@@ -1,3 +1,10 @@
+/*
+ * Question: Write a C program to create a simple calculator using the switch
+ *           statement.
+ * Answer:   Supports +, -, *, /.
+ *           Sample Input: 10 / 4 -> "Result = 2"
+ *           Note: unlike opera.c, this version does not check for division by zero.
+ */
 #include <stdio.h>
 
 int main()

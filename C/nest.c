@@ -1,3 +1,10 @@
+/*
+ * Question: Write a C program using nested if-else to calculate a salary
+ *           increment based on age and current salary.
+ * Answer:   age >= 30: salary <= 500000 -> 10% increment, else 5%.
+ *           age < 30 : salary <= 30000  -> 8% increment, else 3%.
+ *           Input 35 400000 -> 10% increment, amount 40000, new salary 440000.
+ */
 #include <stdio.h>
 
 int main()

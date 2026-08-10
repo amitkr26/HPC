@@ -1,3 +1,8 @@
+/*
+ * Question: Write a C program to demonstrate the unary + and - operators.
+ * Answer:   +a leaves the sign unchanged; -b negates the value of b.
+ *           Sample Input: 3 -7 -> +a = 3 and -b = 7
+ */
 #include <stdio.h>
 
 int main() {

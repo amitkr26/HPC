@@ -1,3 +1,8 @@
+/*
+ * Question: Write a C program to check whether a person is an adult or a minor.
+ * Answer:   num >= 18 -> "Adult"; otherwise "Minor".
+ *           Input 18 -> "18 is Adult"; Input 15 -> "15 is Minor"
+ */
 #include <stdio.h>
 
 int main()

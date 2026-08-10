@@ -1,3 +1,9 @@
+/*
+ * Question: Write a C program to check whether a number is divisible by 5.
+ * Answer:   num % 5 == 0 means the number is divisible by 5.
+ *           Input 25 -> "25 is divisible by 5"
+ *           Input 23 -> "23 is not divisible by 5"
+ */
 #include <stdio.h>
 
 int main()

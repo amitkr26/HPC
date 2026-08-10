@@ -1,3 +1,8 @@
+/*
+ * Question: Write a C program that reads a number and prints "hot" if it is
+ *           greater than 30, otherwise "cold".
+ * Answer:   Input 35 -> "35 is hot"; Input 20 -> "20 is cold"
+ */
 #include <stdio.h>
 
 int main()

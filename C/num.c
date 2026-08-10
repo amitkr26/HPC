@@ -1,3 +1,9 @@
+/*
+ * Question: Write a C program to check whether a number is positive, negative
+ *           or zero.
+ * Answer:   num > 0 -> positive; num == 0 -> zero; otherwise negative.
+ *           Input 5 -> "5 is positive"; 0 -> "0 is zero"; -5 -> "-5 is negative"
+ */
 #include<stdio.h>
 
 int main()

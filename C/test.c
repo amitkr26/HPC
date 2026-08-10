@@ -1,3 +1,14 @@
+/*
+ * Question: Evaluate the output of expressions that mix pre/post increment
+ *           operators.
+ * Answer:   Output produced by gcc 6.3.0:
+ *           b = a++ + ++a (a = 5)  -> "7 12"
+ *           z = x++ * --y (10, 20) -> "11 19 190"
+ *           q = ++p * p++ (p = 4)  -> "6 30"
+ *           Note: some of these expressions modify the same variable between
+ *           two sequence points, which is undefined behaviour in C; results
+ *           may differ between compilers.
+ */
 #include <stdio.h>
 
 int main() {

@@ -1,3 +1,9 @@
+/*
+ * Question: Write a C program to accept two numbers from the user and print
+ *           their sum.
+ * Answer:   Sample Input: 12 30
+ *           Output: "The sum of your entered numbers is: 42"
+ */
 #include<stdio.h>
 
 int main()

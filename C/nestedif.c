@@ -1,3 +1,11 @@
+/*
+ * Question: Write a C program using nested if-else to calculate a salary
+ *           increment based on age and salary (floating-point version).
+ * Answer:   Same rules as nest.c but computed with floating-point values:
+ *           age >= 30: 10% (salary <= 500000) else 5%.
+ *           age < 30 : 8% (salary <= 30000) else 3%.
+ *           Input 35 400000 -> increment 40000, new salary 440000.00
+ */
 #include <stdio.h>
 
 int main()

@@ -1,3 +1,10 @@
+/*
+ * Question: Write a C program to create a simple calculator using the switch
+ *           statement (with division-by-zero protection).
+ * Answer:   Supports +, -, *, /.
+ *           Input 10 + 4 -> "Result = 14"
+ *           Input 10 / 0 -> "Cannot divide by zero"
+ */
 #include <stdio.h>
 
 int main()

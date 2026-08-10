@@ -1,3 +1,8 @@
+/*
+ * Question: Write a C program to find the circumference of a circle.
+ * Answer:   circumference = 2 * PI * radius, where PI is defined as 3.14159.
+ *           Sample Input: 5 -> Output: Circumference of the circle = 31.42
+ */
 #include <stdio.h>
 
 #define PI 3.14159
