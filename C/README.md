@@ -61,6 +61,37 @@ sequences, and pointers.
 | `increment_expression_eval1.c` | Evaluate `z = x++ * --y` where `x = 10`, `y = 20`. | `11 19 190` (`z = 10 * 19`). |
 | `increment_expression_eval2.c` | Evaluate `k = ++i * j--` where `i = 6`, `j = 3`. | `i = 7`, `j = 2`, `k = 21`. |
 
+## Module: Day2 (Lab 2 Assignment)
+
+Twenty programming questions plus a grade program and a bonus ATM program
+submitted for the Day-2 (Lab 2) assignment. Each file is named `qNN_<topic>.c`
+matching the question number in the assignment sheet.
+
+| Program | Question | Answer / Output |
+| --- | --- | --- |
+| `q01_positive_or_negative.c` | Check if a number is positive or negative. | `5` -> positive; `-3` -> negative; `0` -> neither. |
+| `q02_even_or_odd.c` | Check if a number is even or odd. | `8` -> even; `7` -> odd. |
+| `q03_adult_or_minor.c` | Check if a person is adult or minor (18). | `20` -> adult; `15` -> minor. |
+| `q04_hot_or_cold.c` | Check if temperature is hot or cold (>= 30 Hot). | `35` -> Hot; `22` -> Cold. |
+| `q05_divisible_by_5.c` | Check if a number is divisible by 5. | `25` -> divisible; `27` -> not. |
+| `q06_max_of_three_nested_if.c` | Maximum of three numbers using nested-if. | `10 20 15` -> `Maximum = 20`. |
+| `q07_leap_year_nested_if.c` | Leap year using nested-if. | `2024` leap; `1900` not; `2000` leap. |
+| `q08_calculator_switch.c` | Calculator with switch-case (`+ - * /`). | `10 + 4` -> `14`; `/ 0` -> `Cannot divide by zero`. |
+| `q09_vowel_or_consonant.c` | Vowel or consonant using switch. | `a` -> vowel; `b` -> consonant. |
+| `q10_print_1_to_10.c` | Print numbers from 1 to 10. | `1 2 3 4 5 6 7 8 9 10`. |
+| `q11_multiplication_table.c` | Multiplication table (1-10). | `5 x 1 = 5` ... `5 x 10 = 50`. |
+| `q12_even_1_to_50.c` | Print even numbers between 1 and 50. | `2 4 6 ... 50`. |
+| `q13_divisible_by_3_and_5.c` | Print numbers 1-100 divisible by both 3 and 5. | `15 30 45 60 75 90`. |
+| `q14_sum_odd_up_to_n.c` | Sum only odd numbers up to N. | `N=5` -> `Sum = 9`. |
+| `q15_alphabets_a_to_z.c` | Print alphabets a to z using a for loop. | `a b c ... z`. |
+| `q16_five_stars_row.c` | Print 5 stars in a row using a for loop. | `*****`. |
+| `q17_square_star_pattern.c` | Square star pattern of N rows. | `N=3` -> 3x3 block of stars. |
+| `q18_right_triangle_star.c` | Right triangle star pattern. | `N=5` -> 1 star to 5 stars. |
+| `q19_stars_row_while.c` | Stars in a row from user input, while loop. | `5` -> `*****`. |
+| `q20_stars_row_while.c` | Stars in a row from user input, while loop. | Duplicate of Q19. `7` -> `*******`. |
+| `grade_else_if.c` | Grade assignment using an else-if ladder. | 90-100 -> A; 75-89 -> B; 50-74 -> C; 35-49 -> D; <35 -> Fail. |
+| `atm_simple.c` | Bonus: ATM using only if...else. | PIN 1234 -> menu; else `Access Denied`. |
+
 ## Module: Advanced
 
 Programs that combine operators in ways that rely on evaluation order or
