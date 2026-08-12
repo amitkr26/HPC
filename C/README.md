@@ -12,6 +12,7 @@ applicable).
 C/
 ├── Beginner/       Basic I/O, variables, arithmetic, loops, simple if-else
 ├── Intermediate/   switch, nested if, increment/decrement, pointers
+├── Arrays/         1D, 2D and 3D arrays, search, insert, delete
 └── Advanced/       Complex expressions and undefined behaviour
 ```
 
@@ -41,6 +42,12 @@ Programs that introduce I/O, variables, operators, loops and simple decision mak
 | `sum_of_odd_numbers.c` | Find the sum of all odd numbers from 1 to N. | Input `5` -> `Sum = 9`. |
 | `multiplication_table.c` | Print the multiplication table of a number (1-10). | Input `5` -> `5 x 1 = 5` up to `5 x 10 = 50`. |
 | `multiple_of_3_and_5.c` | Print numbers from 1 to 100 divisible by both 3 and 5. | Output: `15, 30, 45, 60, 75, 90`. |
+| `alphabets_a_to_z_duplicate.c` | Print alphabets `a` to `z`. | Duplicate of `Day2/q15`. |
+| `five_stars_row_duplicate.c` | Print 5 stars in a row. | Duplicate of `Day2/q16`. |
+| `square_star_pattern_duplicate.c` | Square star pattern of N rows. | Duplicate of `Day2/q17`. |
+| `right_triangle_star_pattern_duplicate.c` | Right triangle star pattern. | Duplicate of `Day2/q18`. |
+| `stars_row_do_while.c` | Print N stars in a row using `do-while`. | Input `5` -> `*****`. |
+| `print_1_to_10_duplicate.c` | Print numbers from 1 to 10. | Duplicate of `Day2/q10`. |
 
 ## Module: Intermediate
 
@@ -60,6 +67,34 @@ sequences, and pointers.
 | `pointer_sizeof_demo.c` | Demonstrate a pointer and `sizeof`. | `*ptr` prints `5`; `sizeof(int)` prints `4`. |
 | `increment_expression_eval1.c` | Evaluate `z = x++ * --y` where `x = 10`, `y = 20`. | `11 19 190` (`z = 10 * 19`). |
 | `increment_expression_eval2.c` | Evaluate `k = ++i * j--` where `i = 6`, `j = 3`. | `i = 7`, `j = 2`, `k = 21`. |
+| `grade_else_if_ladder.c` | Grade assignment using an else-if ladder. | Duplicate of `Day2/grade_else_if.c`. |
+| `grade_else_if_ladder_variant.c` | Same grading logic with simpler bounds. | 90+ -> A; 75+ -> B; 50+ -> C; 35+ -> D; else Fail. |
+| `max_of_three_nested_if_duplicate.c` | Maximum of three numbers using nested-if. | Duplicate of `Day2/q06`. |
+| `atm_if_else.c` | ATM using only if...else. | Duplicate of `Day2/atm_simple.c`. |
+| `atm_if_else_variant.c` | ATM simulation using integer balance. | PIN 1234 -> menu; else `Access Denied`. |
+
+## Module: Arrays
+
+Programs that store and manipulate collections of values using one-, two- and
+three-dimensional arrays: display, sum, reverse, count, search, insert and
+delete.
+
+| Program | Question | Answer / Output |
+| --- | --- | --- |
+| `print_2d_array.c` | Print a fixed 2x3 two-dimensional array. | Rows `1 2 3` and `4 5 6`. |
+| `print_3d_array.c` | Print a fixed 2x2x2 three-dimensional array. | Two blocks of 2 rows each. |
+| `three_d_array_marks.c` | Store marks for 5 departments x 3 students x 5 subjects and show each student's total and average for a chosen department. | Input 1-5, 3 students, 5 subjects each. |
+| `sum_two_arrays.c` | Add two arrays element-wise (size 5). | `sum[i] = arr1[i] + arr2[i]`. |
+| `sum_two_arrays_duplicate.c` | Same as `sum_two_arrays.c`. | Duplicate. |
+| `print_reverse_array.c` | Read N elements, print original and reversed array. | Uses a variable-length array. |
+| `reverse_array.c` | Read N elements, print them in reverse order. | Loops from `n-1` down to `0`. |
+| `count_even_odd_array.c` | Count even and odd elements in an array. | `N` element input. |
+| `count_even_odd_ten_elements.c` | Count even and odd elements in an array of exactly 10. | Fixed 10 inputs. |
+| `insert_element_array.c` | Insert an element at a given position. | Shifts elements right. |
+| `delete_element_array.c` | Delete an element by value. | Shifts elements left. |
+| `linear_search_array.c` | Search an array for a value. | Prints index or `Element not found`. |
+| `largest_in_array.c` | Find the largest element in an array. | Scans the array for the maximum. |
+| `total_average_marks.c` | Total and average of 5 subject marks. | `Average = total / 5.0`. |
 
 ## Module: Day2 (Lab 2 Assignment)
 
@@ -118,5 +153,8 @@ gcc <module>/<filename>.c -o <module>/<filename>
 - **Decision making:** `even_odd_check.c`, `divisible_by_5.c`, `hot_or_cold.c`, `adult_or_minor.c`, `positive_negative_zero.c`, `leap_year.c`, `leap_year_duplicate.c`, `salary_increment_nested_if.c`, `salary_increment_float.c`
 - **Loops:** `do_while_demo.c`, `even_series.c`, `sum_of_odd_numbers.c`, `multiplication_table.c`, `multiple_of_3_and_5.c`
 - **Switch:** `calculator_switch_safe.c`, `calculator_switch_basic.c`, `vowel_or_consonant.c`
+- **Grades:** `grade_else_if_ladder.c`, `grade_else_if_ladder_variant.c`, `Day2/grade_else_if.c`
+- **ATM:** `atm_if_else.c`, `atm_if_else_variant.c`, `Day2/atm_simple.c`
 - **Increment/decrement operators:** `increment_decrement_operators.c`, `increment_expression_eval1.c`, `increment_expression_eval2.c`, `undefined_increment_behavior.c`, `undefined_increment_behavior2.c`
 - **Pointers:** `pointer_sizeof_demo.c`
+- **Arrays:** `print_2d_array.c`, `print_3d_array.c`, `three_d_array_marks.c`, `sum_two_arrays.c`, `sum_two_arrays_duplicate.c`, `print_reverse_array.c`, `reverse_array.c`, `count_even_odd_array.c`, `count_even_odd_ten_elements.c`, `insert_element_array.c`, `delete_element_array.c`, `linear_search_array.c`, `largest_in_array.c`, `total_average_marks.c`
