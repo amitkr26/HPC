@@ -14,7 +14,7 @@
 
 ## Related existing material
 
-- `C/Project/student_management.c` uses many functions (but also structs and
+- `08-STRUCTURES-UNIONS/code/student_management.c` uses many functions (but also structs and
   pointers - study the function pattern only, skip the rest for now).
 - After this lesson the "Student Marks Manager" in
   `16-MINI-PROJECTS/` can be rewritten with functions.

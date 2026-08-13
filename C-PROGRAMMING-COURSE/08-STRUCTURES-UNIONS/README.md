@@ -6,7 +6,7 @@
 
 ## What already exists (look-ahead only)
 
-- `C/Project/student_management.c` - a 397-line project using `struct Student`,
+- `08-STRUCTURES-UNIONS/code/student_management.c` - a 397-line project using `struct Student`,
   an array of structs, functions taking `Student *`, `typedef`, and a menu
   loop (add/display/search/update/delete/stats).
 
@@ -23,5 +23,5 @@ it is NOT evidence that structures have been learned yet.
 
 ## Revisit target
 
-After this module, `C/Project/student_management.c` should be fully
+After this module, `08-STRUCTURES-UNIONS/code/student_management.c` should be fully
 understood line by line.

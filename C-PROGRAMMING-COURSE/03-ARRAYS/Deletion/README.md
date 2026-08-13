@@ -11,8 +11,8 @@ Completed (Day 3). Confidence 3/5 (shift logic needs re-practice).
 
 ## Code
 
-- `C/Arrays/delete_element_array.c`
-- `C/Day3/q06_delete_value.c`
+- `03-ARRAYS/Deletion/code/delete_element_array.c`
+- `03-ARRAYS/Day-03/code/q06_delete_value.c`
 
 ## Key pattern
 

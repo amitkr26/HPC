@@ -6,7 +6,7 @@ memory, file handling).
 
 ## Planned
 
-1. **Student management system with file storage** - the `C/Project/student_management.c`
+1. **Student management system with file storage** - the `08-STRUCTURES-UNIONS/code/student_management.c`
    design, upgraded to save/load records to a file (`fopen`/`fprintf`/`fscanf`).
 2. **Library management system** - books, members, issue/return using structs,
    dynamic arrays, and files.

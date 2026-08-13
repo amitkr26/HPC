@@ -7,7 +7,7 @@ far. Confidence 2/5.
 
 ## Code
 
-- `C/Arrays/print_2d_array.c` - fixed 2x3 array, row-wise output
+- `03-ARRAYS/2D-Arrays/code/print_2d_array.c` - fixed 2x3 array, row-wise output
 
 ## Theory (from Lab-3 Explain Q3-Q4, MCQ 3/8)
 

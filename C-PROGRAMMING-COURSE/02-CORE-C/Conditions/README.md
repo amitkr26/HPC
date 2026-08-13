@@ -12,13 +12,13 @@ Completed (Day 2). Confidence 4/5. Ternary operator not started.
 
 ## Code
 
-Simple if/else: `C/Day2/q01-q05`, `C/Beginner/even_odd_check.c`,
-`C/Beginner/positive_negative_zero.c`
-Else-if ladder: `C/Day2/grade_else_if.c`, `C/Intermediate/grade_else_if_ladder*.c`
-Nested if: `C/Day2/q06_max_of_three_nested_if.c`, `C/Day2/q07_leap_year_nested_if.c`,
-`C/Intermediate/leap_year.c`, `C/Intermediate/salary_increment_nested_if.c`
-Switch: `C/Day2/q08_calculator_switch.c`, `C/Day2/q09_vowel_or_consonant.c`,
-`C/Intermediate/calculator_switch*.c`, `C/Intermediate/vowel_or_consonant.c`
+Simple if/else: `01-BEGINNER/Day-02/code/assignment/q01-q05`, `01-BEGINNER/Day-02/code/even_odd_check.c`,
+`01-BEGINNER/Day-02/code/positive_negative_zero.c`
+Else-if ladder: `01-BEGINNER/Day-02/code/assignment/grade_else_if.c`, `02-CORE-C/Conditions/code/grade_else_if_ladder*.c`
+Nested if: `01-BEGINNER/Day-02/code/assignment/q06_max_of_three_nested_if.c`, `01-BEGINNER/Day-02/code/assignment/q07_leap_year_nested_if.c`,
+`02-CORE-C/Conditions/code/leap_year.c`, `02-CORE-C/Conditions/code/salary_increment_nested_if.c`
+Switch: `01-BEGINNER/Day-02/code/assignment/q08_calculator_switch.c`, `01-BEGINNER/Day-02/code/assignment/q09_vowel_or_consonant.c`,
+`02-CORE-C/Conditions/code/calculator_switch*.c`, `02-CORE-C/Conditions/code/vowel_or_consonant.c`
 
 ## Key rules
 

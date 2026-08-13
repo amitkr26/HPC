@@ -12,12 +12,12 @@ evaluation practised. Ternary operator not yet started.
 
 ## Code
 
-- `C/Beginner/binary_arithmetic.c`, `C/Beginner/binary_arithmetic_input.c`
-- `C/Beginner/unary_operators.c`
-- `C/Intermediate/increment_decrement_operators.c`
-- `C/Intermediate/increment_expression_eval1.c` (`z = x++ * --y`)
-- `C/Intermediate/increment_expression_eval2.c` (`k = ++i * j--`)
-- `C/Advanced/undefined_increment_behavior.c` - what NOT to write
+- `01-BEGINNER/Day-01/code/binary_arithmetic.c`, `01-BEGINNER/Day-01/code/binary_arithmetic_input.c`
+- `01-BEGINNER/Day-01/code/unary_operators.c`
+- `02-CORE-C/Operators/code/increment_decrement_operators.c`
+- `02-CORE-C/Operators/code/increment_expression_eval1.c` (`z = x++ * --y`)
+- `02-CORE-C/Operators/code/increment_expression_eval2.c` (`k = ++i * j--`)
+- `12-ADVANCED-C/code/undefined_increment_behavior.c` - what NOT to write
 
 ## Key rules
 

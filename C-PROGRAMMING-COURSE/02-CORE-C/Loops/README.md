@@ -13,11 +13,11 @@ Completed (Day 2). Confidence 4/5. `break`/`continue` practice still pending
 
 ## Code
 
-For loops: `C/Day2/q10-q15`, `C/Beginner/even_series.c`,
-`C/Beginner/sum_of_odd_numbers.c`, `C/Beginner/multiplication_table.c`
-While: `C/Day2/q19_stars_row_while.c`, `C/Day2/q20_stars_row_while.c`
-Do-while: `C/Beginner/do_while_demo.c`, `C/Beginner/stars_row_do_while.c`
-Patterns: `C/Day2/q16_five_stars_row.c`, `q17_square_star_pattern.c`,
+For loops: `01-BEGINNER/Day-02/code/q10-q15`, `01-BEGINNER/Day-02/code/even_series.c`,
+`01-BEGINNER/Day-02/code/sum_of_odd_numbers.c`, `01-BEGINNER/Day-02/code/multiplication_table.c`
+While: `01-BEGINNER/Day-02/code/assignment/q19_stars_row_while.c`, `01-BEGINNER/Day-02/code/assignment/q20_stars_row_while.c`
+Do-while: `01-BEGINNER/Day-02/code/do_while_demo.c`, `01-BEGINNER/Day-02/code/stars_row_do_while.c`
+Patterns: `01-BEGINNER/Day-02/code/assignment/q16_five_stars_row.c`, `q17_square_star_pattern.c`,
 `q18_right_triangle_star.c`
 
 ## Key rules

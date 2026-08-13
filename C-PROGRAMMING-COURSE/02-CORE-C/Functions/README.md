@@ -14,7 +14,7 @@
 
 ## Heads-up for this lesson
 
-The project `C/Project/student_management.c` already uses functions with
+The project `08-STRUCTURES-UNIONS/code/student_management.c` already uses functions with
 pointers and an array of structures. It is a **look-ahead file**: after this
 lesson you can study its function structure, but the struct/pointer parts
 belong to Levels 7-9.

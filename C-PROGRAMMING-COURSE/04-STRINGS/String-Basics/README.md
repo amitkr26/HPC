@@ -12,8 +12,8 @@ Completed (Day 4). Confidence 3/5.
 
 ## Code
 
-- `C/Day4/q01_string_length.c` - read a string, print `strlen()`
-- `C/Day4/q05_longer_string.c` - compare two lengths, print the longer
+- `04-STRINGS/Day-04/code/q01_string_length.c` - read a string, print `strlen()`
+- `04-STRINGS/Day-04/code/q05_longer_string.c` - compare two lengths, print the longer
 
 ## Key rules
 

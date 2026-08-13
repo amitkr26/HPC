@@ -11,10 +11,10 @@ Completed (Day 3). Confidence 4/5.
 
 ## Code
 
-- `C/Arrays/print_reverse_array.c` - read N, print original then reversed
-- `C/Arrays/print_2d_array.c` - nested loops over rows and columns
-- `C/Arrays/print_3d_array.c` - triple nested loops
-- Every `C/Day3/q*.c` program has an input loop and an output loop
+- `03-ARRAYS/1D-Arrays/code/print_reverse_array.c` - read N, print original then reversed
+- `03-ARRAYS/2D-Arrays/code/print_2d_array.c` - nested loops over rows and columns
+- `03-ARRAYS/3D-Arrays/code/print_3d_array.c` - triple nested loops
+- Every `03-ARRAYS/Day-03/code/q*.c` program has an input loop and an output loop
 
 ## Key patterns
 

@@ -12,8 +12,8 @@ Completed (Day 3). Confidence 4/5.
 
 ## Code
 
-- `C/Arrays/linear_search_array.c`
-- `C/Day3/q02_linear_search.c`
+- `03-ARRAYS/Searching/code/linear_search_array.c`
+- `03-ARRAYS/Day-03/code/q02_linear_search.c`
 
 ## Key pattern
 

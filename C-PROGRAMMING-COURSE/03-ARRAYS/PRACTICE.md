@@ -7,28 +7,28 @@ Work in order. Do not skip levels. After each level, update confidence in
 
 The exact questions from the Day-3 assignment
 (`C/Assignmenmt/Amit_Kumar_Lab3_Day3_Assignment.docx`). Write each one, then
-compare with the solved program in `C/Day3/`. Paths are workspace-relative.
+compare with the solved program in `03-ARRAYS/Day-03/code/`. Paths are workspace-relative.
 
 | # | Question | Solved program |
 | --- | --- | --- |
-| 1 | Insert an element at a position | `C/Day3/q01_insert_element.c` |
-| 2 | Linear search for a value | `C/Day3/q02_linear_search.c` |
-| 3 | Largest element in an array | `C/Day3/q03_largest_element.c` |
-| 4 | Count even and odd numbers | `C/Day3/q04_count_even_odd.c` |
-| 5 | Reverse an array | `C/Day3/q05_reverse_array.c` |
-| 6 | Delete a given value | `C/Day3/q06_delete_value.c` |
-| 7 | Swap first and last elements | `C/Day3/q07_swap_first_last.c` |
-| 8 | Check two arrays are identical | `C/Day3/q08_arrays_identical.c` |
-| 9 | Copy one array into another | `C/Day3/q09_copy_array.c` |
-| 10 | Replace negatives with 0 | `C/Day3/q10_replace_negatives.c` |
+| 1 | Insert an element at a position | `03-ARRAYS/Day-03/code/q01_insert_element.c` |
+| 2 | Linear search for a value | `03-ARRAYS/Day-03/code/q02_linear_search.c` |
+| 3 | Largest element in an array | `03-ARRAYS/Day-03/code/q03_largest_element.c` |
+| 4 | Count even and odd numbers | `03-ARRAYS/Day-03/code/q04_count_even_odd.c` |
+| 5 | Reverse an array | `03-ARRAYS/Day-03/code/q05_reverse_array.c` |
+| 6 | Delete a given value | `03-ARRAYS/Day-03/code/q06_delete_value.c` |
+| 7 | Swap first and last elements | `03-ARRAYS/Day-03/code/q07_swap_first_last.c` |
+| 8 | Check two arrays are identical | `03-ARRAYS/Day-03/code/q08_arrays_identical.c` |
+| 9 | Copy one array into another | `03-ARRAYS/Day-03/code/q09_copy_array.c` |
+| 10 | Replace negatives with 0 | `03-ARRAYS/Day-03/code/q10_replace_negatives.c` |
 
-Extra array programs already written: `C/Arrays/insert_element_array.c`,
-`C/Arrays/linear_search_array.c`, `C/Arrays/largest_in_array.c`,
-`C/Arrays/count_even_odd_array.c`, `C/Arrays/count_even_odd_ten_elements.c`,
-`C/Arrays/reverse_array.c`, `C/Arrays/print_reverse_array.c`,
-`C/Arrays/delete_element_array.c`, `C/Arrays/sum_two_arrays.c`,
-`C/Arrays/total_average_marks.c`, `C/Arrays/print_2d_array.c`,
-`C/Arrays/print_3d_array.c`, `C/Arrays/three_d_array_marks.c` (multidim
+Extra array programs already written: `03-ARRAYS/Insertion/code/insert_element_array.c`,
+`03-ARRAYS/Searching/code/linear_search_array.c`, `03-ARRAYS/1D-Arrays/code/largest_in_array.c`,
+`03-ARRAYS/1D-Arrays/code/count_even_odd_array.c`, `03-ARRAYS/1D-Arrays/code/count_even_odd_ten_elements.c`,
+`03-ARRAYS/1D-Arrays/code/reverse_array.c`, `03-ARRAYS/1D-Arrays/code/print_reverse_array.c`,
+`03-ARRAYS/Deletion/code/delete_element_array.c`, `03-ARRAYS/1D-Arrays/code/sum_two_arrays.c`,
+`03-ARRAYS/1D-Arrays/code/total_average_marks.c`, `03-ARRAYS/2D-Arrays/code/print_2d_array.c`,
+`03-ARRAYS/3D-Arrays/code/print_3d_array.c`, `03-ARRAYS/3D-Arrays/code/three_d_array_marks.c` (multidim
 project).
 
 Full mapping: `PRACTICE-INDEX.md`.

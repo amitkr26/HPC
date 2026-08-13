@@ -12,8 +12,8 @@ Completed (Day 1). Confidence 3/5.
 
 ## Code
 
-- `C/Beginner/print_variables.c` - declare and print `char`, `int`, `float`
-- `C/Beginner/sum_of_two_numbers.c` - two `int` variables + input
+- `01-BEGINNER/Day-01/code/print_variables.c` - declare and print `char`, `int`, `float`
+- `01-BEGINNER/Day-01/code/sum_of_two_numbers.c` - two `int` variables + input
 
 ## Theory
 

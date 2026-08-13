@@ -1,7 +1,7 @@
 # 04 - Strings
 
 The strings module (Day 4). Maps every string topic to a program in
-`C/Day4/q01-q13` and the solved assignment
+`04-STRINGS/Day-04/code/q01-q13` and the solved assignment
 (`C/Assignmenmt/Amit_Kumar_Lab4_Day4_Assignment.docx`).
 
 ## Progression checklist
@@ -32,7 +32,8 @@ The strings module (Day 4). Maps every string topic to a program in
 
 ## Source material (preserved in `C/`)
 
-- `C/Day4/q01-q13` - all string programs with `.exe`, input files, screenshots
+- `04-STRINGS/Day-04/code/q01-q13` - all string programs (`.exe`, input files
+  and screenshots remain in the `C/` history)
 - `C/Assignmenmt/Amit_Kumar_Lab4_Day4_Assignment.docx` - solved document
   (13 programs + 10 MCQs + 5 Explain answers)
 

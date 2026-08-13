@@ -18,4 +18,4 @@ programs you write (`code/`).
 10. Find the most frequent value.
 
 Answers/working programs: write them yourself in `code/` before looking at
-`C/Arrays/` programs.
+the solved programs in the array sub-module `code/` folders.

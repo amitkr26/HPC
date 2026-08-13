@@ -11,10 +11,10 @@ Completed (Day 1). Confidence 4/5.
 
 ## Code
 
-- `C/Beginner/hello_world.c` - first printf
-- `C/Beginner/print_variables.c` - printf with types
-- `C/Beginner/sum_of_two_numbers.c` - scanf two ints
-- `C/Beginner/binary_arithmetic_input.c` - scanf and arithmetic
+- `01-BEGINNER/Day-01/code/hello_world.c` - first printf
+- `01-BEGINNER/Day-01/code/print_variables.c` - printf with types
+- `01-BEGINNER/Day-01/code/sum_of_two_numbers.c` - scanf two ints
+- `01-BEGINNER/Day-01/code/binary_arithmetic_input.c` - scanf and arithmetic
 
 ## Key rules
 

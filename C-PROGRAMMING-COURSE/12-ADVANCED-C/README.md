@@ -6,9 +6,9 @@
 
 ## What exists
 
-- `C/Advanced/undefined_increment_behavior.c` - expressions mixing pre/post
+- `12-ADVANCED-C/code/undefined_increment_behavior.c` - expressions mixing pre/post
   increments (some lines are undefined behaviour; output shown for gcc 6.3.0)
-- `C/Advanced/undefined_increment_behavior2.c` - `q = ++p * p++` with `p=4`
+- `12-ADVANCED-C/code/undefined_increment_behavior2.c` - `q = ++p * p++` with `p=4`
   (undefined behaviour)
 
 These were studied as a **warning topic**: never rely on expressions that

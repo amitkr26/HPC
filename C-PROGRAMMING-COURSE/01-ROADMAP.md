@@ -30,7 +30,7 @@ actually exists in this workspace. Status tags:
   temperature conversion, percentage, discount, speed, net salary
 
 **Material:** `01-BEGINNER/Day-01/` -> `C/Assignmenmt/Amit_Kumar_CDay1_Assignment.docx`,
-`C/Beginner/`
+`01-BEGINNER/`
 
 > Note: several Day-1 problems (simple interest, compound interest, BMI,
 > Celsius/Fahrenheit, percentage, discount, speed, net salary) exist only in
@@ -46,8 +46,8 @@ actually exists in this workspace. Status tags:
 - Ternary operator  `[ ]` not yet practised
 - Relational and logical operators
 
-**Material:** `01-BEGINNER/Day-02/` -> `C/Day2/`, `C/Beginner/` (decision files),
-`C/Intermediate/` (nested-if variants)
+**Material:** `01-BEGINNER/Day-02/` -> `01-BEGINNER/Day-02/code/`, `01-BEGINNER/` (decision files),
+`02-CORE-C/` (nested-if variants)
 
 ## LEVEL 3 - Loops  (Day 2)  [DONE]
 
@@ -58,7 +58,7 @@ actually exists in this workspace. Status tags:
 - `break`, `continue` (conceptual questions done; practice with them in loops)
 - Loop patterns: counting, series, sum, tables, alphabets, stars
 
-**Material:** `01-BEGINNER/Day-02/` -> `C/Day2/q10-q20`, `C/Beginner/` (loops)
+**Material:** `01-BEGINNER/Day-02/` -> `01-BEGINNER/Day-02/code/assignment/q10-q20`, `01-BEGINNER/` (loops)
 
 ## LEVEL 4 - Arrays  (Day 3)  [DONE]
 
@@ -76,7 +76,7 @@ actually exists in this workspace. Status tags:
 - Bounds errors, garbage values, buffer overflow
 - Sorting  `[ ]` NOT STARTED
 
-**Material:** `03-ARRAYS/` -> `C/Arrays/`, `C/Day3/`,
+**Material:** `03-ARRAYS/` -> `03-ARRAYS/`, `03-ARRAYS/Day-03/code/`,
 `C/Assignmenmt/Amit_Kumar_Lab3_Day3_Assignment.docx`
 
 ## LEVEL 5 - Strings  (Day 4)  [DONE]
@@ -91,7 +91,7 @@ actually exists in this workspace. Status tags:
 - Character classification: `isupper()`, `islower()`, `isdigit()` (`ctype.h`)
 - Mini applications: login, password validation, authentication
 
-**Material:** `04-STRINGS/` -> `C/Day4/`,
+**Material:** `04-STRINGS/` -> `04-STRINGS/Day-04/code/`,
 `C/Assignmenmt/Amit_Kumar_Lab4_Day4_Assignment.docx`
 
 ## LEVEL 6 - Functions  [ ] NOT STARTED (next)
@@ -106,7 +106,7 @@ actually exists in this workspace. Status tags:
 ## LEVEL 7 - Pointers  [PARTIAL - one demo only]
 
 - What is a pointer, address-of `&`, dereference `*`
-- `sizeof`  (demo program exists: `C/Intermediate/pointer_sizeof_demo.c`)
+- `sizeof`  (demo program exists: `05-POINTERS/code/pointer_sizeof_demo.c`)
 - Pointer arithmetic, arrays and pointers, pointer/array relationship
 - Pointers as function arguments, call by reference
 - Pointers and strings
@@ -129,7 +129,7 @@ actually exists in this workspace. Status tags:
 - `enum`
 - Bit fields  [advanced]
 
-> The existing `C/Project/student_management.c` already uses structs, arrays
+> The existing `08-STRUCTURES-UNIONS/code/student_management.c` already uses structs, arrays
 > of structs, and functions with pointers. It was written ahead of this level
 > (reference only - revisit it here).
 
@@ -159,7 +159,7 @@ actually exists in this workspace. Status tags:
 ## LEVEL 14 - Advanced C  [PARTIAL - undefined behaviour only]
 
 - Evaluation order and undefined behaviour
-  (`C/Advanced/undefined_increment_behavior*.c` - studied as a warning topic)
+  (`12-ADVANCED-C/code/undefined_increment_behavior*.c` - studied as a warning topic)
 - Function pointers, bitwise operators, linked lists
   [all not started]
 
@@ -171,7 +171,7 @@ See `16-MINI-PROJECTS/`. Projects must only use already-learned concepts.
 - After arrays: student marks manager, inventory, employee records
 - After strings: password validator (exists), word counter, text analyzer
 - After functions+arrays+structures: **student management system**
-  (exists at `C/Project/student_management.c`, planned for Level 9)
+  (exists at `08-STRUCTURES-UNIONS/code/student_management.c`, planned for Level 9)
 
 ---
 

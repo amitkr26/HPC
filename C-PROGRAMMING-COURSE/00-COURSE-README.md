@@ -27,10 +27,8 @@ C-PROGRAMMING-COURSE/          <- this course (read this first)
 └── 01-BEGINNER/ ... 17-FINAL-PROJECTS/   <- modules
 
 C/                              <- my learning history (do NOT delete)
-├── Beginner/  Intermediate/  Arrays/  Advanced/   <- topic files
-├── Day2/  Day3/  Day4/                         <- assignment programs
-├── Assignmenmt/                                <- assignment sheets + solved docs
-└── Project/                                    <- the student management project
+├── *.c (flat)                  <- every program, copied into the course code/ folders
+└── Assignmenmt/                <- assignment sheets + solved docs
 ```
 
 The `C/` folder is **learning history** and stays untouched. The course
@@ -100,8 +98,8 @@ conceptual), MCQs, and a revision summary.
 - The solved documents follow the format documented in `AGENTS.md`
   (`## C Assignment Deliverable Format`): cloned template, code tables,
   console screenshots, MCQ answers table, Explain section.
-- `C/Day2/`, `C/Day3/`, `C/Day4/` hold the per-question `.c`/`.exe`/input/
-  screenshot pairs.
+- `01-BEGINNER/Day-02/code/`, `03-ARRAYS/Day-03/code/`, `04-STRINGS/Day-04/code/`
+  hold the per-question `.c` programs (copied from the flat `C/` history).
 
 ## How to revise
 

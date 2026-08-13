@@ -6,8 +6,8 @@
 
 ## Code
 
-- `C/Arrays/print_3d_array.c` - fixed 2x2x2 array, prints block by block
-- `C/Arrays/three_d_array_marks.c` - **the multidimentional array assignment**:
+- `03-ARRAYS/3D-Arrays/code/print_3d_array.c` - fixed 2x2x2 array, prints block by block
+- `03-ARRAYS/3D-Arrays/code/three_d_array_marks.c` - **the multidimentional array assignment**:
   `marks[5][3][5]` = 5 departments x 3 students x 5 subjects; user selects a
   department, program prints each student's total and average (with 1-based to
   0-based index conversion)

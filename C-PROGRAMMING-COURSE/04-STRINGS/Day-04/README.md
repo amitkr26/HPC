@@ -11,10 +11,9 @@
 ## What I did today
 
 - Studied: strings from the Day-4 class assignment.
-- Programs written: `C/Day4/q01-q13` (length, copy, compare, concatenate,
+- Programs written: `code/q01-q13` (length, copy, compare, concatenate,
   longer string, password check, `.txt` extension, concat + count, vowels,
-  char classification, login system, password creator, secure authentication) -
-  all with `.exe`, input files, screenshots.
+  char classification, login system, password creator, secure authentication).
 - Assignment: `C/Assignmenmt/Amit_Kumar_Lab4_Day4_Assignment.docx` (solved:
   13 programs + 10 MCQs + 5 Explain answers).
 

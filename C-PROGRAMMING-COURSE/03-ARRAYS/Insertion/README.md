@@ -11,8 +11,8 @@ Completed (Day 3). Confidence 3/5 (shift logic needs re-practice).
 
 ## Code
 
-- `C/Arrays/insert_element_array.c`
-- `C/Day3/q01_insert_element.c`
+- `03-ARRAYS/Insertion/code/insert_element_array.c`
+- `03-ARRAYS/Day-03/code/q01_insert_element.c`
 
 ## Key pattern
 

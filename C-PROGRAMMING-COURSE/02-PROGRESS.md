@@ -11,10 +11,10 @@ solve new problems unaided).
 
 | Day | Topic | Status | Practice | Assignment | Confidence |
 | --- | --- | --- | --- | --- | --- |
-| Day 1 | C fundamentals (intro, printf/scanf, variables, data types, operators, basic programs) | Completed | `C/Beginner/*.c` re-run; Day-1 Q1-Q18 in assignment | `Amit_Kumar_CDay1_Assignment.docx` (20 Qs + MCQ bank) | 3 |
-| Day 2 | Decision making, switch, loops, patterns | Completed | `C/Day2/q01-q20` | `Amit_Kumar_Lab2_Day2_Assignment.pdf` | 4 |
-| Day 3 | Arrays: 1D/2D/3D, search, insert, delete, reverse, copy, compare | Completed | `C/Arrays/*.c`, `C/Day3/*.c` | `Amit_Kumar_Lab3_Day3_Assignment.docx` + multidim array assignment | 3 |
-| Day 4 | Strings: strlen/strcpy/strcmp/strcat, input methods, char classification, login/password apps | Completed | `C/Day4/q01-q13` | `Amit_Kumar_Lab4_Day4_Assignment.docx` | 3 |
+| Day 1 | C fundamentals (intro, printf/scanf, variables, data types, operators, basic programs) | Completed | `01-BEGINNER/Day-01/code + 01-BEGINNER/Day-02/code` re-run; Day-1 Q1-Q18 in assignment | `Amit_Kumar_CDay1_Assignment.docx` (20 Qs + MCQ bank) | 3 |
+| Day 2 | Decision making, switch, loops, patterns | Completed | `01-BEGINNER/Day-02/code/assignment/q01-q20` | `Amit_Kumar_Lab2_Day2_Assignment.pdf` | 4 |
+| Day 3 | Arrays: 1D/2D/3D, search, insert, delete, reverse, copy, compare | Completed | `03-ARRAYS/*/code/*.c`, `03-ARRAYS/Day-03/code/*.c` | `Amit_Kumar_Lab3_Day3_Assignment.docx` + multidim array assignment | 3 |
+| Day 4 | Strings: strlen/strcpy/strcmp/strcat, input methods, char classification, login/password apps | Completed | `04-STRINGS/Day-04/code/q01-q13` | `Amit_Kumar_Lab4_Day4_Assignment.docx` | 3 |
 
 ## Topic status
 
@@ -25,12 +25,12 @@ solve new problems unaided).
 | Variables, identifiers, constants, literals, keywords | Completed | Day-1 assignment Explain Q16-Q20 | 3 |
 | Data types (int/float/double/char), sizeof | Completed | `print_variables.c`, `pointer_sizeof_demo.c` | 3 |
 | Arithmetic, unary, increment/decrement operators | Completed | `binary_arithmetic*.c`, `unary_operators.c`, Day-1 Q19-20 | 3 |
-| if / if-else / else-if ladder | Completed | `C/Day2/q01-q05`, grade programs | 4 |
+| if / if-else / else-if ladder | Completed | `01-BEGINNER/Day-02/code/assignment/q01-q05`, grade programs | 4 |
 | Nested if | Completed | max-of-three, leap year (Day2 q06/q07) | 4 |
 | switch | Completed | calculator, vowel (Day2 q08/q09) | 4 |
 | Ternary operator | Not Started | - | - |
-| for loop | Completed | `C/Day2/q10-q18` | 4 |
-| while loop | Completed | `C/Day2/q19-q20` | 4 |
+| for loop | Completed | `01-BEGINNER/Day-02/code/assignment/q10-q18` | 4 |
+| while loop | Completed | `01-BEGINNER/Day-02/code/assignment/q19-q20` | 4 |
 | do-while loop | Completed | `do_while_demo.c`, `stars_row_do_while.c` | 3 |
 | Nested loops, patterns | Completed | square/right-triangle patterns | 4 |
 | break / continue | Needs Practice | only conceptual questions in Day-2 doc | 2 |
@@ -71,11 +71,11 @@ solve new problems unaided).
 | File handling | Not Started | - | - |
 | Preprocessor | Not Started | - | - |
 | Command-line arguments | Not Started | - | - |
-| Advanced C / undefined behaviour | Needs Practice | `C/Advanced/undefined_increment_behavior*.c` | 1 |
+| Advanced C / undefined behaviour | Needs Practice | `12-ADVANCED-C/code/undefined_increment_behavior*.c` | 1 |
 
 ## Weekly goal (current)
 
-- [ ] Re-run every `C/Arrays/` and `C/Day3/` program from scratch (no peeking)
+- [ ] Re-run every `03-ARRAYS/` and `03-ARRAYS/Day-03/code/` program from scratch (no peeking)
       to move Arrays 1D confidence to 4-5. Question-to-program map:
       `PRACTICE-INDEX.md`.
 - [ ] Rewrite the Day-2 question set from memory (`01-BEGINNER/Day-02/PRACTICE.md`).

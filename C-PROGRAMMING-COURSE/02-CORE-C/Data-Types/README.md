@@ -12,8 +12,8 @@ Completed (Day 1). Confidence 3/5. `sizeof` touched via
 
 ## Code
 
-- `C/Beginner/print_variables.c` - char/int/float together
-- `C/Intermediate/pointer_sizeof_demo.c` - `sizeof(int)` = 4 bytes
+- `01-BEGINNER/Day-01/code/print_variables.c` - char/int/float together
+- `05-POINTERS/code/pointer_sizeof_demo.c` - `sizeof(int)` = 4 bytes
 
 ## Theory
 

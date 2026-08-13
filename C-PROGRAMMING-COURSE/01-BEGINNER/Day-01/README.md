@@ -14,19 +14,19 @@
   assignment sheet).
 - Programs written: `hello_world`, `print_variables`, `sum_of_two_numbers`,
   `binary_arithmetic`, `unary_operators`, `swap_two_numbers`, area programs
-  (in `C/Beginner/`).
+  (in `code/`).
 - Assignment: `C/Assignmenmt/Amit_Kumar_CDay1_Assignment.docx`
   (20 lab questions + MCQ bank + 20 Explain questions, solved).
 
 ## Where the theory lives
 
 - Day-1 assignment docx (Explain Q1-Q20)
-- `C/Beginner/` programs
+- `code/` programs
 - Cheat sheet: `03-CHEAT-SHEET.md`
 
 ## Programs
 
-| File (in `C/Beginner/`) | Topic |
+| File (in `code/`) | Topic |
 | --- | --- |
 | `hello_world.c` | printf, program structure |
 | `print_variables.c` | data types, format specifiers |

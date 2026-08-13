@@ -13,10 +13,11 @@ daily lessons for Day 1 and Day 2. Topic detail lives in `02-CORE-C`.
 Each day folder has a `PRACTICE.md` with the exact instructor question set
 and links to the solved programs. Full mapping in `PRACTICE-INDEX.md`.
 
-## Source material (in `C/`)
+## Source material
 
-- `C/Beginner/` - hello world, variables, arithmetic, geometry, loops, patterns
-- `C/Day2/` - assignment programs q01-q20 (conditions, loops, patterns)
+- `Day-01/code/` - hello world, variables, arithmetic, geometry (Day-1)
+- `Day-02/code/` - loops, patterns (Day-2 topic programs)
+- `Day-02/code/assignment/` - assignment programs q01-q20 (conditions, loops, patterns)
 
 ## Honest status
 

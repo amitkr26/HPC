@@ -11,14 +11,14 @@
 
 - Studied: conditions (Day-2 Q1-Q7), switch (Q8-Q9), loops (Q10-Q20),
   else-if grade ladder, bonus ATM program.
-- Programs written: `C/Day2/q01-q20`, `C/Day2/grade_else_if.c`,
-  `C/Day2/atm_simple.c`.
+- Programs written: `code/assignment/q01-q20`, `code/assignment/grade_else_if.c`,
+  `code/assignment/atm_simple.c`.
 - Assignment: `C/Assignmenmt/Amit_Kumar_Lab2_Day2_Assignment.pdf`
-  (solved; markdown copy: `C/Day2/Amit_Lab2.md`).
+  (solved; markdown copy: `01-BEGINNER/Day-02/PRACTICE.md`).
 
 ## Programs map
 
-| Questions | Topic | Files (in `C/Day2/`) |
+| Questions | Topic | Files (in `code/assignment/`) |
 | --- | --- | --- |
 | Q1-Q5 | simple if/else | `q01_positive_or_negative` ... `q05_divisible_by_5` |
 | Q6-Q7 | nested if | `q06_max_of_three_nested_if`, `q07_leap_year_nested_if` |
@@ -28,7 +28,7 @@
 | Q19-Q20 | while loops | `q19_stars_row_while`, `q20_stars_row_while` |
 | Bonus | if-else only ATM | `atm_simple` |
 
-## Concept questions answered (in `C/Day2/Amit_Lab2.md`)
+## Concept questions answered (in `01-BEGINNER/Day-02/PRACTICE.md`)
 
 - for vs while vs do-while (when to use each)
 - entry-controlled vs exit-controlled loops

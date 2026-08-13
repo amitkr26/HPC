@@ -1,7 +1,7 @@
 # 03 - Arrays
 
 The complete arrays module (Day 3). Every topic below maps to a real program
-in `C/Arrays/` or `C/Day3/`, or to a question in the Day-3 assignment
+in `03-ARRAYS/` or `03-ARRAYS/Day-03/code/`, or to a question in the Day-3 assignment
 (`C/Assignmenmt/Amit_Kumar_Lab3_Day3_Assignment.docx`) and the multidimentional
 array assignment.
 
@@ -53,16 +53,16 @@ Status: `[x]` = done, `[~]` = needs practice, `[ ]` = not started.
 | `Array-Practice/` | practice levels and coding drills |
 | `Day-03/` | the daily record of the arrays lesson |
 
-## Source material (all preserved in `C/`)
+## Source material
 
-- `C/Arrays/` - 14 programs (1D/2D/3D, search, insert, delete, sum, largest,
-  even/odd count, reverse)
-- `C/Day3/q01-q10` - the Lab-3 assignment programs with input files and
-  console screenshots
+- `03-ARRAYS/*/code/` - 14 programs (1D/2D/3D, search, insert, delete, sum,
+  largest, even/odd count, reverse) copied into the topic sub-modules
+- `03-ARRAYS/Day-03/code/q01-q10` - the Lab-3 assignment programs (input files
+  and console screenshots are in the original `C/` history)
 - `C/Assignmenmt/Amit_Kumar_Lab3_Day3_Assignment.docx` - solved document
   (programs + outputs + 10 MCQs + 10 Explain answers)
 - `C/Assignmenmt/Amit Kumar - multidimentional array-Assignment.pdf` - the 3D
-  student marks project (solved as `C/Arrays/three_d_array_marks.c`)
+  student marks project (solved as `03-ARRAYS/3D-Arrays/code/three_d_array_marks.c`)
 
 ## Honest status
 

@@ -16,9 +16,9 @@ Completed (Day 4). Confidence 3/5 - `fgets` details need practice.
 
 ## Code
 
-- `C/Day4/q09_print_vowels.c` - `%[^\n]`
-- `C/Day4/q10_char_classify.c` - `%99[^\n]`
-- `C/Day4/q13_secure_authentication.c` - `fgets` + `strcspn` + `getchar` flush
+- `04-STRINGS/Day-04/code/q09_print_vowels.c` - `%[^\n]`
+- `04-STRINGS/Day-04/code/q10_char_classify.c` - `%99[^\n]`
+- `04-STRINGS/Day-04/code/q13_secure_authentication.c` - `fgets` + `strcspn` + `getchar` flush
 
 ## Key rules
 

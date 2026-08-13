@@ -51,7 +51,7 @@ Same `%d %f %lf %c %s` as above. `scanf` needs addresses: `&var`.
 - `&` = address-of, `*` = dereference  **(pointers in progress)**
 
 > Warning: `a++ + ++a` style expressions are **undefined behaviour** - never
-> rely on them. See `C/Advanced/undefined_increment_behavior*.c`.
+> rely on them. See `12-ADVANCED-C/code/undefined_increment_behavior*.c`.
 
 ## Conditions
 
@@ -68,7 +68,7 @@ switch (value) {          /* value must be int or char */
 ```
 
 Nested if example (max of three) and leap-year logic live in
-`C/Day2/q06/q07`.
+`01-BEGINNER/Day-02/code/assignment/q06_max_of_three_nested_if.c / q07_leap_year_nested_if.c`.
 
 ## Loops
 

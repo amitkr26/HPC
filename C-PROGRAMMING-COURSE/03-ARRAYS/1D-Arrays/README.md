@@ -10,16 +10,16 @@ Completed (Day 3). Confidence 3-4/5.
 
 | Topic | Program |
 | --- | --- |
-| Basics/init/input | `C/Arrays/total_average_marks.c`, `C/Day3/q01-q10` |
-| Sum two arrays | `C/Arrays/sum_two_arrays.c` (+ `sum_two_arrays_duplicate.c` duplicate) |
-| Total + average | `C/Arrays/total_average_marks.c` |
-| Largest | `C/Arrays/largest_in_array.c`, `C/Day3/q03_largest_element.c` |
-| Even/odd count | `C/Arrays/count_even_odd_array.c`, `C/Arrays/count_even_odd_ten_elements.c`, `C/Day3/q04_count_even_odd.c` |
-| Reverse | `C/Arrays/reverse_array.c`, `C/Arrays/print_reverse_array.c`, `C/Day3/q05_reverse_array.c` |
-| Copy | `C/Day3/q09_copy_array.c` |
-| Compare identical | `C/Day3/q08_arrays_identical.c` |
-| Swap first/last | `C/Day3/q07_swap_first_last.c` |
-| Replace negatives | `C/Day3/q10_replace_negatives.c` |
+| Basics/init/input | `03-ARRAYS/1D-Arrays/code/total_average_marks.c`, `03-ARRAYS/Day-03/code/q01-q10` |
+| Sum two arrays | `03-ARRAYS/1D-Arrays/code/sum_two_arrays.c` (+ `sum_two_arrays_duplicate.c` duplicate) |
+| Total + average | `03-ARRAYS/1D-Arrays/code/total_average_marks.c` |
+| Largest | `03-ARRAYS/1D-Arrays/code/largest_in_array.c`, `03-ARRAYS/Day-03/code/q03_largest_element.c` |
+| Even/odd count | `03-ARRAYS/1D-Arrays/code/count_even_odd_array.c`, `03-ARRAYS/1D-Arrays/code/count_even_odd_ten_elements.c`, `03-ARRAYS/Day-03/code/q04_count_even_odd.c` |
+| Reverse | `03-ARRAYS/1D-Arrays/code/reverse_array.c`, `03-ARRAYS/1D-Arrays/code/print_reverse_array.c`, `03-ARRAYS/Day-03/code/q05_reverse_array.c` |
+| Copy | `03-ARRAYS/Day-03/code/q09_copy_array.c` |
+| Compare identical | `03-ARRAYS/Day-03/code/q08_arrays_identical.c` |
+| Swap first/last | `03-ARRAYS/Day-03/code/q07_swap_first_last.c` |
+| Replace negatives | `03-ARRAYS/Day-03/code/q10_replace_negatives.c` |
 
 ## Key rules
 

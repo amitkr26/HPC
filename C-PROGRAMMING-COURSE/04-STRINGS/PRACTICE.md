@@ -6,23 +6,23 @@ Work in order. Update confidence in `02-PROGRESS.md` after each level.
 
 The exact questions from the Day-4 assignment
 (`C/Assignmenmt/Amit_Kumar_Lab4_Day4_Assignment.docx`). Write each one, then
-compare with the solved program in `C/Day4/`. Paths are workspace-relative.
+compare with the solved program in `04-STRINGS/Day-04/code/`. Paths are workspace-relative.
 
 | # | Question | Solved program |
 | --- | --- | --- |
-| 1 | String length using `strlen()` | `C/Day4/q01_string_length.c` |
-| 2 | Copy a string using `strcpy()` | `C/Day4/q02_string_copy.c` |
-| 3 | Compare strings using `strcmp()` | `C/Day4/q03_string_compare.c` |
-| 4 | Join strings using `strcat()` | `C/Day4/q04_string_concatenate.c` |
-| 5 | Longer of two strings | `C/Day4/q05_longer_string.c` |
-| 6 | Password check using `strcmp()` | `C/Day4/q06_password_check.c` |
-| 7 | Append `.txt` extension using `strcat()` | `C/Day4/q07_add_extension.c` |
-| 8 | Concatenate + total character count | `C/Day4/q08_concat_and_length.c` |
-| 9 | Print all vowels in a string | `C/Day4/q09_print_vowels.c` |
-| 10 | Classify each character (lower/upper/digit/special) | `C/Day4/q10_char_classify.c` |
-| 11 | Simple C login system | `C/Day4/q11_login_system.c` |
-| 12 | Secure password creator | `C/Day4/q12_password_creator.c` |
-| 13 | Secure authentication (register + login) | `C/Day4/q13_secure_authentication.c` |
+| 1 | String length using `strlen()` | `04-STRINGS/Day-04/code/q01_string_length.c` |
+| 2 | Copy a string using `strcpy()` | `04-STRINGS/Day-04/code/q02_string_copy.c` |
+| 3 | Compare strings using `strcmp()` | `04-STRINGS/Day-04/code/q03_string_compare.c` |
+| 4 | Join strings using `strcat()` | `04-STRINGS/Day-04/code/q04_string_concatenate.c` |
+| 5 | Longer of two strings | `04-STRINGS/Day-04/code/q05_longer_string.c` |
+| 6 | Password check using `strcmp()` | `04-STRINGS/Day-04/code/q06_password_check.c` |
+| 7 | Append `.txt` extension using `strcat()` | `04-STRINGS/Day-04/code/q07_add_extension.c` |
+| 8 | Concatenate + total character count | `04-STRINGS/Day-04/code/q08_concat_and_length.c` |
+| 9 | Print all vowels in a string | `04-STRINGS/Day-04/code/q09_print_vowels.c` |
+| 10 | Classify each character (lower/upper/digit/special) | `04-STRINGS/Day-04/code/q10_char_classify.c` |
+| 11 | Simple C login system | `04-STRINGS/Day-04/code/q11_login_system.c` |
+| 12 | Secure password creator | `04-STRINGS/Day-04/code/q12_password_creator.c` |
+| 13 | Secure authentication (register + login) | `04-STRINGS/Day-04/code/q13_secure_authentication.c` |
 
 Full mapping: `PRACTICE-INDEX.md`.
 
@@ -83,7 +83,7 @@ Full mapping: `PRACTICE-INDEX.md`.
 1. Word counter: read a sentence, count words, characters (no spaces), vowels,
    and digits.
 2. Password validator with rules (length, upper, lower, digit, special) and
-   specific error messages - you already wrote one as `C/Day4/q12_password_creator.c`;
+   specific error messages - you already wrote one as `04-STRINGS/Day-04/code/q12_password_creator.c`;
    rewrite it from memory.
 3. Text analyzer: input a name, validate it (only letters), store the name in
    an array of names, print the sorted list later (sorting comes later - for

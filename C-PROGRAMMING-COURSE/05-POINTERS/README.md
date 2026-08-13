@@ -3,12 +3,12 @@
 ## Status
 
 **Needs Practice** - only ONE pointer program exists so far
-(`C/Intermediate/pointer_sizeof_demo.c`), and it only demonstrates `*ptr` and
+(`05-POINTERS/code/pointer_sizeof_demo.c`), and it only demonstrates `*ptr` and
 `sizeof`. This is not yet a lesson.
 
 ## What exists
 
-- `C/Intermediate/pointer_sizeof_demo.c` - pointer + `sizeof(int)` demo
+- `05-POINTERS/code/pointer_sizeof_demo.c` - pointer + `sizeof(int)` demo
 - Day-1 Explain Q14 (float vs double) touches `sizeof` only
 - Day-3 Explain Q2 explains array-to-pointer decay (`sizeof` on a parameter)
 
@@ -24,4 +24,4 @@
 ## Why it matters
 
 The 2D/3D array memory topics and the student management project
-(`C/Project/student_management.c`) are waiting on pointers.
+(`08-STRUCTURES-UNIONS/code/student_management.c`) are waiting on pointers.

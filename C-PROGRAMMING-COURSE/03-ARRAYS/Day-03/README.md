@@ -10,13 +10,13 @@
 ## What I did today
 
 - Studied: arrays from the Day-3 class assignment.
-- Programs written: `C/Day3/q01-q10` (insert, linear search, largest,
+- Programs written: `code/q01-q10` (insert, linear search, largest,
   even/odd count, reverse, delete, swap first/last, identical, copy,
-  replace negatives) - all with `.exe`, input files, and screenshots.
-- Extra practice: `C/Arrays/` programs (2D/3D print, sum of arrays, largest,
-  linear search, insert/delete, marks totals).
+  replace negatives).
+- Extra practice: `03-ARRAYS/*/code/` programs (2D/3D print, sum of arrays,
+  largest, linear search, insert/delete, marks totals).
 - Solved the 3D student-marks project:
-  `C/Arrays/three_d_array_marks.c` (`Amit Kumar - multidimentional
+  `03-ARRAYS/3D-Arrays/code/three_d_array_marks.c` (`Amit Kumar - multidimentional
   array-Assignment.pdf`).
 - Assignment: `C/Assignmenmt/Amit_Kumar_Lab3_Day3_Assignment.docx` (solved:
   10 programs + 10 MCQs + 10 Explain answers).
