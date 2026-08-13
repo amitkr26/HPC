@@ -69,4 +69,5 @@ Status: `[x]` = done, `[~]` = needs practice, `[ ]` = not started.
 1D arrays: solid (confidence 3-4). 2D/3D, memory theory, bounds/garbage: only
 seen in MCQs and explanations - **needs practice**. Sorting: not started.
 
-See `PRACTICE.md` (levels 1-6) and `REVISION.md` for drills.
+See `PRACTICE.md` (levels 1-6 + the Day-3 question set) and `REVISION.md`
+for drills. The master question-to-program map is in `PRACTICE-INDEX.md`.

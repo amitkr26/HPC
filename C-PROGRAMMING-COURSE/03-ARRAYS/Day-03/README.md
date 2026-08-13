@@ -40,3 +40,5 @@
 - Confidence: 3/5
 - Gap to close: re-practice insertion/deletion shift logic; smallest element;
   sorting (not started).
+
+Practice drills + the full Day-3 question set: `03-ARRAYS/PRACTICE.md`.

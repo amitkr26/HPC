@@ -37,3 +37,5 @@
 - Confidence: 3/5
 - Gap to close: `fgets` + buffer flushing, `strchr`, 2D char arrays, substring
   searches (`strstr`), and buffer-overflow examples - all need practice.
+
+Practice drills + the full Day-4 question set: `04-STRINGS/PRACTICE.md`.

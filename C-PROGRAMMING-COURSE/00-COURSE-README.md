@@ -22,6 +22,7 @@ C-PROGRAMMING-COURSE/          <- this course (read this first)
 ├── 02-PROGRESS.md             <- what is done / in progress / not started
 ├── 03-CHEAT-SHEET.md          <- quick revision reference
 ├── TOPIC-INDEX.md             <- search every topic from one place
+├── PRACTICE-INDEX.md          <- every instructor question + the program written for it
 ├── TEMPLATES/Day-XX/          <- blank template for a new lesson
 └── 01-BEGINNER/ ... 17-FINAL-PROJECTS/   <- modules
 
@@ -85,6 +86,8 @@ conceptual), MCQs, and a revision summary.
 
 ## How to practice
 
+- `PRACTICE-INDEX.md` maps every instructor-given question to the program
+  written for it (and shows what is still missing).
 - Every studied module has a `PRACTICE.md` with six levels:
   Level 1 Basic -> Level 2 Logic -> Level 3 Coding -> Level 4 Debugging ->
   Level 5 Interview/Viva -> Level 6 Challenge.

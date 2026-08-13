@@ -76,9 +76,12 @@ solve new problems unaided).
 ## Weekly goal (current)
 
 - [ ] Re-run every `C/Arrays/` and `C/Day3/` program from scratch (no peeking)
-      to move Arrays 1D confidence to 4-5.
+      to move Arrays 1D confidence to 4-5. Question-to-program map:
+      `PRACTICE-INDEX.md`.
+- [ ] Rewrite the Day-2 question set from memory (`01-BEGINNER/Day-02/PRACTICE.md`).
 - [ ] Write the missing Day-1 programs (SI, CI, BMI, temp conversions,
-      percentage, discount, speed, net salary) in `C-PROGRAMMING-COURSE/02-CORE-C/Input-Output/code/`.
+      percentage, discount, speed, net salary) using
+      `01-BEGINNER/Day-01/PRACTICE.md`.
 - [ ] Next lesson: Functions (Day 5).
 
 ## How to update this file

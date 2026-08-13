@@ -24,3 +24,9 @@ point to the assignment docx files in `C/Assignmenmt/`.
 
 Everything here is based on Day 1/Day 2 material. `break`/`continue` practice
 and the ternary operator remain pending (see `02-PROGRESS.md`).
+
+## Instructor practice
+
+The Day-1 and Day-2 question sets (with every solved program) are mapped in
+`01-BEGINNER/Day-01/PRACTICE.md`, `01-BEGINNER/Day-02/PRACTICE.md`, and the
+master `PRACTICE-INDEX.md`.

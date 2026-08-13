@@ -10,6 +10,9 @@ Search any C topic here. Format:
 Paths are relative to the workspace root. `C/` files are original learning
 history; files inside `C-PROGRAMMING-COURSE/` are course material.
 
+For every instructor-given practice question and its solved program, see
+`PRACTICE-INDEX.md`.
+
 ---
 
 ## C Fundamentals

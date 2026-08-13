@@ -10,6 +10,9 @@ daily lessons for Day 1 and Day 2. Topic detail lives in `02-CORE-C`.
 | Day 1 | `Day-01/` | Program structure, printf/scanf, variables, data types, operators, basic programs |
 | Day 2 | `Day-02/` | if/else, switch, for/while/do-while, nested loops, patterns |
 
+Each day folder has a `PRACTICE.md` with the exact instructor question set
+and links to the solved programs. Full mapping in `PRACTICE-INDEX.md`.
+
 ## Source material (in `C/`)
 
 - `C/Beginner/` - hello world, variables, arithmetic, geometry, loops, patterns

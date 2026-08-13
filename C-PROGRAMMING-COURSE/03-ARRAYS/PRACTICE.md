@@ -3,6 +3,36 @@
 Work in order. Do not skip levels. After each level, update confidence in
 `02-PROGRESS.md`.
 
+## Instructor question set (Day-3 lab)
+
+The exact questions from the Day-3 assignment
+(`C/Assignmenmt/Amit_Kumar_Lab3_Day3_Assignment.docx`). Write each one, then
+compare with the solved program in `C/Day3/`. Paths are workspace-relative.
+
+| # | Question | Solved program |
+| --- | --- | --- |
+| 1 | Insert an element at a position | `C/Day3/q01_insert_element.c` |
+| 2 | Linear search for a value | `C/Day3/q02_linear_search.c` |
+| 3 | Largest element in an array | `C/Day3/q03_largest_element.c` |
+| 4 | Count even and odd numbers | `C/Day3/q04_count_even_odd.c` |
+| 5 | Reverse an array | `C/Day3/q05_reverse_array.c` |
+| 6 | Delete a given value | `C/Day3/q06_delete_value.c` |
+| 7 | Swap first and last elements | `C/Day3/q07_swap_first_last.c` |
+| 8 | Check two arrays are identical | `C/Day3/q08_arrays_identical.c` |
+| 9 | Copy one array into another | `C/Day3/q09_copy_array.c` |
+| 10 | Replace negatives with 0 | `C/Day3/q10_replace_negatives.c` |
+
+Extra array programs already written: `C/Arrays/insert_element_array.c`,
+`C/Arrays/linear_search_array.c`, `C/Arrays/largest_in_array.c`,
+`C/Arrays/count_even_odd_array.c`, `C/Arrays/count_even_odd_ten_elements.c`,
+`C/Arrays/reverse_array.c`, `C/Arrays/print_reverse_array.c`,
+`C/Arrays/delete_element_array.c`, `C/Arrays/sum_two_arrays.c`,
+`C/Arrays/total_average_marks.c`, `C/Arrays/print_2d_array.c`,
+`C/Arrays/print_3d_array.c`, `C/Arrays/three_d_array_marks.c` (multidim
+project).
+
+Full mapping: `PRACTICE-INDEX.md`.
+
 ## Level 1 - Basic (understand the syntax)
 
 1. Declare `int marks[5]` and initialize it with `{10,20,30,40,50}`. Print

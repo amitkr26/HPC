@@ -2,6 +2,30 @@
 
 Work in order. Update confidence in `02-PROGRESS.md` after each level.
 
+## Instructor question set (Day-4 lab)
+
+The exact questions from the Day-4 assignment
+(`C/Assignmenmt/Amit_Kumar_Lab4_Day4_Assignment.docx`). Write each one, then
+compare with the solved program in `C/Day4/`. Paths are workspace-relative.
+
+| # | Question | Solved program |
+| --- | --- | --- |
+| 1 | String length using `strlen()` | `C/Day4/q01_string_length.c` |
+| 2 | Copy a string using `strcpy()` | `C/Day4/q02_string_copy.c` |
+| 3 | Compare strings using `strcmp()` | `C/Day4/q03_string_compare.c` |
+| 4 | Join strings using `strcat()` | `C/Day4/q04_string_concatenate.c` |
+| 5 | Longer of two strings | `C/Day4/q05_longer_string.c` |
+| 6 | Password check using `strcmp()` | `C/Day4/q06_password_check.c` |
+| 7 | Append `.txt` extension using `strcat()` | `C/Day4/q07_add_extension.c` |
+| 8 | Concatenate + total character count | `C/Day4/q08_concat_and_length.c` |
+| 9 | Print all vowels in a string | `C/Day4/q09_print_vowels.c` |
+| 10 | Classify each character (lower/upper/digit/special) | `C/Day4/q10_char_classify.c` |
+| 11 | Simple C login system | `C/Day4/q11_login_system.c` |
+| 12 | Secure password creator | `C/Day4/q12_password_creator.c` |
+| 13 | Secure authentication (register + login) | `C/Day4/q13_secure_authentication.c` |
+
+Full mapping: `PRACTICE-INDEX.md`.
+
 ## Level 1 - Basic (understand the syntax)
 
 1. Declare `char name[20] = "Amit";` and print it with `%s`.

@@ -41,4 +41,5 @@ The strings module (Day 4). Maps every string topic to a program in
 Core functions: solid (confidence 3-4). 2D char arrays, `strchr`, buffer
 overflow, `fgets` details: seen but **needs practice**.
 
-See `PRACTICE.md` and `REVISION.md`.
+See `PRACTICE.md` (levels 1-6 + the Day-4 question set) and `REVISION.md`.
+The master question-to-program map is in `PRACTICE-INDEX.md`.
