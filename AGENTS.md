@@ -59,3 +59,17 @@ Companion artifacts per assignment (in the `C\Day<N>` folder, like Day3/Day4):
 - The solved document as both `.docx` and `.pdf` named
   `Amit_Kumar_Lab<labnum>_Day<day>_Assignment.docx/.pdf`.
 
+## C Programming Course Updates
+
+There is a living C course at `C-PROGRAMMING-COURSE\`. Before working on C
+learning material, read `00-COURSE-README.md`. Do NOT restructure the `C\`
+folder (it is learning history). Never mark a topic Completed/Mastered without
+evidence (studied/practiced/understood/mastered rule in the course README).
+
+When the user says "Add today's lesson: <topic>" (or "Day N: <topic>"), follow
+the exact checklist in `00-COURSE-README.md` (How to add a new day): copy
+`TEMPLATES\Day-XX`, fill theory/syntax/examples/code/practice/MCQ/debugging,
+then update `01-ROADMAP.md`, `02-PROGRESS.md`, `TOPIC-INDEX.md`, and
+`03-CHEAT-SHEET.md` as needed. Compile-check every new `.c` file with
+`C:\MinGW\bin\gcc.exe`.
+
