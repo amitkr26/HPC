@@ -1,18 +1,16 @@
 #include <stdio.h>
 
 int main() {
-    int arr[10] = {12, 5, 8, 7, 10, 3, 6, 9, 14, 1};
+    int arr[10] = {5, 12, 15, 20, 23, 25, 30, 35, 42, 50};
     int *ptr;
-    int even = 0, odd = 0;
+    int count = 0;
     int i;
 
     ptr = arr;
 
     for (i = 0; i < 10; i++) {
-        if (*ptr % 2 == 0) {
-            even++;
-        } else {
-            odd++;
+        if (*ptr % 5 == 0) {
+            count++;
         }
         ptr++;
     }
@@ -24,8 +22,7 @@ int main() {
         ptr++;
     }
 
-    printf("\nEven numbers: %d\n", even);
-    printf("Odd numbers: %d\n", odd);
+    printf("\nElements divisible by 5: %d\n", count);
 
     return 0;
 }
