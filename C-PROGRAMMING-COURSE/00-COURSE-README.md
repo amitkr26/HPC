@@ -59,7 +59,12 @@ A day's folder is placed under the **module that matches its main topic**:
 | Day 2 | Conditions, loops, patterns | `01-BEGINNER/Day-02/` |
 | Day 3 | Arrays | `03-ARRAYS/Day-03/` |
 | Day 4 | Strings | `04-STRINGS/Day-04/` |
-| Day 5+ | e.g. Pointers | `05-POINTERS/Day-05/` ... |
+| Day 5 | Functions | `06-FUNCTIONS/Day-06/` |
+| Day 5 | Pointers | `05-POINTERS/Day-05/` |
+| Day 7 | Recursion | `07-RECURSION/Day-07/` |
+| Day 6 | Structures & Unions | `08-STRUCTURES-UNIONS/Day-08/` |
+| Day 7 | Dynamic Memory | `09-DYNAMIC-MEMORY/Day-09/` |
+| Day 8 | File Handling | `10-FILE-HANDLING/Day-10/` |
 
 ## How daily lessons work
 
@@ -147,10 +152,12 @@ I will follow this exact checklist (do not skip steps):
 
 ## Recommended learning order (now)
 
-Fundamentals -> Conditions -> Loops -> **Arrays** -> **Strings** ->
-(revise both) -> Functions -> Pointers -> Recursion -> Structures -> ...
+Fundamentals -> Conditions -> Loops -> Arrays -> Strings ->
+Functions -> Pointers -> Recursion -> Structures -> Dynamic Memory ->
+File Handling -> Preprocessor -> ...
 
-The next lesson I have not started yet: **Functions**.
+Levels 1-11 are complete with theory, syntax, examples, practice, MCQ, and
+debugging materials. Next lesson: **Level 12 - Preprocessor**.
 
 ## Honesty rule
 

@@ -127,32 +127,113 @@ toupper(c)  tolower(c)
 
 Return non-zero if true. Use for password/character validation.
 
-## Functions (future)
+## Functions
 
 ```c
-return_type name(parameters);
-return_type name(parameters) { ... return value; }
+return_type name(parameters);              // prototype
+return_type name(parameters) { ... }       // definition
+name(arguments);                          // call
 ```
 
-## Pointers (in progress)
+- Call by value: `func(x)` - copies value, original unchanged
+- Call by reference: `func(&x)` - passes address, can modify original
+- `void` functions return nothing
+- Static variables retain value between calls: `static int count = 0;`
+- Recursive functions must have a base case to stop
 
 ```c
-int x = 5;   int *p = &x;   printf("%d", *p);   /* 5 */
+int add(int a, int b) { return a + b; }
+void swap(int *a, int *b) { int t=*a; *a=*b; *b=t; }
+int factorial(int n) { return (n<=1) ? 1 : n*factorial(n-1); }
 ```
 
-## Structures (future)
+## Pointers
 
 ```c
-struct Student { int roll; char name[50]; float marks; };
+int x = 5;
+int *p = &x;        // p stores address of x
+printf("%d", *p);   // dereference: prints 5
+*p = 10;            // change x through pointer
 ```
 
-## Dynamic memory / File handling / Preprocessor (future)
+- `&` = address-of operator
+- `*` = dereference operator
+- Pointer arithmetic: `p+1` advances by `sizeof(type)` bytes
+- Arrays decay to pointers: `arr == &arr[0]`
+- Pass by reference: `func(&x)` in call, `func(int *p)` in definition
+- Double pointer: `int **pp = &p;` (pointer to pointer)
+- Always initialize pointers; check for NULL before dereferencing
 
 ```c
-malloc() calloc() realloc() free();
-fopen("f.txt","r") fscanf fprintf fgets fclose();
-#define MAX 100    #include <stdio.h>    #ifdef
+void swap(int *a, int *b) { int t=*a; *a=*b; *b=t; }
+int *ptr = arr;  // points to first element
+printf("%d", *(ptr+i));  // same as arr[i]
 ```
+
+## Structures
+
+```c
+struct Student {
+    int roll;
+    char name[50];
+    float marks;
+};
+
+struct Student s1 = {1, "Amit", 85.5};
+s1.roll = 2;                    // dot operator
+struct Student *p = &s1;
+p->name;                        // arrow operator (pointer)
+```
+
+- Arrays of structs: `struct Student class[3];`
+- Nested structs: `struct Date { int d,m,y; }; struct Emp { struct Date join; };`
+- `typedef struct { ... } Alias;` - no `struct` keyword needed
+- `union` - all members share memory (size = largest member)
+- `enum Color { RED, GREEN, BLUE };` - named integer constants
+- Struct assignment copies all members: `s2 = s1;`
+
+## Dynamic Memory
+
+```c
+#include <stdlib.h>
+int *p = (int*)malloc(n * sizeof(int));     // uninitialized
+int *p = (int*)calloc(n, sizeof(int));      // zero-initialized
+p = (int*)realloc(p, new_size * sizeof(int)); // resize
+free(p);                                     // release memory
+p = NULL;                                    // prevent dangling
+```
+
+- Heap (malloc) vs Stack (local variables)
+- Always check for NULL after malloc/calloc/realloc
+- Always free before losing the pointer
+- Memory leak = forgetting to free
+- Dynamic 2D array: `int **mat = malloc(rows * sizeof(int*));`
+
+## File Handling
+
+```c
+FILE *fp = fopen("file.txt", "r");  // open
+// "r" read, "w" write (truncate), "a" append
+// "r+" read+write, "w+" read+write (truncate), "a+" read+append
+
+fputc('A', fp);                     // write char
+char ch = fgetc(fp);                // read char (EOF at end)
+fputs("Hello\n", fp);               // write string
+fgets(buf, size, fp);               // read line
+fprintf(fp, "%s %d\n", str, num);   // write formatted
+fscanf(fp, "%s %d", str, &num);     // read formatted
+
+fseek(fp, 0, SEEK_SET);             // go to beginning
+fseek(fp, 0, SEEK_END);             // go to end
+long pos = ftell(fp);               // current position
+rewind(fp);                         // go to beginning
+
+fclose(fp);                         // always close!
+```
+
+- Always check `fopen` return for NULL
+- Use `"rb"/"wb"` for binary files
+- `feof(fp)` returns non-zero at end of file
 
 ## Common compiler errors
 

@@ -94,56 +94,86 @@ actually exists in this workspace. Status tags:
 **Material:** `04-STRINGS/` -> `04-STRINGS/Day-04/code/`,
 `C/Assignmenmt/Amit_Kumar_Lab4_Day4_Assignment.docx`
 
-## LEVEL 6 - Functions  [ ] NOT STARTED (next)
+## LEVEL 6 - Functions  [DONE]
 
 - Why functions, declaration vs definition, prototype
 - Parameters, return values
-- Call by value
+- Call by value, call by reference (pointers)
 - `void` functions
 - Scope, local/global variables
-- Storage classes  [later]
+- Storage classes (auto, static, extern, register)
+- Recursive functions (factorial, fibonacci, GCD, power)
+- Function with arrays
+- Returning multiple values via pointers
 
-## LEVEL 7 - Pointers  [PARTIAL - one demo only]
+**Material:** `06-FUNCTIONS/Day-06/` -> `06-FUNCTIONS/Day-06/code/`,
+`C/Day5/`, `C/Assignmenmt/Amit_Kumar_Lab5_Day5_Assignment.docx`
+
+## LEVEL 7 - Pointers  [DONE]
 
 - What is a pointer, address-of `&`, dereference `*`
-- `sizeof`  (demo program exists: `05-POINTERS/code/pointer_sizeof_demo.c`)
+- `sizeof` (demo program: `pointer_sizeof_demo.c`)
 - Pointer arithmetic, arrays and pointers, pointer/array relationship
 - Pointers as function arguments, call by reference
 - Pointers and strings
-- Array of pointers, pointer to pointer
+- Array of pointers, pointer to pointer (double pointer)
+- Swapping using pointers
+- Reverse array using pointers
 
-**Material:** `05-POINTERS/`
+**Material:** `05-POINTERS/Day-05/` -> `05-POINTERS/Day-05/code/`,
+`C/Day7/`, `C/Day8/`, `C/Assignmenmt/Amit_Kumar_Lab7_Day7_Assignment.docx`
 
-## LEVEL 8 - Recursion  [ ] NOT STARTED
+## LEVEL 8 - Recursion  [DONE]
 
 - Base case + recursive case
-- Factorial, Fibonacci, sum, power, GCD
+- Factorial, Fibonacci, sum of digits, power, GCD
 - Recursion vs iteration, call stack, stack overflow
+- Tower of Hanoi
+- String reversal using recursion
+- Palindrome check using recursion
+- Linear search using recursion
+- Bubble sort using recursion
+- Decimal to binary using recursion
 
-## LEVEL 9 - Structures, Unions, Enums  [ ] NOT STARTED
+**Material:** `07-RECURSION/Day-07/` -> `07-RECURSION/Day-07/code/`
+
+## LEVEL 9 - Structures, Unions, Enums  [DONE]
 
 - `struct`, members, arrays of structs
 - Nested structs, struct pointers (`->`)
-- `typedef`
+- `typedef` with structures
 - `union`, memory sharing
 - `enum`
-- Bit fields  [advanced]
+- Structure as function arguments (by value and pointer)
+- Sorting structures
+- Student management system
 
-> The existing `08-STRUCTURES-UNIONS/code/student_management.c` already uses structs, arrays
-> of structs, and functions with pointers. It was written ahead of this level
-> (reference only - revisit it here).
+**Material:** `08-STRUCTURES-UNIONS/Day-08/` -> `08-STRUCTURES-UNIONS/Day-08/code/`,
+`C/Day6/`, `C/Day8/`, `C/Assignmenmt/Amit_Kumar_Lab6_Day6_Assignment.docx`
 
-## LEVEL 10 - Dynamic Memory  [ ] NOT STARTED
+## LEVEL 10 - Dynamic Memory  [DONE]
 
 - `malloc()`, `calloc()`, `realloc()`, `free()`
 - Heap vs stack
 - Memory leaks, dangling pointers
+- Dynamic arrays, dynamic 2D arrays
+- Dynamic structures
+- Dynamic strings
 
-## LEVEL 11 - File Handling  [ ] NOT STARTED
+**Material:** `09-DYNAMIC-MEMORY/Day-09/` -> `09-DYNAMIC-MEMORY/Day-09/code/`
 
-- `fopen()` modes, `fprintf/fscanf`, `fgets/fputs`
-- `fread/fwrite`, binary vs text
-- `fclose()`, error handling
+## LEVEL 11 - File Handling  [DONE]
+
+- `fopen()` modes (r, w, a, r+, w+, a+)
+- `fprintf/fscanf`, `fgets/fputs`
+- `fgetc/fputc` (character I/O)
+- `fclose()`, error handling (NULL check)
+- File positioning (fseek, ftell, rewind)
+- End of file detection (feof)
+- Struct file I/O
+- Simple encryption/decryption
+
+**Material:** `10-FILE-HANDLING/Day-10/` -> `10-FILE-HANDLING/Day-10/code/`
 
 ## LEVEL 12 - Preprocessor  [ ] NOT STARTED
 
@@ -171,15 +201,16 @@ See `16-MINI-PROJECTS/`. Projects must only use already-learned concepts.
 - After arrays: student marks manager, inventory, employee records
 - After strings: password validator (exists), word counter, text analyzer
 - After functions+arrays+structures: **student management system**
-  (exists at `08-STRUCTURES-UNIONS/code/student_management.c`, planned for Level 9)
+  (exists at `08-STRUCTURES-UNIONS/code/student_management.c`)
 
 ---
 
 ## Where I am now
 
-Currently completing: **Level 5 - Strings (Day 4)**.
+All levels 1-11 complete with theory, syntax, examples, practice, MCQ, and
+debugging materials.
 
-Next lesson: **Level 6 - Functions**.
+Next lesson: **Level 12 - Preprocessor**.
 
 ## Gap checklist (what exists on paper but not as separate code)
 
