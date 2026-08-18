@@ -1,5 +1,0 @@
-Hello
-Hello from fputs
-Name: Amit
-Age: 30
-Scores: 85.50
