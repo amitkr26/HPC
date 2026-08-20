@@ -5,6 +5,14 @@ learning. It is not a generic tutorial dump: every module is wired to the
 actual programs, assignments, and screenshots that I have already written and
 submitted.
 
+> ## Course status: COMPLETE
+> The taught C syllabus (Day 1 - Day 8) is complete. The daily learning record
+> and all assignment deliverables are preserved in the `C/` folder and indexed
+> here. Remaining "Not Started" topics (preprocessor, bitwise, linked lists,
+> function pointers) were beyond the taught syllabus and are **optional**.
+>
+> **Now learning C++** - see `C++/` (Day 1: basics, iostream, cout/cin).
+
 ## What this course is
 
 - A **master index** that connects theory, syntax, code, practice, MCQs,
@@ -158,6 +166,14 @@ File Handling -> Preprocessor -> ...
 
 Levels 1-11 are complete with theory, syntax, examples, practice, MCQ, and
 debugging materials. Next lesson: **Level 12 - Preprocessor**.
+
+## C course: finished (Day 1 - Day 8)
+
+All taught levels are complete. The final assignments (String, Multi-Dimensional
+Array, Function, Day 7 File/Memory) were verified and submitted. The C course
+now continues as the **C++ course** in `C++/`, which follows the same
+day-by-day structure (README, THEORY, SYNTAX, EXAMPLES, PRACTICE, MCQ,
+DEBUGGING, code/).
 
 ## Honesty rule
 

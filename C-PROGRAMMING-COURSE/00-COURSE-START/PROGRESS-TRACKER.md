@@ -7,6 +7,10 @@ The single source of truth for what is done. Statuses used:
 are actually done. Confidence is a 5-point scale (1 = just saw it, 5 = can
 solve new problems unaided).
 
+> ## C course: COMPLETE (Day 1 - Day 8)
+> The taught C syllabus is finished and all assignments are verified in `C/`.
+> **Next: C++ course** - Day 1 (basics, iostream, cout/cin) in `C++/`.
+
 ## Daily log
 
 | Day | Topic | Status | Practice | Assignment | Confidence |
@@ -15,6 +19,13 @@ solve new problems unaided).
 | Day 2 | Decision making, switch, loops, patterns | Completed | `01-BEGINNER/Day-02/code/assignment/q01-q20` | `Amit_Kumar_Lab2_Day2_Assignment.pdf` | 4 |
 | Day 3 | Arrays: 1D/2D/3D, search, insert, delete, reverse, copy, compare | Completed | `03-ARRAYS/*/code/*.c`, `03-ARRAYS/Day-03/code/*.c` | `Amit_Kumar_Lab3_Day3_Assignment.docx` + multidim array assignment | 3 |
 | Day 4 | Strings: strlen/strcpy/strcmp/strcat, input methods, char classification, login/password apps | Completed | `04-STRINGS/Day-04/code/q01-q13` | `Amit_Kumar_Lab4_Day4_Assignment.docx` | 3 |
+| Day 5 | Functions: menu calculator, guess game, call by value/reference | Completed | `08-FUNCTIONS/03-PRACTICE/` | `Amit Kumar - C programming Function Assignment.docx` (2 programs, verified) | 4 |
+| Day 5/6 | Pointers: basics, arithmetic, arrays, double pointers | Completed | `05-POINTERS/Day-05/code/` | `C/` Day 5&6 combined assignment | 3 |
+| Day 6 | Structures, unions, enums, student management | Completed | `08-STRUCTURES-UNIONS/Day-08/code/` | `Amit_Kumar_Lab6_Day6_Assignment.docx` | 3 |
+| Day 7 | Dynamic memory: malloc/calloc/realloc/free | Completed | `09-DYNAMIC-MEMORY/Day-09/code/` | `Amit Kumar - C programming Day 7 Assignment.docx.pdf` (8 programs + MCQ, verified) | 3 |
+| Day 8 | File handling: modes, char/string/formatted I/O | Completed | `10-FILE-HANDLING/Day-10/code/` | Day 7 assignment Q1-Q2 (students.txt) | 3 |
+| Extra | String assignment (auth system: strlen/strcpy/strncpy/strcat/strcmp/strchr) | Completed | verified with gcc, 2 test runs | `Amit_Kumar_-_C_Programming_String_Assignment.docx` | 3 |
+| Extra | Multi-dimensional array assignment (marks[5][3][5]) | Completed | verified with gcc, 75 marks + dept 3 | `Amit_Kumar_MultiDimensionalArrayAssignment.docx` | 3 |
 
 ## Topic status
 
@@ -75,14 +86,9 @@ solve new problems unaided).
 
 ## Weekly goal (current)
 
-- [ ] Re-run every `03-ARRAYS/` and `03-ARRAYS/Day-03/code/` program from scratch (no peeking)
-      to move Arrays 1D confidence to 4-5. Question-to-program map:
-      `PRACTICE-INDEX.md`.
-- [ ] Rewrite the Day-2 question set from memory (`01-BEGINNER/Day-02/PRACTICE.md`).
-- [ ] Write the missing Day-1 programs (SI, CI, BMI, temp conversions,
-      percentage, discount, speed, net salary) using
-      `01-BEGINNER/Day-01/PRACTICE.md`.
-- [ ] Next lesson: Functions (Day 5).
+- [x] Complete the taught C syllabus (Day 1 - Day 8)
+- [x] Submit and verify the final assignment set (String, Array, Function, Day 7)
+- [ ] **C++ Day 1**: basics, iostream, cout/cin (`C++/01-CPP-BASICS/Day-01/`)
 
 ## How to update this file
 

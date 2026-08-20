@@ -182,14 +182,19 @@ Complete learning progression from beginner to advanced C, based on actual repos
 
 **Completed (with theory, syntax, examples, practice, MCQ, debugging):**
 - ✅ Levels 1-11: Fundamentals → File Handling
+- ✅ Final assignment set (String, Multi-Dimensional Array, Function, Day 7)
+  verified and stored in `C/`
 
-**Next Lesson:**
-- **Level 12: Preprocessor** (`14-PREPROCESSOR/`)
+> ## C course: COMPLETE
+> The taught C syllabus is finished. Advanced topics below (Preprocessor,
+> Command-Line Arguments, Function Pointers, Bitwise Operators, Linked Lists,
+> Final Projects) are optional / out of syllabus.
+>
+> **Next course: C++** - see `C++/`. Day 1 (basics, iostream, cout/cin) is
+> the current lesson.
 
-**Partial:**
-- Advanced C / Undefined Behavior (warning topic only)
-
-**Not Started:**
+**Remaining optional topics (not in taught syllabus):**
+- Level 12: Preprocessor (`14-PREPROCESSOR/`)
 - Command-Line Arguments
 - Function Pointers
 - Bitwise Operators

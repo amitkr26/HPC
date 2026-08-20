@@ -2,6 +2,14 @@
 
 A structured, progressive C programming curriculum built from real daily learning. This repository contains a complete learning path from absolute beginner to advanced C topics, with theory, examples, practice programs, assignments, MCQs, debugging guides, and projects.
 
+> ## Status: C COURSE COMPLETE (through Day 8)
+> The taught C syllabus (basics -> functions -> pointers -> recursion -> structures ->
+> dynamic memory -> file handling) is **complete**. All assignment deliverables live in
+> the `C/` folder (learning history, never delete).
+>
+> **Next: C++** - the C++ course starts in [`C++/`](C++/README.md). Day 1 (basics,
+> iostream, cout/cin) is the current lesson.
+
 ## What This Repository Contains
 
 - **Structured Course Modules** - 13 main topics organized by prerequisite order
