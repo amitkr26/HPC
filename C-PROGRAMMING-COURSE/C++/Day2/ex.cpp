@@ -16,9 +16,6 @@ class Complex{
         real=c.real;
         imag =c.imag;
     }
-
-    
-
 };
 void display(Complex c){
         cout<<c.real<<"+"<<c.imag<<"i"<<endl;
