@@ -1,25 +1,25 @@
 #include <iostream>
-#include <map>
+#include <forward_list>
 using namespace std;
 
 int main() {
-    map<int, string> m;
+    forward_list<int> v = {2, 4, 6, 8, 10};
 
-    m.insert(pair<int, string>);
-    v.insert(14);
+    v.push_front(12);
+    v.push_front(14);
 
-    v.erase(10);
+    v.pop_front();
 
-    cout << "Set: ";
+    cout << "List: ";
     for (int x : v) {
         cout << x << " ";
     }
 
     cout << endl;
 
-    set<int>::iterator itr;
+    forward_list<int>::iterator itr;
 
-    cout << "Using iterator: ";
+    cout << "Using iterator: " << endl;
 
     for (itr = v.begin(); itr != v.end(); ++itr) {
         cout << *itr << " ";
@@ -27,7 +27,7 @@ int main() {
 
     cout << endl;
 
-    cout << "Using range-based loop: ";
+    cout << "Using range-based loop: " << endl;
 
     for (int x : v) {
         cout << x << " ";

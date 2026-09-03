@@ -3,9 +3,9 @@
 using namespace std;
 
 int main() {
-    map<int, string> m;
+    set<int> v = {2, 4, 6, 8, 10};
 
-    m.insert(pair<int, string>);
+    v.insert(12);
     v.insert(14);
 
     v.erase(10);

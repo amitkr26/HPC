@@ -1,16 +1,16 @@
 #include <iostream>
-#include <map>
+#include <set>
 using namespace std;
 
 int main() {
-    map<int, string> m;
+    set<int> v = {2, 4, 6, 8, 10};
 
-    m.insert(pair<int, string>);
+    v.insert(12);
     v.insert(14);
 
-    v.erase(10);
+    v.erase();
 
-    cout << "Set: ";
+    cout << "List: ";
     for (int x : v) {
         cout << x << " ";
     }
@@ -19,7 +19,7 @@ int main() {
 
     set<int>::iterator itr;
 
-    cout << "Using iterator: ";
+    cout << "Using iterator: " << endl;
 
     for (itr = v.begin(); itr != v.end(); ++itr) {
         cout << *itr << " ";
@@ -27,7 +27,7 @@ int main() {
 
     cout << endl;
 
-    cout << "Using range-based loop: ";
+    cout << "Using range-based loop: " << endl;
 
     for (int x : v) {
         cout << x << " ";

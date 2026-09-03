@@ -1,0 +1,25 @@
+# Compiled executables and object files
+*.exe
+*.o
+*.obj
+*.class
+
+# Build artifacts and IDEs
+build/
+dist/
+.vs/
+.idea/
+*.suo
+*.user
+
+# OS junk
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Editor/IDE local config (keep shared config, ignore machine-local)
+.vscode/settings.json
+
+# Sensitive / local only
+credentials.txt
+.env
