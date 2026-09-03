@@ -17,8 +17,6 @@ HPC/
 ├── 04-PROGRAMMING/           # C and C++ practice + assignments
 │   ├── C/                    #   structured C curriculum by topic
 │   └── CPP/                  #   C++ practice organized by topic
-├── 05-OS/                    # Operating Systems notes & assignments
-│   └── ASSIGNMENTS/
 ├── 06-OTHERS/                # Resumes, interview prep (VLSI/Digital), misc
 │   ├── INTERVIEW-PREP/
 │   └── RESUME/
