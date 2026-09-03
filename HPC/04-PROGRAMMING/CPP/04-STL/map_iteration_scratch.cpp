@@ -12,8 +12,12 @@ int main() {
     map<int, string>::iterator itr;
 
     for (itr = m.begin(); itr != m.end(); ++itr) {
-        cout << *itr << " ";
+        cout << itr -> first<< "=>" << itr->second <<endl;
     }
+
+    map<int, string>::iterator itr1;
+    itr1 = itr
+
 
     cout << endl;
 
