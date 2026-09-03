@@ -11,19 +11,21 @@ int main() {
 
     map<int, string>::iterator itr;
 
+    cout << "Using iterator:" << endl;
+
     for (itr = m.begin(); itr != m.end(); ++itr) {
-        cout << *itr << " ";
+        cout << "ID: " << itr->first
+             << ", Name: " << itr->second << endl;
     }
 
     cout << endl;
 
-    cout << "Using range-based loop: ";
+    cout << "Using range-based loop:" << endl;
 
-    for (int x : m) {
-        cout << x << " ";
+    for (const auto& x : m) {
+        cout << "ID: " << x.first
+             << ", Name: " << x.second << endl;
     }
-
-    cout << endl;
 
     return 0;
 }
