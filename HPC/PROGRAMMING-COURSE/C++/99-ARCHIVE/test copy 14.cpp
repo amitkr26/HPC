@@ -1,14 +1,14 @@
 #include <iostream>
-#include <forward_list>
+#include <list>
 using namespace std;
 
 int main() {
-    forward_list<int> v = {2, 4, 6, 8, 10};
+    list<int> v = {2, 4, 6, 8, 10};
 
-    v.push_front(12);
-    v.push_front(14);
+    v.push_back(12);
+    v.push_back(14);
 
-    v.pop_front();
+    v.pop_back();
 
     cout << "List: ";
     for (int x : v) {
@@ -17,7 +17,7 @@ int main() {
 
     cout << endl;
 
-    forward_list<int>::iterator itr;
+    list<int>::iterator itr;
 
     cout << "Using iterator: " << endl;
 
