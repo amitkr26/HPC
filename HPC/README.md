@@ -1,31 +1,46 @@
 # HPC Study Materials
 
-Personal learning repository for High Performance Computing (HPC) and related engineering topics: Linux/OS, Cloud, Networking, and programming (C & C++).
+Personal learning repository for the **Advanced Certificate Course – HPC (AI), July 2026 Batch**. Modules follow the official course schedule.
 
 ## Repository Structure
 
 ```
 HPC/
-├── 01-LINUX/                 # Linux OS course
-│   ├── COURSE-MATERIAL/      #   assignment sheets, question papers, handouts (PDF/DOCX)
-│   └── SOLUTIONS/            #   shell-script solutions q01–q58 + launcher
-├── 02-CLOUD/                 # Cloud computing course
-│   └── COURSE-MATERIAL/      #   session slide PDFs (Session 1–7)
-├── 03-NETWORKING/            # Computer networking course
-│   ├── COURSE-MATERIAL/      #   session slide PDFs (Session 1–11)
-│   └── PRACTICE/             #   Cisco Packet Tracer files (.pkt)
-├── 04-PROGRAMMING/           # C and C++ practice + assignments
-│   ├── C/                    #   structured C curriculum by topic
-│   └── CPP/                  #   C++ practice organized by topic
-├── 06-OTHERS/                # Resumes, interview prep (VLSI/Digital), misc
+├── 01-COMPUTER-NETWORKS/           # Computer Networks & Interconnects (48hrs)
+│   ├── COURSE-MATERIAL/            #   session slide PDFs (Session 1–11)
+│   └── PRACTICE/                   #   Cisco Packet Tracer files (.pkt)
+├── 02-LINUX-AND-OS/                # Linux and Operating Systems (48hrs)
+│   ├── COURSE-MATERIAL/            #   assignment sheets, question papers, PPTs, handouts
+│   └── SOLUTIONS/                  #   shell-script solutions q01–q58 + launcher
+├── 03-CLOUD-COMPUTING/             # Cloud Computing & Operation/Deployment Strategies (48hrs)
+│   └── COURSE-MATERIAL/            #   session slide PDFs (Session 1–7)
+├── 04-C-AND-DS/                    # C and Data Structure (64hrs)
+│   ├── COURSE-MATERIAL/            #   reference PDFs + assignment docx
+│   └── (topic folders 01–21, assignments, mini-projects)
+├── 05-CPP-PROGRAMMING/             # C++ Programming (40hrs)
+│   ├── COURSE-MATERIAL/            #   day slide PDFs + assignment docx
+│   └── (topic folders, assignments)
+├── 06-PYTHON-PROGRAMMING/          # Python Programming (40hrs) — upcoming
+├── 07-HPC-AND-ITS-ARCHITECTURE/    # Introduction to HPC & Its Architecture (48hrs) — upcoming
+├── 08-CPP-PARALLEL-PROGRAMMING/    # C++ with Parallel Programming (40hrs) — upcoming
+├── 09-ADVANCED-PROGRAMMING-HPC/    # Advanced Programming – HPC (72hrs) — upcoming
+├── 10-STATISTICS-AND-DATA-HANDLING/# Statistical Analysis & Data Handling using Python (48hrs) — upcoming
+├── 11-ML-DL-OPENVINO/              # Intro to ML, DL & OpenVINO (48hrs) — upcoming
+├── 12-APTITUDE-AND-COMMUNICATION/  # Aptitude & Effective Communication (50hrs) — upcoming
+├── 13-PROJECT-MODULE/              # Project Module (100hrs) — upcoming
+├── 99-EXTRA/                       # Resumes, interview prep (VLSI/Digital), misc
 │   ├── INTERVIEW-PREP/
 │   └── RESUME/
-└── 99-REFERENCES/            # Course details, review/archive items
+└── 99-REFERENCES/                  # Course details, review/archive items
     └── REVIEW/
 ```
 
 ## Guides
 
-- **C++** – `04-PROGRAMMING/CPP/README.md` (course overview + roadmap)
-- **C** – `04-PROGRAMMING/C/README.md` (course overview + roadmap)
+- **C++** – `05-CPP-PROGRAMMING/README.md` (course overview + roadmap)
+- **C** – `04-C-AND-DS/README.md` (course overview + roadmap)
 - **Assignments vs. code mapping** – `ASSIGNMENT-MAPPING.md`
+
+## Course Details
+
+Full schedule in `99-REFERENCES/Course_Details_2026.pdf`. Modules in teaching order: Networks → Linux/OS → Cloud → C → C++ → Python → HPC Arch → C++ Parallel → Advanced HPC → Statistics → ML/DL/OpenVINO → Aptitude → Project.

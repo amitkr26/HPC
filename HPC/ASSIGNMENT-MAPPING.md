@@ -2,7 +2,7 @@
 
 Maps solution programs to their originating assignment documents across the C, C++, and Linux courses.
 
-## C++ (04-PROGRAMMING/CPP/09-ASSIGNMENTS)
+## C++ (05-CPP-PROGRAMMING/09-ASSIGNMENTS)
 
 | Day | Assignment document | Solution programs |
 |-----|---------------------|-------------------|
@@ -12,7 +12,7 @@ Maps solution programs to their originating assignment documents across the C, C
 | DAY-04 | `DAY-04/Amit_Kumar_C++_Lambda_Assignment.docx` | `01_lambda_basic.cpp` … `07_lambda_capture_by_ref.cpp` |
 | root   | `Amit_Kumar_C++_Lambda_Assignment.docx` | (duplicate of DAY-04 sheet) |
 
-## C (04-PROGRAMMING/C/18-ASSIGNMENTS)
+## C (04-C-AND-DS/18-ASSIGNMENTS)
 
 | Day / topic | Assignment document | Solution programs |
 |-------------|---------------------|-------------------|
@@ -27,7 +27,7 @@ Maps solution programs to their originating assignment documents across the C, C
 | MULTI-DIM-ARRAY | `MULTI-DIM-ARRAY/*.docx` `*.pdf` | `06-ARRAYS/02-2D-ARRAYS/` |
 | root | `Amit_Kumar_C_Assignment.docx`(+ `.pdf`) | (full course submission) |
 
-## Linux (01-LINUX)
+## Linux (02-LINUX-AND-OS)
 
 | Source | Solution programs |
 |--------|-------------------|
@@ -38,4 +38,4 @@ Maps solution programs to their originating assignment documents across the C, C
 ## Notes
 
 - Assignment `.docx`/`.pdf` marked `_alt`/`_variant`/`(duplicate)` are near-identical revisions kept to preserve source; the primary sheet is the un-suffixed file.
-- Redundant examples are quarantined under `04-PROGRAMMING/C/99-ARCHIVE/duplicate-pdfs/` (user-organized) and `03-NETWORKING/COURSE-MATERIAL/REVIEW/`.
+- Redundant examples are quarantined under `04-C-AND-DS/99-ARCHIVE/duplicate-pdfs/` (user-organized) and `99-REFERENCES/REVIEW/`.
