@@ -8,7 +8,7 @@ Learning progression for C++, assuming the completed C course as foundation.
 - Program structure, `#include <iostream>`, `main()`
 - `cout`, `cin`, `endl`, `using namespace std`
 - Compilation with g++
-- **Location**: `01-CPP-BASICS/Day-01/`
+- **Location**: `01-CPP-BASICS/`
 
 ### Day 2: Variables, Data Types & Operators
 - C++ data types, `sizeof`, type modifiers
@@ -48,7 +48,7 @@ Learning progression for C++, assuming the completed C course as foundation.
 **Completed:** C course (Day 1-8) - see `../00-COURSE-START/`.
 
 **In Progress:**
-- C++ Day 1: basics & iostream (`01-CPP-BASICS/Day-01/`)
+- C++ basics & iostream (`01-CPP-BASICS/`), functions/OOP/STL practice files
 
 **Not Started:**
-- C++ Days 2-8
+- C++ Days 2-8 fully documented (topic folders `02-…06` hold the code)

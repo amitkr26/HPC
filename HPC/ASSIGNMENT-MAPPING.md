@@ -2,13 +2,13 @@
 
 Maps solution programs to their originating assignment documents across the C, C++, and Linux courses.
 
-## C++ (05-CPP-PROGRAMMING/09-ASSIGNMENTS)
+## C++ (05-CPP-PROGRAMMING/08-ASSIGNMENTS)
 
 | Day | Assignment document | Solution programs |
 |-----|---------------------|-------------------|
 | DAY-01 | `DAY-01/Amit_Kumar_C++_Class_Assignment.docx` | `01_circle_area.cpp`, `02_employee_oop.cpp`, `03_temperature_oop.cpp`, `04_login_password.cpp`, `05_speaker_volume.cpp` |
 | DAY-01 | `DAY-01/Amit_Kumar_C++_Namespace_Assignment.docx` (+ `_alt`) | `01a_circle_square_collision_namespace.cpp`, `01b_india_usa_currency_namespace.cpp`, `05a_company_hr_nested_namespace.cpp` |
-| DAY-02 | `DAY-02/Amit_Kumar_C++_Day1_Assignment.docx` (+ `_alt`, `_variant1`) | code in `05-OOP` (deep-copy classes) |
+| DAY-02 | `DAY-02/Amit_Kumar_C++_Day1_Assignment.docx` (+ `_alt`, `_variant1`) | code in `04-OOP` (deep-copy classes) |
 | DAY-04 | `DAY-04/Amit_Kumar_C++_Lambda_Assignment.docx` | `01_lambda_basic.cpp` … `07_lambda_capture_by_ref.cpp` |
 | root   | `Amit_Kumar_C++_Lambda_Assignment.docx` | (duplicate of DAY-04 sheet) |
 

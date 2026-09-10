@@ -1,27 +1,30 @@
 # C++ Programming Course
 
-The C++ course begins here. It follows the same living, day-by-day structure
-as the completed C course (theory -> syntax -> examples -> practice -> MCQ ->
-debugging -> code/), but for C++.
+The C++ course. It mirrors the same living, structured layout as the C course:
+numbered topic folders, each with `01-CONCEPTS/` (theory -> syntax -> MCQ ->
+debugging), `02-EXAMPLES/` (code), `03-PRACTICE/`, and `04-ASSIGNMENTS/`.
 
-> **Status: Day 1 in progress** - C++ basics, iostream, cout/cin.
+> **Status: course in progress** - basics through classes/STL, exam practice.
 
 ## Folder layout
 
 ```
-C++/
-├── README.md              <- you are here
-├── 00-COURSE-START/       <- overview, roadmap, progress tracker
-├── 01-CPP-BASICS/         <- Day 1: program structure, iostream, cout/cin
-└── ... (future modules)
+05-CPP-PROGRAMMING/
+├── README.md                  <- you are here
+├── 00-COURSE-START/           <- overview, roadmap, progress tracker
+├── COURSE-MATERIAL/           <- assignment sheets + lecture PDFs
+│   ├── ASSIGNMENTS/
+│   └── REFERENCE/
+├── 01-CPP-BASICS/             <- program structure, iostream, cout/cin
+├── 02-FUNCTIONS/              <- overloading, default args, variadic
+├── 03-STL/                    <- vectors, maps, lists
+├── 04-OOP/                    <- classes, constructors, inheritance
+├── 05-POINTERS-AND-MEMORY/    <- new/delete, deep & shallow copy
+├── 06-ADVANCED-CPP/           <- templates, lambdas, smart pointers
+├── 07-PRACTICE/               <- extra practice programs
+├── 08-ASSIGNMENTS/            <- day-by-day submitted solutions
+└── 09-ARCHIVE/                <- in-progress / retired attempts
 ```
-
-## How daily lessons work
-
-Every lesson folder contains: `README.md` (overview), `THEORY.md`,
-`SYNTAX.md`, `EXAMPLES.md` (with dry runs), `PRACTICE.md` (Levels 1-6),
-`MCQ.md`, `DEBUGGING.md`, and a `code/` folder with one `.cpp` file per
-program (snake_case).
 
 ## Compilation
 
@@ -44,4 +47,4 @@ A program existing in a folder does **not** mean it is understood.
 ## Start here
 
 Open `00-COURSE-START/COURSE-OVERVIEW.md`, then jump into
-`01-CPP-BASICS/Day-01/`.
+`01-CPP-BASICS/01-CONCEPTS/`.

@@ -11,7 +11,7 @@ solve new problems unaided).
 
 | Day | Topic | Status | Practice | Assignment | Confidence |
 | --- | --- | --- | --- | --- | --- |
-| Day 1 | C++ basics, program structure, iostream, cout/cin, endl | In Progress | `01-CPP-BASICS/Day-01/code/*.cpp` re-run | (none yet) | 1 |
+| Day 1 | C++ basics, program structure, iostream, cout/cin, endl | In Progress | `01-CPP-BASICS/02-EXAMPLES/code/*.cpp` re-run | (none yet) | 1 |
 
 ## Topic status
 

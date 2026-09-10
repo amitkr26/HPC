@@ -6,31 +6,28 @@ following the same philosophy as the completed C course.
 ## Course status
 
 - **C course: COMPLETE** (Day 1 - Day 8, all assignments verified in `C/`).
-- **C++ course: Day 1 in progress** - basics, iostream, cout/cin.
+- **C++ course: in progress** - basics, functions, STL, classes/OOP done; parallel/advanced covered in the HPC modules.
 
 ## Where things live
 
 ```
-C++/
-├── README.md                 <- course home
-├── 00-COURSE-START/          <- overview, roadmap, progress
-└── 01-CPP-BASICS/Day-01/     <- current lesson
+05-CPP-PROGRAMMING/
+├── README.md                  <- course home
+├── 00-COURSE-START/           <- overview, roadmap, progress
+├── COURSE-MATERIAL/           <- assignment sheets + lecture PDFs
+└── 01-CPP-BASICS/ ... 09-ARCHIVE/  <- numbered topic folders
 ```
 
 ## How daily lessons work
 
-Each lesson folder contains:
+Each topic folder contains:
 
 ```
-Day-XX/
-├── README.md      <- overview, objective, what was done
-├── THEORY.md      <- concepts, progressively
-├── SYNTAX.md      <- correct C++ syntax with comments
-├── EXAMPLES.md    <- tiny examples + dry runs
-├── PRACTICE.md    <- practice programs (easy -> hard)
-├── MCQ.md         <- MCQs, answers on separate lines
-├── DEBUGGING.md   <- common mistakes + find-the-error drills
-└── code/          <- one .cpp file per program, snake_case
+XX-TOPIC/
+├── 01-CONCEPTS/    <- README, THEORY, SYNTAX, MCQ, DEBUGGING
+├── 02-EXAMPLES/    <- EXAMPLES.md + code/ (one .cpp per program, snake_case)
+├── 03-PRACTICE/    <- practice programs (easy -> hard)
+└── 04-ASSIGNMENTS/ <- graded lab assignments
 ```
 
 ## Honesty rule
