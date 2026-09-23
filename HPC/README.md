@@ -20,17 +20,19 @@ HPC/
 ├── 05-CPP-PROGRAMMING/             # C++ Programming (40hrs)
 │   ├── COURSE-MATERIAL/            #   day slide PDFs + assignment docx
 │   └── (topic folders, assignments)
-├── 06-PYTHON-PROGRAMMING/          # Python Programming (40hrs) — upcoming
-├── 07-HPC-AND-ITS-ARCHITECTURE/    # Introduction to HPC & Its Architecture (48hrs) — upcoming
+├── 06-PYTHON-PROGRAMMING/          # Python Programming (40hrs) — day-1 basics practice
+├── 07-HPC-AND-ITS-ARCHITECTURE/    # Intro to HPC & Its Architecture (48hrs) — OpenMP, lectures, assignments
 ├── 08-CPP-PARALLEL-PROGRAMMING/    # C++ with Parallel Programming (40hrs) — upcoming
 ├── 09-ADVANCED-PROGRAMMING-HPC/    # Advanced Programming – HPC (72hrs) — upcoming
 ├── 10-STATISTICS-AND-DATA-HANDLING/# Statistical Analysis & Data Handling using Python (48hrs) — upcoming
 ├── 11-ML-DL-OPENVINO/              # Intro to ML, DL & OpenVINO (48hrs) — upcoming
 ├── 12-APTITUDE-AND-COMMUNICATION/  # Aptitude & Effective Communication (50hrs) — upcoming
-├── 13-PROJECT-MODULE/              # Project Module (100hrs) — upcoming
+├── 13-PROJECT-MODULE/              # Project Module (100hrs) — hpc-vlsi-placement project
 ├── 99-EXTRA/                       # Resumes, interview prep (VLSI/Digital), misc
 │   ├── INTERVIEW-PREP/
-│   └── RESUME/
+│   ├── RESUME/
+│   │   └── COMPANY-SPECIFIC/
+│   └── IMAGES/
 └── 99-REFERENCES/                  # Course details, review/archive items
     └── REVIEW/
 ```
@@ -40,6 +42,8 @@ HPC/
 - **C++** – `05-CPP-PROGRAMMING/README.md` (course overview + roadmap)
 - **C** – `04-C-AND-DS/README.md` (course overview + roadmap)
 - **Assignments vs. code mapping** – `ASSIGNMENT-MAPPING.md`
+- **HPC module 07** – `07-HPC-AND-ITS-ARCHITECTURE/README.md`
+- **Python module 06** – `06-PYTHON-PROGRAMMING/README.md`
 
 ## Course Details
 

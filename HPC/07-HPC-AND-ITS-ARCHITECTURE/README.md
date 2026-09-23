@@ -10,9 +10,10 @@
 ```
 07-HPC-AND-ITS-ARCHITECTURE/
 ├── README.md                  <- you are here
-├── COURSE-MATERIAL/REFERENCE/ <- lecture PDFs
+├── COURSE-MATERIAL/REFERENCE/ <- lecture PDFs + PPTs (intro, admin, day 2)
+├── Assignment/                <- HPC writing/architecture assignments
 └── 01-OPENMP-PARALLELISM/
-    └── 02-EXAMPLES/           <- OpenMP thread demo programs (.c)
+    └── 02-EXAMPLES/           <- OpenMP thread demo programs (.c/.cpp)
 ```
 
 ## Compilation (OpenMP)
