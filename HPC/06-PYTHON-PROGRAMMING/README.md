@@ -11,7 +11,8 @@
 06-PYTHON-PROGRAMMING/
 ├── README.md                  <- you are here
 └── 01-PYTHON-BASICS/
-    └── 03-PRACTICE/           <- Day-1 basics: input, print, variables, arithmetic
+    ├── 03-PRACTICE/           <- Day-1 basics: input, print, variables, arithmetic
+    └── 04-ASSIGNMENTS/        <- Python Assignment 1 notebook
 ```
 
 ## Run

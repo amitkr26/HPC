@@ -1,6 +1,6 @@
 # Assignment Mapping
 
-Maps solution programs to their originating assignment documents across the C, C++, and Linux courses.
+Maps solution programs to their originating assignment documents across the C, C++, Linux, Python, and HPC courses.
 
 ## C++ (05-CPP-PROGRAMMING/08-ASSIGNMENTS)
 
@@ -34,6 +34,19 @@ Maps solution programs to their originating assignment documents across the C, C
 | `COURSE-MATERIAL/Comprehensive_Linux_OS_Lab_Assignment.docx` | `SOLUTIONS/q01…q28` (files, users, processes, scripts) |
 | `COURSE-MATERIAL/Linux-Hands-On Practice Assignment.docx` | `SOLUTIONS/q29…q58` (vi/nano, paging/segmentation) |
 | `COURSE-MATERIAL/Linux_OS_Question_Paper.pdf` | OS memory notes in `COURSE-MATERIAL/q53_q58_paging_segmentation_notes.sh` |
+
+## Python (06-PYTHON-PROGRAMMING/01-PYTHON-BASICS)
+
+| Assignment | Location |
+|------------|----------|
+| `Python_Assignment1.ipynb` (Colab) | `04-ASSIGNMENTS/python_assignment1.ipynb` |
+
+## HPC (07-HPC-AND-ITS-ARCHITECTURE)
+
+| Assignment | Location |
+|------------|----------|
+| Cloud computing writing assignment (IaaS/PaaS/SaaS) | `Assignment/cloud_computing_assignment.docx` |
+| HPC architecture conclusion (Day 2) | `Assignment/hpc_architecture_conclusion.docx` |
 
 ## Notes
 
