@@ -10,14 +10,18 @@
 ```
 07-HPC-AND-ITS-ARCHITECTURE/
 ├── README.md                  <- you are here
-├── COURSE-MATERIAL/REFERENCE/ <- lecture PDFs + PPTs (intro, admin, day 1/2)
-├── Assignment/                <- HPC writing/architecture assignments
+├── COURSE-MATERIAL/           <- course supplies
+│   ├── REFERENCE/             <-   lecture PDFs + PPTs (intro, admin, day 1/2)
+│   └── ASSIGNMENTS/           <-   assignment sheets + submitted solutions
 ├── 01-OPENMP-PARALLELISM/
-│   └── 02-EXAMPLES/           <- OpenMP demos: construct, num_threads/if, for work-sharing, matrix-mult (.c/.cpp)
+│   ├── 02-EXAMPLES/           <- thread IDs, num_threads/if, work-sharing, firstprivate/private
+│   └── 04-ASSIGNMENTS/        <- matrix multiply (OpenMP + serial timing)
 ├── 02-PTHREADS/
-│   └── 02-EXAMPLES/           <- POSIX pthread worker demo + API reference + ps command
+│   ├── 01-CONCEPTS/           <- API reference image + ps thread command
+│   └── 02-EXAMPLES/           <- POSIX pthread worker demo
 └── 03-STD-THREAD/
-    └── 02-EXAMPLES/           <- std::thread worker demo + API reference + ps command
+    ├── 01-CONCEPTS/           <- API reference image + ps thread command
+    └── 02-EXAMPLES/           <- std::thread worker demo
 ```
 
 ## Compilation (OpenMP C++)
