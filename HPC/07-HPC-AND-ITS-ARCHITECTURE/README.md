@@ -19,9 +19,11 @@
 ├── 02-PTHREADS/
 │   ├── 01-CONCEPTS/           <- API reference image + ps thread command
 │   └── 02-EXAMPLES/           <- POSIX pthread worker demo
-└── 03-STD-THREAD/
-    ├── 01-CONCEPTS/           <- API reference image + ps thread command
-    └── 02-EXAMPLES/           <- std::thread worker demo
+├── 03-STD-THREAD/
+│   ├── 01-CONCEPTS/           <- API reference image + ps thread command
+│   └── 02-EXAMPLES/           <- std::thread worker demo
+└── 04-MPI-COMMUNICATION/
+    └── 02-EXAMPLES/           <- P2P sync/async + collectives (bcast/scatter/gather/allreduce/alltoall) + SLURM run script
 ```
 
 ## Compilation (OpenMP C++)
@@ -40,3 +42,14 @@ program.exe
 ```
 
 Both thread programs print from the main thread plus two workers for 10 seconds while the OS `sleep()` runs — use the `threads_ps_cmd.txt` command (`ps -t pts/0 -m -o pid,tid,nlwp,cmd`) to observe the thread count on Linux.
+
+## Compilation (MPI)
+
+Requires an MPI implementation (e.g. OpenMPI). On Linux with `mpic++`:
+
+```bash
+mpic++ 02_p2p_async_nonblocking.cpp -o 02_p2p_async
+mpirun -np 2 ./02_p2p_async        # run the .cpp example with 2 ranks
+```
+
+On a SLURM cluster, submit `04-MPI-COMMUNICATION/02-EXAMPLES/slurm_run_mpi_demo.sh` with `sbatch`. The P2P demos need exactly 2 ranks; collective demos scale to any rank count (hard-coded buffers support up to 4).
