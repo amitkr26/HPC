@@ -14,7 +14,7 @@
 │   ├── REFERENCE/             <-   lecture PDFs + PPTs (intro, admin, day 1/2)
 │   └── ASSIGNMENTS/           <-   assignment sheets + submitted solutions
 ├── 01-OPENMP-PARALLELISM/
-│   ├── 02-EXAMPLES/           <- thread IDs, num_threads/if, work-sharing, firstprivate/private
+│   ├── 02-EXAMPLES/           <- thread IDs, num_threads/if, work-sharing, firstprivate/private, sections, single, critical, atomic, barrier, reduction, threadprivate/copyprivate
 │   └── 04-ASSIGNMENTS/        <- matrix multiply (OpenMP + serial timing)
 ├── 02-PTHREADS/
 │   ├── 01-CONCEPTS/           <- API reference image + ps thread command
@@ -23,7 +23,8 @@
 │   ├── 01-CONCEPTS/           <- API reference image + ps thread command
 │   └── 02-EXAMPLES/           <- std::thread worker demo
 └── 04-MPI-COMMUNICATION/
-    └── 02-EXAMPLES/           <- P2P sync/async + collectives (bcast/scatter/gather/allreduce/alltoall) + SLURM run script
+    ├── 02-EXAMPLES/           <- P2P sync/async + collectives + MPI/OpenMP hybrid mvm + SLURM run script
+    └── (hybrid problems sheet in COURSE-MATERIAL/ASSIGNMENTS)
 ```
 
 ## Compilation (OpenMP C++)
