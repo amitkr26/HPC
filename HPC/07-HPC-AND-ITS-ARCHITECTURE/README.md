@@ -22,9 +22,12 @@
 ├── 03-STD-THREAD/
 │   ├── 01-CONCEPTS/           <- API reference image + ps thread command
 │   └── 02-EXAMPLES/           <- std::thread worker demo
-└── 04-MPI-COMMUNICATION/
-    ├── 02-EXAMPLES/           <- P2P sync/async + collectives + MPI/OpenMP hybrid mvm + SLURM run script
-    └── (hybrid problems sheet in COURSE-MATERIAL/ASSIGNMENTS)
+├── 04-MPI-COMMUNICATION/
+│   ├── 02-EXAMPLES/           <- P2P sync/async + collectives + MPI/OpenMP hybrid mvm + SLURM run script
+│   └── (hybrid problems sheet in COURSE-MATERIAL/ASSIGNMENTS)
+└── 05-PYTHON-PARALLELISM/     <- Python parallel day-1 (faculty Anuja)
+    ├── 02-EXAMPLES/           <- JSON/pickle serialization, threads vs processes + GIL, Pool/speedup/Amdahl
+    └── 03-PRACTICE/           <- t01-t07: JSON, pickle round-trip + security, threads, locks
 ```
 
 ## Compilation (OpenMP C++)
