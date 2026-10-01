@@ -4,6 +4,7 @@
 - **Faculty:** Anuja Sridhar (PE STG)
 - **Schedule:** 10/09/2026 - 17/09/2026
 - **Holidays:** 12/09 - 13/09/2026 (Weekend)
+- **Lecture recordings:** 15/09 - 25/09/2026 in Google Drive — see [`COURSE-MATERIAL/RECORDINGS.md`](COURSE-MATERIAL/RECORDINGS.md)
 
 ## Folder layout
 
@@ -11,6 +12,7 @@
 07-HPC-AND-ITS-ARCHITECTURE/
 ├── README.md                  <- you are here
 ├── COURSE-MATERIAL/           <- course supplies
+│   ├── RECORDINGS.md          <-   index of Drive lecture videos + Gemini session notes
 │   ├── REFERENCE/             <-   lecture PDFs + PPTs (intro, admin, day 1/2)
 │   └── ASSIGNMENTS/           <-   assignment sheets + submitted solutions
 ├── 01-OPENMP-PARALLELISM/
