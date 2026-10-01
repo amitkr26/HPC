@@ -51,4 +51,4 @@ Maps solution programs to their originating assignment documents across the C, C
 ## Notes
 
 - Assignment `.docx`/`.pdf` marked `_alt`/`_variant`/`(duplicate)` are near-identical revisions kept to preserve source; the primary sheet is the un-suffixed file.
-- Redundant examples are quarantined under `04-C-AND-DS/99-ARCHIVE/duplicate-pdfs/` (user-organized) and `99-REFERENCES/REVIEW/`.
+- Redundant examples are quarantined under `99-REFERENCES/REVIEW/`.

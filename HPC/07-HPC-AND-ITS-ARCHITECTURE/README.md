@@ -25,10 +25,25 @@
 ├── 04-MPI-COMMUNICATION/
 │   ├── 02-EXAMPLES/           <- P2P sync/async + collectives + MPI/OpenMP hybrid mvm + SLURM run script
 │   └── (hybrid problems sheet in COURSE-MATERIAL/ASSIGNMENTS)
-└── 05-PYTHON-PARALLELISM/     <- Python parallel day-1 (faculty Anuja)
-    ├── 02-EXAMPLES/           <- JSON/pickle serialization, threads vs processes + GIL, Pool/speedup/Amdahl
-    └── 03-PRACTICE/           <- t01-t07: JSON, pickle round-trip + security, threads, locks
+└── 05-PYTHON-PARALLELISM/     <- Python parallel day-1/2/3 (faculty Anuja)
+    ├── 02-EXAMPLES/           <- day-1: JSON/pickle serialization, threads vs processes + GIL, Pool/speedup/Amdahl
+    │   └── day-02/            <- day-2: Lock/RLock/Semaphore, Condition/Event/Barrier/Queue, process lifecycle, Pool/Queue/Pipe
+    │       └── classroom-examples/   <- day-2 threading/multiprocessing classroom scripts (ex01-ex07 + vinutils)
+    └── 03-PRACTICE/           <- day-1: t01-t07 JSON, pickle round-trip + security, threads, locks
+        └── day-03/            <- day-3: mpi4py availability/collective, ThreadPool vs ProcessPool (factorial)
+            └── classroom-examples/   <- day-3 ex01-ex06 (python-concurrent execution, MPI in Python)
 ```
+
+## Python parallel (day-1/2/3)
+
+All `.py` in `05-PYTHON-PARALLELISM` run standalone:
+
+```bash
+python 05-PYTHON-PARALLELISM/02-EXAMPLES/day-02/01_thread_sync_primitives.py
+python 05-PYTHON-PARALLELISM/03-PRACTICE/day-03/classroom-examples/ex05.py   # needs mpi4py/numpy for ex02-ex04
+```
+
+Day-3 `ex02-ex04` need `mpi4py` (+ `numpy`); day-2 `ex03` needs `requests`. Install per the `requirements.txt` in each folder. Course material for the Python track lives in `COURSE-MATERIAL` (day-1/2/3 assignment PDFs, session slides, SLURM guide).
 
 ## Compilation (OpenMP C++)
 

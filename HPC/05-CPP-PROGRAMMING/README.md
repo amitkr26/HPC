@@ -21,7 +21,6 @@ debugging), `02-EXAMPLES/` (code), `03-PRACTICE/`, and `04-ASSIGNMENTS/`.
 ├── 04-OOP/                    <- classes, constructors, inheritance
 ├── 05-POINTERS-AND-MEMORY/    <- new/delete, deep & shallow copy
 ├── 06-ADVANCED-CPP/           <- templates, lambdas, smart pointers
-├── 07-PRACTICE/               <- extra practice programs
 ├── 08-ASSIGNMENTS/            <- day-by-day submitted solutions
 └── 09-ARCHIVE/                <- in-progress / retired attempts
 ```

@@ -373,8 +373,7 @@ For every instructor-given practice question and its solved program, see
 
 ### Sum using pointer
 - Level: 7 | Day: 5
-- Code: `05-POINTERS/Day-05/code/sum_pointer.c`, `05-POINTERS/Day-05/code/q04_sum_average_pointer.c`,
-  `05-POINTERS/Day-05/code/q15_sum_pointer.c`
+- Code: `05-POINTERS/Day-05/code/sum_pointer.c`, `05-POINTERS/Day-05/code/q15_sum_pointer.c`
 - Related: traversal, accumulation
 
 ### Reverse array using pointers
