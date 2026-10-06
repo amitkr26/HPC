@@ -45,8 +45,11 @@ Maps solution programs to their originating assignment documents across the C, C
 
 | Assignment | Location |
 |------------|----------|
-| Cloud computing writing assignment (IaaS/PaaS/SaaS) | `Assignment/cloud_computing_assignment.docx` |
-| HPC architecture conclusion (Day 2) | `Assignment/hpc_architecture_conclusion.docx` |
+| Cloud computing writing assignment (IaaS/PaaS/SaaS) | `COURSE-MATERIAL/ASSIGNMENTS/cloud_computing_assignment.docx` |
+| HPC architecture conclusion (Day 2) | `COURSE-MATERIAL/ASSIGNMENTS/hpc_architecture_conclusion.docx` |
+| OpenMP + MPI hybrid problems | `COURSE-MATERIAL/ASSIGNMENTS/openmp_mpi_hybrid_problems.pdf` |
+| Assignment 1 - identify parallel statements (data-dependence exercises) | `COURSE-MATERIAL/ASSIGNMENTS/assignment1_parallel_statements.pdf` (companion deck: `REFERENCE/parallel_programming_lecture.pdf`) |
+| Python parallel day-1..5 sheets | `COURSE-MATERIAL/ASSIGNMENTS/python_parallel_day{1..5}_assignment.pdf` |
 
 ## Notes
 

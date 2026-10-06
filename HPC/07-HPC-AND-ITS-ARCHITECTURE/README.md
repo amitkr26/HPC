@@ -13,7 +13,7 @@
 ├── README.md                  <- you are here
 ├── COURSE-MATERIAL/           <- course supplies
 │   ├── RECORDINGS.md          <-   index of Drive lecture videos + Gemini session notes
-│   ├── REFERENCE/             <-   lecture PDFs + PPTs (intro, admin, day 1/2/4/5 sessions, cluster setup)
+│   ├── REFERENCE/             <-   lecture PDFs + PPTs (intro, admin, parallel programming deck, day 1/2/4/5 sessions, cluster setup)
 │   └── ASSIGNMENTS/           <-   assignment sheets + submitted solutions
 ├── 01-OPENMP-PARALLELISM/
 │   ├── 02-EXAMPLES/           <- thread IDs, num_threads/if, work-sharing, firstprivate/private, sections, single, critical, atomic, barrier, reduction, threadprivate/copyprivate
