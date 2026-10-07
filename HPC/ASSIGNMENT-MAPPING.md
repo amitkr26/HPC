@@ -43,13 +43,27 @@ Maps solution programs to their originating assignment documents across the C, C
 
 ## HPC (07-HPC-AND-ITS-ARCHITECTURE)
 
-| Assignment | Location |
-|------------|----------|
-| Cloud computing writing assignment (IaaS/PaaS/SaaS) | `COURSE-MATERIAL/ASSIGNMENTS/cloud_computing_assignment.docx` |
-| HPC architecture conclusion (Day 2) | `COURSE-MATERIAL/ASSIGNMENTS/hpc_architecture_conclusion.docx` |
-| OpenMP + MPI hybrid problems | `COURSE-MATERIAL/ASSIGNMENTS/openmp_mpi_hybrid_problems.pdf` |
-| Assignment 1 - identify parallel statements (data-dependence exercises) | `COURSE-MATERIAL/ASSIGNMENTS/assignment1_parallel_statements.pdf` (companion deck: `REFERENCE/parallel_programming_lecture.pdf`) |
-| Python parallel day-1..5 sheets | `COURSE-MATERIAL/ASSIGNMENTS/python_parallel_day{1..5}_assignment.pdf` |
+Assignment sheet → where its solution(s) live. All paths relative to `07-HPC-AND-ITS-ARCHITECTURE/`.
+
+| Assignment sheet | Solution(s) |
+|------------------|-------------|
+| `COURSE-MATERIAL/ASSIGNMENTS/assignment1_parallel_statements.pdf` | `COURSE-MATERIAL/ASSIGNMENTS/SOLUTIONS/assignment1_parallel_statements_solutions.md` — 16 exercises (source skips Ex 6), each marked parallel/not with its RAW/WAR/WAW dependence |
+| `COURSE-MATERIAL/ASSIGNMENTS/assignment_day2_hpc_arch.pdf` (13 concept questions) | `COURSE-MATERIAL/ASSIGNMENTS/hpc_architecture_conclusion.docx` — already answers all 13 plus Rmax/Rpeak, InfiniBand, RDMA, GPU, workload characterization |
+| `COURSE-MATERIAL/ASSIGNMENTS/cloud_computing_assignment.docx` (IaaS/PaaS/SaaS) | same document — self-contained writing assignment |
+| `COURSE-MATERIAL/ASSIGNMENTS/openmp_mpi_hybrid_problems.pdf` §1 OpenMP (5) | `01-OPENMP-PARALLELISM/04-ASSIGNMENTS/openmp_{array_sum_stats,matmul_scheduling,prime_sieve,task_producer_consumer,task_mergesort}.cpp` |
+| `openmp_mpi_hybrid_problems.pdf` §2 MPI (5) | `04-MPI-COMMUNICATION/04-ASSIGNMENTS/mpi_{scatter_reduce_sum,matvec_gather,ring_sendrecv,trapezoidal,sample_sort}.cpp` |
+| `openmp_mpi_hybrid_problems.pdf` §3 Hybrid MPI+OpenMP (5) | `04-MPI-COMMUNICATION/04-ASSIGNMENTS/hybrid/hybrid_{saxpy,matmul,stencil_2d,monte_carlo_pi,kmeans}.cpp` |
+| `COURSE-MATERIAL/ASSIGNMENTS/python_parallel_day1_assignment.pdf` (10) | `05-PYTHON-PARALLELISM/04-ASSIGNMENTS/day-01/ex01..ex10_*.py` |
+| `python_parallel_day2_assignment.pdf` (5) | `05-PYTHON-PARALLELISM/04-ASSIGNMENTS/day-02/ex01..ex05_*.py` |
+| `python_parallel_day3_assignment.pdf` (5) | `05-PYTHON-PARALLELISM/04-ASSIGNMENTS/day-03/ex01..ex05_*.py` |
+| `python_parallel_day4_assignment.pdf` (4) | `05-PYTHON-PARALLELISM/04-ASSIGNMENTS/day-04/` (scoop/Pyro4/rpyc/celery files — see its `README.md`) |
+| `python_parallel_day5_assignment.pdf` (5) | `05-PYTHON-PARALLELISM/04-ASSIGNMENTS/day-05/ex01..ex05_*.py` + `README.md` (GPU or CPU-fallback) |
+
+**Verification status** (what was actually executed vs. only syntax-checked):
+
+- OpenMP `§1` — all 5 compiled with `-Wall -Wextra` (0 warnings) and **run**, each printing its comparison table and `PASS` against a serial reference.
+- MPI `§2` + Hybrid `§3` — all 10 pass `g++ -fsyntax-only -Wall -Wextra` against a throw-away `mpi.h` stub (no MPI toolchain on this machine); run them on the cluster with the `mpirun` command in each file header. The blocking Send/Recv deadlock demo in `mpi_ring_sendrecv` is gated behind `--deadlock` so the default run cannot hang.
+- Python day-1, day-2, day-3 (ex03–05), day-5 — executed and passing here. day-3 `ex01/ex02` need `mpi4py`; day-4 needs `scoop`/`Pyro4`/`rpyc`/`celery`; day-5 real-GPU paths need `pycuda`/`numba`/`pyopencl` (CPU fallbacks run standalone).
 
 ## Notes
 

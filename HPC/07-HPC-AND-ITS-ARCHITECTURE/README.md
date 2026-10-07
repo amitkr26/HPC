@@ -15,9 +15,10 @@
 │   ├── RECORDINGS.md          <-   index of Drive lecture videos + Gemini session notes
 │   ├── REFERENCE/             <-   lecture PDFs + PPTs (intro, admin, parallel programming deck, day 1/2/4/5 sessions, cluster setup)
 │   └── ASSIGNMENTS/           <-   assignment sheets + submitted solutions
+│       └── SOLUTIONS/         <-   written answers (Assignment 1 data-dependence sheet)
 ├── 01-OPENMP-PARALLELISM/
 │   ├── 02-EXAMPLES/           <- thread IDs, num_threads/if, work-sharing, firstprivate/private, sections, single, critical, atomic, barrier, reduction, threadprivate/copyprivate
-│   └── 04-ASSIGNMENTS/        <- matrix multiply (OpenMP + serial timing)
+│   └── 04-ASSIGNMENTS/        <- matrix multiply + openmp problems sheet §1 (array stats, matmul scheduling, sieve, task producer/consumer, task mergesort)
 ├── 02-PTHREADS/
 │   ├── 01-CONCEPTS/           <- API reference image + ps thread command
 │   └── 02-EXAMPLES/           <- POSIX pthread worker demo
@@ -26,7 +27,8 @@
 │   └── 02-EXAMPLES/           <- std::thread worker demo
 ├── 04-MPI-COMMUNICATION/
 │   ├── 02-EXAMPLES/           <- P2P sync/async + collectives + MPI/OpenMP hybrid mvm + SLURM run script
-│   └── (hybrid problems sheet in COURSE-MATERIAL/ASSIGNMENTS)
+│   └── 04-ASSIGNMENTS/        <- problems sheet §2 MPI (scatter, matvec, ring, trapezoid, sample sort)
+│       └── hybrid/            <-   §3 hybrid MPI+OpenMP (saxpy, matmul, 2D stencil, Monte Carlo, k-means)
 └── 05-PYTHON-PARALLELISM/     <- Python parallel day-1..5 (faculty Anuja)
     ├── 02-EXAMPLES/           <- day-1: JSON/pickle serialization, threads vs processes + GIL, Pool/speedup/Amdahl
     │   ├── day-02/            <- day-2: Lock/RLock/Semaphore, Condition/Event/Barrier/Queue, process lifecycle, Pool/Queue/Pipe
@@ -35,9 +37,15 @@
     │   │   └── classroom-examples/   <- ex01 Celery+RabbitMQ, ex02 Pyro4, ex03 rpyc, ex04 Docker/Scoop
     │   └── day-05/            <- day-5: GPU — PyCUDA, Numba CUDA, PyOpenCL (each with a SLURM .sh)
     │       └── classroom-examples/   <- ex01-ex04 (.py + .sh pairs, GPU partition)
-    └── 03-PRACTICE/           <- day-1: t01-t07 JSON, pickle round-trip + security, threads, locks
-        └── day-03/            <- day-3: mpi4py availability/collective, ThreadPool vs ProcessPool (factorial)
-            └── classroom-examples/   <- day-3 ex01-ex06 (python-concurrent execution, MPI in Python)
+    ├── 03-PRACTICE/           <- day-1: t01-t07 JSON, pickle round-trip + security, threads, locks
+    │   └── day-03/            <- day-3: mpi4py availability/collective, ThreadPool vs ProcessPool (factorial)
+    │       └── classroom-examples/   <- day-3 ex01-ex06 (python-concurrent execution, MPI in Python)
+    └── 04-ASSIGNMENTS/        <- solutions to the day-1..5 lab sheets
+        ├── day-01/            <- 10 exercises (JSON, pickle, word count, threads, pipeline, GIL, race, memory, speedup, toolkit)
+        ├── day-02/            <-  5 (RLock, semaphore pool, barrier, IPC pipeline, async pool callbacks)
+        ├── day-03/            <-  5 (MPI ring, MPI pi, futures, asyncio, asyncio+executor)
+        ├── day-04/            <-  4 (SCOOP, Pyro4, rpyc, Celery) + README
+        └── day-05/            <-  5 (PyCUDA x3, Numba, OpenCL) + README (CPU fallbacks)
 ```
 
 ## Python parallel (day-1..5)
@@ -57,6 +65,33 @@ Day-3 `ex02-ex04` need `mpi4py` (+ `numpy`); day-2 `ex03` needs `requests`. Inst
 **Day-5 (GPU):** needs `pycuda` / `numba` / `pyopencl` and a CUDA-capable node. Each `ex0N.sh` is a SLURM
 batch script for the `gpu` partition (`sbatch ex01.sh`) — it loads `cuda/12.3`, activates `hpc_env`, then runs
 the matching `.py`. Cluster bootstrap: `COURSE-MATERIAL/REFERENCE/hpc_cluster_setup.pdf` (Conda + MPI).
+
+## Assignment solutions
+
+Every sheet in `COURSE-MATERIAL/ASSIGNMENTS/` now has a solution — see
+[`../ASSIGNMENT-MAPPING.md`](../ASSIGNMENT-MAPPING.md) for the full sheet → solution table.
+
+| Sheet | Where |
+|-------|-------|
+| Assignment 1 — data dependence (16 exercises) | `COURSE-MATERIAL/ASSIGNMENTS/SOLUTIONS/assignment1_parallel_statements_solutions.md` |
+| Day-2 HPC architecture (13 questions) | already answered by `COURSE-MATERIAL/ASSIGNMENTS/hpc_architecture_conclusion.docx` |
+| OpenMP / MPI / Hybrid problems (15 programs) | `01-OPENMP-PARALLELISM/04-ASSIGNMENTS/`, `04-MPI-COMMUNICATION/04-ASSIGNMENTS/` (+ `hybrid/`) |
+| Python lab sheets day-1..5 (29 scripts) | `05-PYTHON-PARALLELISM/04-ASSIGNMENTS/day-01` … `day-05` |
+
+```bash
+# OpenMP section — builds and runs anywhere with g++
+g++ -std=c++17 -fopenmp -Wall -Wextra -O2 01-OPENMP-PARALLELISM/04-ASSIGNMENTS/openmp_prime_sieve.cpp -o sieve
+./sieve
+
+# MPI + hybrid sections — need an MPI toolchain on the cluster; each file header documents its mpirun line
+mpic++ -std=c++17 -fopenmp -O2 04-MPI-COMMUNICATION/04-ASSIGNMENTS/mpi_sample_sort.cpp -o sample_sort
+mpirun -np 4 ./sample_sort 1000000
+```
+
+Verified locally: all 5 OpenMP programs build warning-free and print `PASS`; all 10 MPI/hybrid
+programs pass `g++ -fsyntax-only -Wall -Wextra` (no MPI toolchain on this machine — run on the
+cluster). Python day-1/2/5 and day-3 `ex03-05` execute here; day-3 `ex01/ex02`, day-4 and the
+day-5 GPU paths need `mpi4py` / `scoop`+`Pyro4`+`rpyc`+`celery` / `pycuda`+`numba`+`pyopencl`.
 
 ## Compilation (OpenMP C++)
 
