@@ -59,11 +59,26 @@ Assignment sheet → where its solution(s) live. All paths relative to `07-HPC-A
 | `python_parallel_day4_assignment.pdf` (4) | `05-PYTHON-PARALLELISM/04-ASSIGNMENTS/day-04/` (scoop/Pyro4/rpyc/celery files — see its `README.md`) |
 | `python_parallel_day5_assignment.pdf` (5) | `05-PYTHON-PARALLELISM/04-ASSIGNMENTS/day-05/ex01..ex05_*.py` + `README.md` (GPU or CPU-fallback) |
 
-**Verification status** (what was actually executed vs. only syntax-checked):
+**Verification status** — every program below was **executed on the CDAC Delhi PARAM Rudra
+cluster** (`paramrudra.cdacdelhi.in`, gcc 12.3.0 + Open MPI 4.1.5, Python 3.11.4):
 
-- OpenMP `§1` — all 5 compiled with `-Wall -Wextra` (0 warnings) and **run**, each printing its comparison table and `PASS` against a serial reference.
-- MPI `§2` + Hybrid `§3` — all 10 pass `g++ -fsyntax-only -Wall -Wextra` against a throw-away `mpi.h` stub (no MPI toolchain on this machine); run them on the cluster with the `mpirun` command in each file header. The blocking Send/Recv deadlock demo in `mpi_ring_sendrecv` is gated behind `--deadlock` so the default run cannot hang.
-- Python day-1, day-2, day-3 (ex03–05), day-5 — executed and passing here. day-3 `ex01/ex02` need `mpi4py`; day-4 needs `scoop`/`Pyro4`/`rpyc`/`celery`; day-5 real-GPU paths need `pycuda`/`numba`/`pyopencl` (CPU fallbacks run standalone).
+- OpenMP `§1` — 6 programs (incl. the pre-existing `matrix_mult_openmp`) compile with
+  `-Wall -Wextra -O2` at **0 warnings**, run with `OMP_NUM_THREADS=4` and print `PASS`.
+  SLURM job **31155**, `~/hpc/results/`.
+- MPI `§2` (5) + Hybrid `§3` (5) — compile with `mpicxx -Wall -Wextra -O2` at **0 warnings**
+  and run under `mpirun` (4 ranks for `§2`, 2 ranks × 2 threads for `§3`), all printing `PASS`.
+  SLURM job **31155**. Note `mpicc` does **not** link `libstdc++` — these C++ sources must be
+  built with `mpicxx`/`mpic++`. The blocking Send/Recv deadlock demo in `mpi_ring_sendrecv`
+  is gated behind `--deadlock` so the default run cannot hang.
+- `hybrid_kmeans` — first run failed its invariant check (job 31155): the assignment counter
+  summed the **already-global** `gcnt` and then reduced again, reporting `n × P` points
+  (200000 instead of 100000). Fixed to sum the local `cnt[]`; job **31156** now prints
+  `all points assigned exactly once: yes / RESULT: PASS`.
+- Python — all **31** scripts run green (job **31157**): day-1 (10), day-2 (5), day-3 (5, of
+  which `ex01/ex02` run under `mpirun -np 4` with `mpi4py` 4.1.2), day-4 (scoop, Pyro4, RPyC
+  and the full Celery pipeline against a live Redis broker + worker), day-5 (5).
+  `day-05` GPU sheets take their CPU architectural-simulation path — `pycuda`/`pyopencl` are
+  absent and no CUDA device is visible; `numba` 0.68.0 is installed.
 
 ## Notes
 

@@ -172,7 +172,7 @@ static void kmeans_run(const std::vector<double> &pts, long long local_n,
     MPI_Reduce(&obj, &obj_all, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 
     long long assigned_local = 0;
-    for (int c = 0; c < k; ++c) assigned_local += gcnt[(size_t)c];
+    for (int c = 0; c < k; ++c) assigned_local += cnt[(size_t)c];
     long long assigned_all = 0;
     MPI_Reduce(&assigned_local, &assigned_all, 1, MPI_LONG_LONG, MPI_SUM, 0, MPI_COMM_WORLD);
 

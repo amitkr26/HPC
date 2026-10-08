@@ -88,10 +88,14 @@ mpic++ -std=c++17 -fopenmp -O2 04-MPI-COMMUNICATION/04-ASSIGNMENTS/mpi_sample_so
 mpirun -np 4 ./sample_sort 1000000
 ```
 
-Verified locally: all 5 OpenMP programs build warning-free and print `PASS`; all 10 MPI/hybrid
-programs pass `g++ -fsyntax-only -Wall -Wextra` (no MPI toolchain on this machine — run on the
-cluster). Python day-1/2/5 and day-3 `ex03-05` execute here; day-3 `ex01/ex02`, day-4 and the
-day-5 GPU paths need `mpi4py` / `scoop`+`Pyro4`+`rpyc`+`celery` / `pycuda`+`numba`+`pyopencl`.
+All 15 assignment programs **plus** the pre-existing `matrix_mult_openmp` were executed on the
+CDAC PARAM Rudra cluster (SLURM jobs 31155/31156) — each build is warning-free and each run
+prints `PASS`. Build MPI and hybrid sources with `mpicxx`, not `mpicc`: `mpicc` does not link
+`libstdc++` and fails with `undefined reference to operator new`. Python day-1…day-5 (31
+scripts) all pass under job 31157: `mpi4py` covers day-3 `ex01/ex02`; `scoop`, `Pyro4`, `rpyc`,
+`celery` and `numba` are installed in `~/hpc/venv`, and the day-4 Celery pipeline runs against
+a live Redis broker + worker. The day-5 GPU sheets take their CPU architectural-simulation
+fallback (`pycuda`/`pyopencl` are absent and no CUDA device is visible).
 
 ## Compilation (OpenMP C++)
 

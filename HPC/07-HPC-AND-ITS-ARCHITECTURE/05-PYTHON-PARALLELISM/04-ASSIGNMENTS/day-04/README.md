@@ -24,8 +24,27 @@ pip install scoop Pyro4 rpyc celery
 docker run -d -p 6379:6379 redis:alpine
 ```
 
-These packages are **not** installed on this Windows machine — the scripts were
-syntax-checked here but must be executed on the course cluster.
+## Verified execution (PARAM Rudra cluster)
+
+All four exercises were run for real on the cluster (SLURM job 31157 + a follow-up),
+in `~/hpc/venv` where `scoop`, `Pyro4`, `rpyc`, `celery` and `redis` are installed:
+
+```text
+ex01_scoop_monte_carlo.py   rc=0
+inspector (rpyc server + client)   rc=0
+banking (Pyro4 server + client)    rc=0
+celery_config.py / tasks.py        OK — app + validate_order / calculate_tax_and_discount / generate_invoice_pdf
+order_client.py                    rc=0 — 3 tasks validated, chained invoice "INV-ORD-202" produced
+```
+
+A broker **is** already listening on `login02:6379`, so only the worker is needed:
+
+```bash
+celery -A tasks worker --loglevel=info     # terminal 1
+python order_client.py                     # terminal 2
+```
+
+If your environment has no broker, start one first: `docker run -d -p 6379:6379 redis:alpine`.
 
 ## Exercise 1 — SCOOP (`ex01_scoop_monte_carlo.py`)
 

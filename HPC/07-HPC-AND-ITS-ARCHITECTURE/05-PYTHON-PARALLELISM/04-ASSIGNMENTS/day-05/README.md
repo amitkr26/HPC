@@ -22,10 +22,12 @@ exits non-zero on failure.
 
 ## Environment notes
 
-* Verified with numpy 2.x; `pycuda`, `numba`, `pyopencl` were **not** installed
-  on the authoring machine (no NVIDIA GPU), so all five ran via their fallback
+* Verified with numpy 2.x on the authoring machine and again on the PARAM Rudra
+  cluster (SLURM job 31157). `pycuda` and `pyopencl` are **not** installed and no
+  CUDA device is visible on either machine, so all five ran via their fallback
   paths (ex05 also exercises its discovery step, which reports the missing
-  library gracefully).
+  library gracefully); `numba` 0.68.0 *is* installed on the cluster, so `ex04`
+  reaches the "installed but no CUDA device" branch and then simulates the kernel.
 * Kernel explanations from the spec's *Hints & Guidelines* live in each
   script's module docstring rather than inline comments.
 * `ex04`: the spec's kernel only writes lanes with `0 < t_id < 255` and
