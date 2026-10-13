@@ -29,7 +29,7 @@ gcc -g -O0        -o hello        hello.cpp     # or g++ for C++
 gcc -g -O0        -o crash        crash.c
 gcc -g -O0        -o factorial    factorial.c
 gcc -g -O0 -fopenmp -o matrix_multiply matrix_multiply.c
-nvcc -g -G       -o vector_add   vector_add.cu # needs CUDA; -G debugs device code
+nvcc -g -G -arch=sm_80 -o vector_add vector_add.cu   # sm_80 = A100; see note below
 ```
 
 ## Walkthroughs
@@ -83,17 +83,34 @@ OMP_NUM_THREADS=4 gdb ./matrix_multiply
 (gdb) thread apply all bt
 ```
 
-**Lab 5 — `vector_add.cu`** (needs an NVIDIA GPU)
+**Lab 5 — `vector_add.cu`** (verified on PARAM Rudra's `gpu` partition, NVIDIA A100 80GB)
+
+The kernel is missing its `if (idx < n)` guard: with `n = 1000` and 256 threads
+per block the grid rounds up to 4 blocks (1024 threads), so threads 1000–1023
+write past the end of `c`.
 
 ```bash
-nvcc -g -G -o vector_add vector_add.cu
-cuda-gdb ./vector_add
-(cuda-gdb) break vector_add
-(cuda-gdb) run
-(cuda-gdb) info cuda kernels
-(cuda-gdb) info cuda threads
-compute-sanitizer ./vector_add
+module load cuda/12.3
+nvcc -g -G -arch=sm_80 -o vector_add vector_add.cu
+compute-sanitizer --tool memcheck ./vector_add
 ```
+
+```text
+./vector_add                          -> c[10]=30.0 c[999]=2997.0   exit 0   <- silent!
+compute-sanitizer --tool memcheck      -> ERROR SUMMARY: 28 errors
+```
+
+The program does **not** crash on a plain run — the corruption is invisible
+until `compute-sanitizer` reports it. Adding `if (idx >= n) return;` right
+after the index calculation takes the report to **0 errors** with the same
+output.
+
+> **Build on the login node, run on the GPU node.** The `gpu` partition's
+> `/usr/include` is stripped down to three entries, so `nvcc` on `rdgpu01`/`rdgpu02`
+> fails with `fatal error: features.h: No such file or directory` even though
+> `glibc-devel` is installed. Compile on `login02` (where the headers are intact),
+> then run the binary on a GPU node — `/home` is shared NFS, so the executable
+> is already there. Submit with `#SBATCH -p gpu --gpus=1`.
 
 ## Verified behaviour
 
@@ -109,8 +126,10 @@ behave exactly as the deck describes:
 | `matrix_multiply.c` | runs; `C[0][0]=140`, `C[7][7]=-252` |
 | `matrix_multiply_race.c` | `OMP_NUM_THREADS=4` → **14774 mismatches** vs the serial reference, so the race reproduces reliably |
 
-`vector_add.cu` is **not** compiled here — it needs `nvcc` plus an NVIDIA GPU.
-It is kept as the Lab 5 source for the cluster or a CUDA workstation.
+`vector_add.cu` is not built on Windows — it needs `nvcc` plus an NVIDIA GPU.
+It **was** verified on the cluster: built with CUDA 12.3 on `login02` and run on
+`rdgpu01` (A100 80GB), where the missing bounds check produced 28 memcheck
+errors and the fixed version produced 0.
 
 ## Quick tips from the sheet
 
