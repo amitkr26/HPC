@@ -23,7 +23,7 @@ HPC/
 ├── 06-PYTHON-PROGRAMMING/          # Python Programming (40hrs) — day-1 basics practice
 ├── 07-HPC-AND-ITS-ARCHITECTURE/    # Intro to HPC & Its Architecture (48hrs) — OpenMP, lectures, assignments
 ├── 08-CPP-PARALLEL-PROGRAMMING/    # C++ with Parallel Programming (40hrs) — upcoming
-├── 09-ADVANCED-PROGRAMMING-HPC/    # Advanced Programming – HPC (72hrs) — upcoming
+├── 09-ADVANCED-PROGRAMMING-HPC/    # Advanced Programming – HPC (72hrs) — profiling + GDB debugging
 ├── 10-STATISTICS-AND-DATA-HANDLING/# Statistical Analysis & Data Handling using Python (48hrs) — upcoming
 ├── 11-ML-DL-OPENVINO/              # Intro to ML, DL & OpenVINO (48hrs) — upcoming
 ├── 12-APTITUDE-AND-COMMUNICATION/  # Aptitude & Effective Communication (50hrs) — upcoming

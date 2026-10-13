@@ -35,6 +35,7 @@ this file is the index that wires the recordings into the course structure.
 Session slides, assignment sheets and reference PDFs for this module live alongside this
 file in `COURSE-MATERIAL/`:
 
-- `REFERENCE/` — lecture PDFs, PPTs, session slides, SLURM guide
+- `REFERENCE/` — lecture PDFs, PPTs, session slides, SLURM guide, cluster setup
+  and the PARAM Rudra 2FA login guide
 - `ASSIGNMENTS/` — assignment sheets and submitted solutions
 - `../README.md` — folder layout and build/run commands for the module

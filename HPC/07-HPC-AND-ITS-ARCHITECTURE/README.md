@@ -13,7 +13,7 @@
 ├── README.md                  <- you are here
 ├── COURSE-MATERIAL/           <- course supplies
 │   ├── RECORDINGS.md          <-   index of Drive lecture videos + Gemini session notes
-│   ├── REFERENCE/             <-   lecture PDFs + PPTs (intro, admin, parallel programming deck, day 1/2/4/5 sessions, cluster setup)
+│   ├── REFERENCE/             <-   lecture PDFs + PPTs (intro, admin, parallel programming deck, day 1/2/4/5 sessions, cluster setup, PARAM Rudra login guide)
 │   └── ASSIGNMENTS/           <-   assignment sheets + submitted solutions
 │       └── SOLUTIONS/         <-   written answers (Assignment 1 data-dependence sheet)
 ├── 01-OPENMP-PARALLELISM/
