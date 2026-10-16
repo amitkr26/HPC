@@ -28,6 +28,10 @@ HPC/
 ├── 11-ML-DL-OPENVINO/              # Intro to ML, DL & OpenVINO (48hrs) — upcoming
 ├── 12-APTITUDE-AND-COMMUNICATION/  # Aptitude & Effective Communication (50hrs) — upcoming
 ├── 13-PROJECT-MODULE/              # Project Module (100hrs) — hpc-vlsi-placement project
+├── bdw-llm/                        # Standalone project — from-scratch LLM on PARAM Rudra
+│   ├── docs/                       #   stage reports A–J, each md5-verified
+│   ├── scripts/                    #   one SLURM script per stage + the job output it cites
+│   └── src/                        #   tokenizer, model, training loop, evaluation
 ├── 99-EXTRA/                       # Resumes, interview prep (VLSI/Digital), misc
 │   ├── INTERVIEW-PREP/
 │   ├── RESUME/
@@ -44,6 +48,7 @@ HPC/
 - **Assignments vs. code mapping** – `ASSIGNMENT-MAPPING.md`
 - **HPC module 07** – `07-HPC-AND-ITS-ARCHITECTURE/README.md`
 - **Python module 06** – `06-PYTHON-PROGRAMMING/README.md`
+- **BDW from-scratch LLM project** – `bdw-llm/README.md` (overview), `bdw-llm/docs/FINAL_REPORT.md` (results)
 
 ## Course Details
 

@@ -1,0 +1,56 @@
+==========================================
+SLURM_CLUSTER_NAME = paramrudra
+SLURM_ARRAY_JOB_ID = 
+SLURM_ARRAY_TASK_ID = 
+SLURM_ARRAY_TASK_COUNT = 
+SLURM_ARRAY_TASK_MAX = 
+SLURM_ARRAY_TASK_MIN = 
+SLURM_JOB_ACCOUNT = tutor
+SLURM_JOB_ID = 31776
+SLURM_JOB_NAME = bdw_d_tok
+SLURM_JOB_NODELIST = rdcn14
+SLURM_JOB_USER = 3ioip3lt
+SLURM_JOB_UID = 56027
+SLURM_JOB_PARTITION = standard
+SLURM_TASK_PID = 4191495
+SLURM_SUBMIT_DIR = /home/tutor/3ioip3lt/bdw-llm/scripts
+SLURM_CPUS_ON_NODE = 4
+SLURM_NTASKS = 1
+SLURM_TASK_PID = 4191495
+==========================================
+node     : rdcn14
+python   : /home/tutor/3ioip3lt/bdw-llm/venv/bin/python
+cpus     : 48
+date     : 2026-10-16T12:28:15+05:30
+
+
+
+
+corpus      : /home/tutor/3ioip3lt/bdw-llm/data/raw/fineweb_pilot.jsonl
+vocab_size  : 16384
+min_freq    : 2
+special     : ['<|pad|>', '<|bos|>', '<|eos|>']
+byte alphabet: 256
+train_time_s: 13.0
+final vocab : 16384
+added tokens: [('<|pad|>', 0), ('<|bos|>', 1), ('<|eos|>', 2)]
+saved       : /home/tutor/3ioip3lt/bdw-llm/tokenizer/tokenizer.json 1130003 bytes
+
+--- round-trip probes ---
+ids=12   ok=True  'The quick brown fox jumps over the lazy dog.'
+ids=23   ok=True  'def train(path):\n    return sum(path) / len(path)'
+ids=19   ok=True  '1234567890 + 987654321 = 1111111111'
+ids=30   ok=True  'Unicode: café ééé हिन्दी 中文'
+ids=17   ok=True  'Emoji are just bytes: 😀🚀🧠'
+ids=16   ok=True  '\x00\x01\x02 control bytes and \x7f\x80ÿ high bytes'
+
+--- corpus round-trip sample (500 docs) ---
+docs=500 mismatches=0 tokens=402674
+
+--- held-out round-trip (last 500 docs) ---
+docs=500 mismatches=0
+
+stats -> /home/tutor/3ioip3lt/bdw-llm/tokenizer/train_stats.json
+TOKENIZER_TRAIN_OK
+
+TOK_STAGE_DONE rc=0

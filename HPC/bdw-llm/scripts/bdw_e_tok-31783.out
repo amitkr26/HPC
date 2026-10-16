@@ -1,0 +1,51 @@
+==========================================
+SLURM_CLUSTER_NAME = paramrudra
+SLURM_ARRAY_JOB_ID = 
+SLURM_ARRAY_TASK_ID = 
+SLURM_ARRAY_TASK_COUNT = 
+SLURM_ARRAY_TASK_MAX = 
+SLURM_ARRAY_TASK_MIN = 
+SLURM_JOB_ACCOUNT = tutor
+SLURM_JOB_ID = 31783
+SLURM_JOB_NAME = bdw_e_tok
+SLURM_JOB_NODELIST = rdcn14
+SLURM_JOB_USER = 3ioip3lt
+SLURM_JOB_UID = 56027
+SLURM_JOB_PARTITION = standard
+SLURM_TASK_PID = 4191629
+SLURM_SUBMIT_DIR = /home/tutor/3ioip3lt/bdw-llm/scripts
+SLURM_CPUS_ON_NODE = 4
+SLURM_NTASKS = 1
+SLURM_TASK_PID = 4191629
+==========================================
+node   : rdcn14
+python : /home/tutor/3ioip3lt/bdw-llm/venv/bin/python
+date   : 2026-10-16T12:31:36+05:30
+
+tokenizer   : /home/tutor/3ioip3lt/bdw-llm/tokenizer/tokenizer.json
+vocab_size  : 16384
+special ids : pad=0 bos=1 eos=2
+docs        : 50689 (skipped 0)
+tokens      : 38210943
+encode_time : 61.6s (620589 tokens/s)
+id range    : min=2 max=16383 (vocab=16384)
+saved       : /home/tutor/3ioip3lt/bdw-llm/tokens/stream.npy 152843900 bytes
+seq_len     : 1024
+rows        : 37315  (tail 383 tokens dropped)
+shards      : 39
+   shard_0000.npy                                       (976, 1024)      3997824
+   shard_0001.npy                                       (976, 1024)      3997824
+   shard_0002.npy                                       (976, 1024)      3997824
+   shard_0003.npy                                       (976, 1024)      3997824
+   ... (35 more)
+
+--- verification ---
+random row 31741: ids=1024 first10=[14, 3733, 281, 338, 2211, 6096, 740, 275, 689, 3665]
+decoded head: ', stressing that either Iran proves its seriousness in the developmental support to Yemen or there is no need for the an'
+decoded tail: 'ional Iranian allies in Yemen who enjoy its support to their'
+doc round-trip lossless: True
+
+meta -> /home/tutor/3ioip3lt/bdw-llm/tokens/meta.json
+TOKENIZE_OK
+
+TOKENIZE_STAGE_DONE rc=0

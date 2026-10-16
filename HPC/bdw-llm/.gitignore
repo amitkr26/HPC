@@ -1,0 +1,56 @@
+# =============================================================================
+# BDW — From-Scratch LLM on PARAM Rudra
+# Committed: docs/ (stage reports), scripts/ (one SLURM script per stage + the
+# job output they cite), src/ (model, training, data, evaluation code).
+# Everything below is generated, downloaded, or far too large for git.
+# =============================================================================
+
+# --- required exclusions ----------------------------------------------------
+# pinned virtualenv (~5.7 GB of site-packages; rebuild from requirements)
+venv/
+.venv/
+
+# corpora: raw pilot + unseen eval, and every tokenised int32 array
+data/
+tokens/
+
+# checkpoints: 333 MB each, written every 5 minutes and rotated
+checkpoints/
+
+# never commit raw tensors / matrices, wherever they happen to live
+*.npy
+*.npz
+
+# --- generated, machine-local ----------------------------------------------
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# environment and credentials
+.env
+.env.*
+*.pem
+*.key
+
+# per-stage run logs (the job output under scripts/ is kept on purpose:
+# docs/*.md cite those exact lines as evidence)
+logs/
+*.log
+
+# upload / build scratch used by the stage drivers
+*.b64
+*.tmp
+*.temp
+*~
+*.swp
+*.bak
+.DS_Store
+Thumbs.db
+
+# --- job output is evidence, so it stays tracked ----------------------------
+*.out
+*.err
+!scripts/*.out
+!scripts/*.err

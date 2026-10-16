@@ -1,0 +1,81 @@
+==========================================
+SLURM_CLUSTER_NAME = paramrudra
+SLURM_ARRAY_JOB_ID = 
+SLURM_ARRAY_TASK_ID = 
+SLURM_ARRAY_TASK_COUNT = 
+SLURM_ARRAY_TASK_MAX = 
+SLURM_ARRAY_TASK_MIN = 
+SLURM_JOB_ACCOUNT = tutor
+SLURM_JOB_ID = 31831
+SLURM_JOB_NAME = bdw_g_train
+SLURM_JOB_NODELIST = rdgpu01
+SLURM_JOB_USER = 3ioip3lt
+SLURM_JOB_UID = 56027
+SLURM_JOB_PARTITION = gpu
+SLURM_TASK_PID = 3214951
+SLURM_SUBMIT_DIR = /home/tutor/3ioip3lt/bdw-llm/scripts
+SLURM_CPUS_ON_NODE = 4
+SLURM_NTASKS = 1
+SLURM_TASK_PID = 3214951
+==========================================
+node      : rdgpu01
+date      : 2026-10-16T14:42:08+05:30
+which py  : /home/tutor/3ioip3lt/bdw-llm/venv/bin/python
+CUDA_VISIBLE_DEVICES=0
+checkpoint before this run:
+-rw-rw-r-- 1 3ioip3lt 3ioip3lt 333674610 Oct 16 14:20 /home/tutor/3ioip3lt/bdw-llm/checkpoints/step_0014583.pt
+-rw-rw-r-- 1 3ioip3lt 3ioip3lt 333674610 Oct 16 14:25 /home/tutor/3ioip3lt/bdw-llm/checkpoints/step_0029208.pt
+
+GPU 0: NVIDIA A100 80GB PCIe (UUID: GPU-16845317-cfa6-e9c5-4858-eb7ffd7d6be2)
+
+======================================================================
+BDW training
+======================================================================
+device        : NVIDIA A100 80GB PCIe
+torch         : 2.5.1+cu121
+args          : {
+  "batch_size": 8,
+  "seq_len": 1024,
+  "lr": 0.0006,
+  "min_lr": 6e-05,
+  "warmup_steps": 200,
+  "total_steps": 200000,
+  "weight_decay": 0.1,
+  "beta1": 0.9,
+  "beta2": 0.95,
+  "grad_clip": 1.0,
+  "ckpt_interval_s": 300.0,
+  "log_interval": 20,
+  "eval_interval": 500,
+  "keep_ckpt": 3,
+  "seed": 1337,
+  "no_resume": false,
+  "max_steps": 60
+}
+shards        : 39  rows=37315  tokens=38210560
+
+[resume] loading /home/tutor/3ioip3lt/bdw-llm/checkpoints/step_0029208.pt
+[resume] step=29208 tokens_seen=239271936 last_loss=4.3126
+
+params        : 27800576 (27.80 M)
+
+--- training ---
+step     loss         lr         tok/s      elapsed   epoch%  
+29220    4.2755       5.72e-04   162386     0m01s     626.5
+29240    4.0860       5.72e-04   360905     0m01s     626.9
+29260    4.3365       5.72e-04   365860     0m01s     627.3
+[max-steps] reached 60 this run
+
+[final] saved step_0029268.pt
+
+=== summary ===
+steps total     : 29268
+tokens seen     : 239763456 (6.27 epochs)
+steps this run  : 60
+wall this run   : 2.9s
+loss first      : 4.1799
+loss last       : 4.2795
+loss tail mean  : 4.2257
+loss decreased  : False
+stop reason     : total-steps
+TRAIN_DONE
