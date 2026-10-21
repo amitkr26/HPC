@@ -738,6 +738,47 @@ This converts the brand promise from an aspiration into a test with a binary
 verdict — exactly the kind of check this project has applied at every stage
 (md5s, `STAGE_K_OK`, `TRAIN_DONE`, `RESULT: ALL_OK`).
 
+### 10.3.1 The verifier was built and tested, not just specified
+
+`src/citation_verifier.py` implements the check above: per sentence, content
+word recall ≥ 0.5 against some retrieved passage, plus every number and every
+distinctive proper noun must appear verbatim in that same passage. One
+unattached sentence fails the draft. It is corpus-agnostic and has no model or
+network dependency, so it drops into the Zone 2 gateway exactly as S5
+requires. `src/verify_e2e.py` runs it against the real retrieval path and the
+real 28 M model.
+
+| Condition | Expected | Result |
+|---|---|---|
+| **A.** RAG-on answers, 3 questions | PASS | **1 / 3 PASS** — see below |
+| **B.** same answers **+ 1 injected false claim** | FAIL | **3 / 3 FAIL — every fabrication caught** |
+| **C.** no-context answer checked against passages it never saw | FAIL | **FAIL** |
+
+**Condition B is the negative control, and it is the important row.** On the
+photosynthesis answer, which passed cleanly on its own, the *only* failing
+sentence after injection was the injected one — so the verifier isolates the
+unsourced claim without discarding the grounded text around it.
+
+**Condition A's 1/3 is not a verifier failure; it is the verifier working.**
+The three cases split exactly as the mechanism predicts:
+
+* *Photosynthesis* — **PASS**, recall 0.54. Genuinely grounded.
+* *Black hole* — retrieval returned **0 passages** (Wikipedia rate-limited
+  after 4 retries), so the model produced its usual no-context noise and the
+  verifier correctly refused it: recall 0.00, no source.
+* *Romeo and Juliet* — **FAIL, and it caught a real hallucination.** The model
+  wrote *"a 1950 American film adapted from the play written by Robert
+  Shakespeare"*. The retrieved passage said *William* Shakespeare and carried no
+  film date. The verifier flagged **unsourced number `1950`** and **unsourced
+  name `Robert`** — precisely the two fabricated elements. This was not a
+  synthetic test case; it is the 28 M model hallucinating on a live query and
+  being stopped.
+
+That is the entire argument for §10.3 in one run: **the small model does
+hallucinate, sometimes brazenly, and the verifier refuses to let it through.**
+Abstaining with a link to `/opportunities` is a better outcome for a
+"source-verified" product than shipping "Robert Shakespeare in 1950".
+
 ### 10.4 Prompt-injection specifics
 
 * **From the user:** length limit, control-character stripping, and — most
@@ -798,7 +839,7 @@ verification on arrival. That procedure is already written and proven
 |---|---|---|---|
 | **0. Foundations** | Export `step_0003000.pt` → safetensors + ONNX; containerise; deploy Zone 3 VM; benchmark against the measured 14–55 tok/s CPU baseline | **Export + parity + throughput now tested and passing (§6.1).** Remaining: containerise and deploy the VM | ~US$15/mo |
 | **1. Retrieval swap** | Build the BDW corpus index in Supabase `pgvector`; replace Wikipedia retrieval; port the Stage M prompt template verbatim, with the no-trailing-space rule enforced by a unit test | RAG-on answers cite BDW rows; zero third-party search calls | ~US$25/mo |
-| **2. Routing + verification** | Intent router, `zod`-validated structured queries, server-side citation verifier, abstention path, `--no-rag`-style A/B harness | Class A/B never generate; verifier rejects 100% of uncited drafts in a red-team set | ~US$40/mo |
+| **2. Routing + verification** | Intent router, `zod`-validated structured queries, server-side citation verifier, abstention path, `--no-rag`-style A/B harness | **Citation verifier already prototyped and tested (§10.3.1) — catches injected fabrications 3/3 and a real live hallucination.** Remaining: intent router + `zod` boundary | ~US$40/mo |
 | **3. Domain adaptation** | Domain BPE — **gated on the production corpus measuring ≥ ~50 MB (§8.3 shows a 0.39 MB corpus regresses general English 32%)**; continue-pretraining; instruction synthesis from BDW content; cross-encoder reranker from accept/click signals | Domain held-out set shows a measurable win over the current checkpoint; no regression on a general-English control set | training on PARAM Rudra (free) + ~US$40/mo serving |
 | **4. Scale** | Only if Phase 3 says so: 100–350 M model for class C; GPU when queue depth demands | Queue-depth and cost-per-query data justify the spend | to be decided from Phase 3 metrics |
 
@@ -935,6 +976,13 @@ login node, CPU only — see §6.1):
 | `data/raw/bdw_domain.jsonl` (44 docs from 45 BDW pages) | 408,715 B, 386,167 chars |
 | `tokenizer_domain/domain_bpe_16k.json` | 0.35 MB, **actual vocab 5,300** |
 | `tokenizer_domain/domain_bpe_32k.json` | 0.35 MB, **actual vocab 5,300** (identical — corpus saturated) |
+
+**Stage Q citation-verifier prototype** (§10.3.1, no model/network dependency):
+
+| Artefact | Note |
+|---|---|
+| `src/citation_verifier.py` | the S5 boundary check: recall ≥ 0.5 + all numbers and proper nouns sourced |
+| `src/verify_e2e.py` | end-to-end test against live retrieval + the 28 M model |
 
 ## Appendix B — Stage-to-production mapping
 
