@@ -550,7 +550,7 @@ capacity learning character-level spellings of acronyms rather than meaning.
 
 | Step | Action | Expected effect |
 |---|---|---|
-| 1 | **Retrain the byte-level BPE on BDW's own text** (circulars, `resources/`, FAQ, org profiles, JDs, news) at vocab 32,000 | Domain compression toward ≥4 chars/token; acronyms become single tokens |
+| 1 | **Retrain the byte-level BPE on BDW's own text** (circulars, `resources/`, FAQ, org profiles, JDs, news) — **only once the corpus is ≥ ~50 MB**; choose vocab from the measured corpus size, not by default (§8.3) | Acronyms and org names collapse to single tokens, **if and only if** the corpus is large enough to support the merges |
 | 2 | **Continue pre-training** on the BDW corpus + a permissively-licensed electronics corpus, ~5–20 B tokens, on PARAM Rudra | Closes the §3.1 gap: the model has never seen a DRDO circular |
 | 3 | **Synthesise instruction data from BDW content** — FAQ → QA pairs, resource pages → summaries, circulars → extraction rows, JD → eligibility rows — plus distillation from the frontier gateway | Directly trains the classes in §4.2 |
 | 4 | **Scale the architecture** to ~100–350 M parameters (12–24 layers, `d_model` 768, context 2048) | The 28 M model stays as router/reranker; the larger one takes class C first-pass |
@@ -558,6 +558,62 @@ capacity learning character-level spellings of acronyms rather than meaning.
 
 Steps 1–3 are cheap. Step 4 is the first one with real cost, and it should be
 gated on evidence that steps 1–3 were not enough.
+
+### 8.3 Measured: a small domain corpus does not pay for itself
+
+The recommendation above was **tested, not assumed** (`src/build_domain_corpus.py`
++ `src/domain_tokenizer_ab.py`). A domain corpus was scraped from 45 of BDW's
+own public pages — the exact source §8.1 names — giving **44 docs / 386,167
+chars / 0.39 MB**. Two byte-level BPEs were trained on it with everything else
+held identical to Stage D (same pre-tokenizer, `min_frequency=2`, same special
+tokens), and all three tokenizers were measured on the same 55 terms and 5
+phrases used in §8.
+
+**The corpus was too small, and the result says so plainly.**
+
+| Tokenizer | Target vocab | **Actual vocab** | Domain chars/tok | Domain tokens (55 terms) | Terms split >1 |
+|---|---|---|---|---|---|
+| general-16K (shipped) | 16,384 | 16,384 | 2.31 | 160 | 47/55 |
+| domain-16K | 16,384 | **5,300** | 2.87 | 129 | 27/55 |
+| domain-32K | 32,000 | **5,300** | 2.87 | 129 | 27/55 |
+
+The trainer **saturated at 5,300 merges** on 0.39 MB of text — it ran out of
+learnable pairs long before either target. Consequently domain-16K and
+domain-32K are **the same tokenizer**, and the vocab-size parameter had no
+effect at all.
+
+**Gains on domain terms were real but modest** (2.31 → 2.87 chars/token,
+**1.24×**, **19% fewer tokens**), and concentrated in exactly the places that
+matter: `SystemVerilog` collapsed from **6 tokens to 1**, `Tessolve` and
+`Synopsys` from 4 to 1, `Testability` from a suffix to a single token. But
+several terms got *worse* — `crosstalk` 4 → 5, `nanosheet` 4 → 5,
+`clock tree synthesis` 4 → 5 — and `Gate-All-Around` stayed at 7.
+
+**The regression guard failed, which is the decisive finding.** On the same
+general-English control set:
+
+| Tokenizer | General-English chars/tok | Tokens |
+|---|---|---|
+| general-16K (shipped) | **4.45** | 62 |
+| domain-16K / domain-32K | **3.03** | 91 |
+
+General English got **32% worse** — more than the 19% domain improvement. For
+a career platform whose traffic is a mix of domain queries *and* ordinary
+English questions ("How can freshers break into the industry?"), trading a
+32% loss on the majority class for a 19% gain on the minority class is a bad
+deal.
+
+**Conclusion, and the correction to §8.2 step 1:** retraining the BPE is the
+right instinct but the **corpus size is the binding constraint, not the vocab
+target**. Before training, measure the production corpus; do not attempt a
+32K domain BPE until it is at least ~50 MB (roughly 130× the pilot scrape —
+the full set of 590+ openings with complete JD text, all circulars, the
+entire news archive and resource library, which plausibly clears that bar).
+If the corpus is smaller than that, **keep the shipped 16K tokenizer**: it is
+strictly better on mixed traffic. This is the same lesson the pre-training
+stage already taught — 43 epochs over a 165 MB corpus bought perplexity at
+the price of a widening generalisation gap — now measured at the tokenizer
+level instead.
 
 ---
 
@@ -743,7 +799,7 @@ verification on arrival. That procedure is already written and proven
 | **0. Foundations** | Export `step_0003000.pt` → safetensors + ONNX; containerise; deploy Zone 3 VM; benchmark against the measured 14–55 tok/s CPU baseline | **Export + parity + throughput now tested and passing (§6.1).** Remaining: containerise and deploy the VM | ~US$15/mo |
 | **1. Retrieval swap** | Build the BDW corpus index in Supabase `pgvector`; replace Wikipedia retrieval; port the Stage M prompt template verbatim, with the no-trailing-space rule enforced by a unit test | RAG-on answers cite BDW rows; zero third-party search calls | ~US$25/mo |
 | **2. Routing + verification** | Intent router, `zod`-validated structured queries, server-side citation verifier, abstention path, `--no-rag`-style A/B harness | Class A/B never generate; verifier rejects 100% of uncited drafts in a red-team set | ~US$40/mo |
-| **3. Domain adaptation** | Domain BPE (§8.2), continue-pretraining, instruction synthesis from BDW content, cross-encoder reranker from accept/click signals | Domain held-out set shows a measurable win over the current checkpoint; compression ≥4 chars/token | training on PARAM Rudra (free) + ~US$40/mo serving |
+| **3. Domain adaptation** | Domain BPE — **gated on the production corpus measuring ≥ ~50 MB (§8.3 shows a 0.39 MB corpus regresses general English 32%)**; continue-pretraining; instruction synthesis from BDW content; cross-encoder reranker from accept/click signals | Domain held-out set shows a measurable win over the current checkpoint; no regression on a general-English control set | training on PARAM Rudra (free) + ~US$40/mo serving |
 | **4. Scale** | Only if Phase 3 says so: 100–350 M model for class C; GPU when queue depth demands | Queue-depth and cost-per-query data justify the spend | to be decided from Phase 3 metrics |
 
 Each phase has an independent exit criterion and is independently shippable.
@@ -870,6 +926,15 @@ login node, CPU only — see §6.1):
 | `export/bdw_28m_int8.onnx` (per-tensor, rejected on quality) | 34.68 MB |
 | `export/bdw_28m_int8_perchannel.onnx` (rejected) | 34.89 MB |
 | `export/bdw_28m_int8_exhead.onnx` (`lm_head` fp32, rejected) | 58.81 MB |
+
+**Stage P domain-tokenizer test artefacts** (§8.3, produced by
+`src/build_domain_corpus.py` + `src/domain_tokenizer_ab.py`):
+
+| Artefact | Size / value |
+|---|---|
+| `data/raw/bdw_domain.jsonl` (44 docs from 45 BDW pages) | 408,715 B, 386,167 chars |
+| `tokenizer_domain/domain_bpe_16k.json` | 0.35 MB, **actual vocab 5,300** |
+| `tokenizer_domain/domain_bpe_32k.json` | 0.35 MB, **actual vocab 5,300** (identical — corpus saturated) |
 
 ## Appendix B — Stage-to-production mapping
 
