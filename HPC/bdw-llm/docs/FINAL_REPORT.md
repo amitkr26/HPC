@@ -14,7 +14,7 @@ held-out perplexity **52.40** vs **18,603.31** for the untrained model.
 
 | | |
 |---|---|
-| Architecture | decoder-only Transformer, pre-norm, RoPE, learned positional embeddings removed in favour of RoPE |
+| Architecture | decoder-only Transformer, pre-norm, learned positional embeddings, multi-head causal self-attention (`F.scaled_dot_product_attention`, `is_causal=True`) |
 | Parameters | **27,800,576** |
 | Layers / heads | 6 / 8, `n_embd=512`, context 1024 |
 | Vocab | **16,384** byte-level BPE, built here (not downloaded) |
@@ -142,6 +142,17 @@ switching to `exec python` (§7 of `TRAINING.md`).
 7. `stop reason` label always reported `total-steps`; replaced with an
    explicit `signal` / `total-steps` / `max-steps` / `loop-exit`.
 8. Duplicate final save; guarded with `last_saved_step`.
+
+> **Post-hoc documentation correction (Stage O, 2026-10-21).** The
+> architecture row in §1 originally described the model as using RoPE with
+> "learned positional embeddings removed in favour of RoPE". That is wrong.
+> `src/model.py` uses **learned positional embeddings** (`pos_emb =
+> nn.Embedding(seq_len, d_model)`, added to the token embedding in
+> `TransformerLM.forward`) and contains **no rotary embedding code at all** —
+> attention is plain `F.scaled_dot_product_attention(..., is_causal=True)`.
+> `MODEL.md` §1 was always correct; this report's summary row was not, and
+> has been fixed. The trained weights and all measured results are unaffected
+> — only the prose was wrong.
 
 ---
 

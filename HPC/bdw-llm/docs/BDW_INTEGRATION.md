@@ -66,7 +66,7 @@ of the document.
 
 | Property | Value |
 |---|---|
-| Architecture | decoder-only Transformer, pre-norm, RoPE |
+| Architecture | decoder-only Transformer, pre-norm, **learned positional embeddings**, multi-head causal self-attention (`F.scaled_dot_product_attention`, `is_causal=True`) |
 | Parameters | **27,800,576** |
 | Layers / heads | 6 / 8 |
 | `d_model` | 512 |
@@ -340,16 +340,27 @@ The inference service must **not** live inside the Next.js deployment:
 ### 5.4 Why CPU-first, not GPU-first
 
 The temptation is to buy a GPU for an LLM. For a 27.8 M parameter model that
-is the wrong trade:
+is the wrong trade, and **Phase 0 has now been tested rather than assumed**
+(§6.2):
 
-* fp32 is 334 MB → **fp16 is ~167 MB** → **int8 quantised ~84 MB**, which fits
-  in L2/L3 cache on a modern server CPU.
-* Measured throughput on 4 CPU cores was **14–55 tok/s** — adequate for
-  interactive chat, and adequate for reranking (which is a scoring pass, not
-  autoregressive generation).
+* Exported ONNX fp32 is **138.12 MB**; safetensors fp32 is **106.06 MB**
+  (tied `tok_emb`/`lm_head` weights stored once). Either fits comfortably in
+  CPU cache.
+* Measured decode throughput on 4 CPU cores: **71.2 tok/s** under ONNX
+  Runtime and **49.4 tok/s** under PyTorch — ONNX is **1.44× faster** than
+  the PyTorch path that produced the Stage M numbers. (Full measurements:
+  §6.1.)
 * A GPU's minimum useful billing increment dwarfs the cost of serving this
   model on CPU. **Buy the GPU when the CPU queue depth, not the architecture
   diagram, says to.**
+
+> **Correction to an earlier draft of this document.** §5.4 and §6 originally
+> recommended **int8 dynamic quantisation** at "~84 MB". Phase 0 testing
+> disproved that recommendation: int8 drops top-1 token agreement to
+> **0.719–0.766** (roughly one token in four changes), and even keeping
+> `lm_head` in fp32 only recovers it to 0.766. For a product whose promise is
+> "no AI hallucinations", a format that alters a quarter of the output tokens
+> is not acceptable. The recommendation is now **ONNX fp32** — see §6.1.
 
 ---
 
@@ -357,15 +368,76 @@ is the wrong trade:
 
 | Parameter | Proposal |
 |---|---|
-| Precision | int8 dynamic quantisation for CPU; fp16 if a GPU appears |
-| Runtime | ONNX Runtime (CPU EP) with a fallback to a C/C++ GGML-style runner — note the owner already maintains **`colibri`** (pure-C MoE inference, "run frontier models on hardware you already own"), so a C serving path is in-house |
+| Precision | **fp32 ONNX** (measured correct, §6.1). *Not* int8 — tested and rejected on quality grounds |
+| Runtime | ONNX Runtime (CPU EP), verified in Phase 0; fallback to a C/C++ GGML-style runner — note the owner already maintains **`colibri`** (pure-C MoE inference, "run frontier models on hardware you already own"), so a C serving path is in-house |
 | Batching | micro-batch rerank/scoring requests for 5–10 ms; generation stays per-request |
 | Concurrency | 2–4 workers per VM; queue-depth autoscale to a second VM, not a bigger VM |
 | Timeout | hard 15 s generation cap (matches the project's original SLURM `MaxWall=00:15:00` instinct — a bounded run is better than a hung one) |
 | Failure mode | if the 28 M runtime is down, **the gateway skips it and goes straight to the frontier path with retrieval** — the small model must never be a single point of failure for `/ask-ai` |
 | Model loading | weights checksum-verified against a published digest at boot (the md5 discipline, promoted to a hard gate) |
 
-### 6.1 Latency budget (pilot, estimate)
+### 6.1 Phase 0 export test — measured, not assumed
+
+Run on the PARAM Rudra **login node**, CPU only, 4 threads, on
+`checkpoints_ft/step_0003000.pt` (27,800,576 params). Toolchain: torch
+2.5.1+cu121, onnx 1.23.2, onnxruntime 1.31.0, safetensors 0.8.0.
+
+**Artefact sizes**
+
+| Format | Size | Note |
+|---|---|---|
+| PyTorch `.pt` (fp32) | 318.2 MB | current format; stores optimizer-agnostic state |
+| **safetensors (fp32)** | **106.06 MB** | tied `tok_emb`/`lm_head` stored once; **round-trip max\|diff\| = 0.000e+00** |
+| **ONNX (fp32)** | **138.12 MB** | **recommended serving format** |
+| ONNX int8, per-tensor | 34.68 MB | 3.98× smaller — **rejected, quality** |
+| ONNX int8, per-channel | 34.89 MB | rejected, quality |
+| ONNX int8 per-channel, `lm_head` fp32 | 58.81 MB | rejected, quality |
+
+**Numerical parity** (batch=2, seq=128, random ids, reference = PyTorch fp32)
+
+| Runtime | max\|diff\| | top-1 agreement |
+|---|---|---|
+| **ONNX fp32** | **4.24e-05** | **1.000** |
+| ONNX int8 per-tensor | 1.05e+01 | 0.719 |
+| ONNX int8 per-channel | 1.12e+01 | 0.750 |
+| ONNX int8 per-channel, `lm_head` fp32 | 1.12e+01 | 0.766 |
+
+ONNX fp32 is **numerically equivalent for decoding purposes** (every argmax
+identical). The int8 variants change roughly a quarter to a third of tokens;
+keeping the output projection in fp32 barely helps, so the damage is spread
+through the network, not isolated to the head.
+
+**Throughput**
+
+| seq_len | PyTorch fp32 | ONNX fp32 | ONNX int8 | int8 speedup |
+|---|---|---|---|---|
+| 128 | 6,702 tok/s | 8,430 tok/s | 12,872 tok/s | 1.53× |
+| 256 | 7,570 tok/s | 7,927 tok/s | 17,179 tok/s | 2.17× |
+| 512 | 6,664 tok/s | 7,001 tok/s | 12,741 tok/s | 1.82× |
+| 1024 | 7,473 tok/s | 5,477 tok/s | 7,635 tok/s | 1.39× |
+
+Simulated decode — 32 steps, full re-forward each step, exactly the way
+`chat_with_rag.py` generates (no KV cache):
+
+| Runtime | Time | Throughput |
+|---|---|---|
+| PyTorch fp32 | 0.65 s | 49.4 tok/s |
+| **ONNX fp32** | **0.45 s** | **71.2 tok/s** |
+| ONNX int8 | 0.26 s | 121.3 tok/s |
+
+**Phase 0 conclusion:** ship **ONNX fp32**. It is *faster* than the PyTorch
+path that produced the Stage M measurements (71.2 vs 49.4 tok/s, 1.44×),
+byte-exact enough that no output token changes, and 138 MB is trivial to
+host. The int8 path is 1.7× faster and 4× smaller but is not worth trading a
+quarter of the output tokens for it on this product.
+
+*One export caveat:* `TransformerLM.forward` guards `if t > cfg.seq_len`,
+which `torch.onnx.export` traces as a constant (`TracerWarning`). The exported
+graph therefore bakes in the 1024-token limit rather than enforcing it
+dynamically. Harmless for serving — pad/truncate to 1024 at the gateway — but
+it means the dynamic `seq` axis is advisory, not validated.
+
+### 6.2 Latency budget (pilot, estimate)
 
 | Stage | Budget |
 |---|---|
@@ -668,7 +740,7 @@ verification on arrival. That procedure is already written and proven
 
 | Phase | Scope | Exit criterion | Cost |
 |---|---|---|---|
-| **0. Foundations** | Export `step_0003000.pt` → safetensors + ONNX; containerise; deploy Zone 3 VM; benchmark against the measured 14–55 tok/s CPU baseline | Reproduces Stage M output quality on CPU in a container | ~US$15/mo |
+| **0. Foundations** | Export `step_0003000.pt` → safetensors + ONNX; containerise; deploy Zone 3 VM; benchmark against the measured 14–55 tok/s CPU baseline | **Export + parity + throughput now tested and passing (§6.1).** Remaining: containerise and deploy the VM | ~US$15/mo |
 | **1. Retrieval swap** | Build the BDW corpus index in Supabase `pgvector`; replace Wikipedia retrieval; port the Stage M prompt template verbatim, with the no-trailing-space rule enforced by a unit test | RAG-on answers cite BDW rows; zero third-party search calls | ~US$25/mo |
 | **2. Routing + verification** | Intent router, `zod`-validated structured queries, server-side citation verifier, abstention path, `--no-rag`-style A/B harness | Class A/B never generate; verifier rejects 100% of uncited drafts in a red-team set | ~US$40/mo |
 | **3. Domain adaptation** | Domain BPE (§8.2), continue-pretraining, instruction synthesis from BDW content, cross-encoder reranker from accept/click signals | Domain held-out set shows a measurable win over the current checkpoint; compression ≥4 chars/token | training on PARAM Rudra (free) + ~US$40/mo serving |
@@ -787,6 +859,17 @@ honest numbers.
 | `src/prep_instruction_data.py` | 16,422 B | `e57c86ed6db36d23becb894e1e096ec7` |
 | `logs/eval_results.json` | — | `6e58e3a5e75e18e814cc5f2474c66ad6` |
 | `logs/finetune_metrics.jsonl` | — | `ba90680f6efd734e815993f7ae0e0277` |
+
+**Phase 0 export artefacts** (produced by `src/export_test.py`, PARAM Rudra
+login node, CPU only — see §6.1):
+
+| Artefact | Size |
+|---|---|
+| `export/bdw_28m.safetensors` (fp32, tied weights deduplicated) | 106.06 MB |
+| `export/bdw_28m_fp32.onnx` — **recommended** | 138.12 MB |
+| `export/bdw_28m_int8.onnx` (per-tensor, rejected on quality) | 34.68 MB |
+| `export/bdw_28m_int8_perchannel.onnx` (rejected) | 34.89 MB |
+| `export/bdw_28m_int8_exhead.onnx` (`lm_head` fp32, rejected) | 58.81 MB |
 
 ## Appendix B — Stage-to-production mapping
 
