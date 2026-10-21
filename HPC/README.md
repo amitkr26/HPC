@@ -31,7 +31,8 @@ HPC/
 ├── bdw-llm/                        # Standalone project — from-scratch LLM on PARAM Rudra
 │   ├── docs/                       #   stage reports A–J, each md5-verified
 │   ├── scripts/                    #   one SLURM script per stage + the job output it cites
-│   └── src/                        #   tokenizer, model, training loop, evaluation
+│   ├── src/                        #   tokenizer, model, training loop, evaluation
+│   └── tokenizer/                  #   trained byte-level BPE vocab (16,384)
 ├── 99-EXTRA/                       # Resumes, interview prep (VLSI/Digital), misc
 │   ├── INTERVIEW-PREP/
 │   ├── RESUME/

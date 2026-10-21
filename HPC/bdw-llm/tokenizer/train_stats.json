@@ -1,0 +1,6 @@
+{
+  "vocab_size": 16384,
+  "corpus_tokens_sampled": 402674,
+  "corpus_docs_sampled": 500,
+  "roundtrip_probe_ok": true
+}
