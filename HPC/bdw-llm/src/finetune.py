@@ -18,6 +18,14 @@ Three deliberate differences from pre-training:
 
 Data is `data/instruct_tokens/shards/` from Stage K; the last shard is held
 out for validation.
+
+Stage N.3 (7B-teacher distillation) reuses this same entry point unchanged
+apart from three explicit arguments: `--shard-dir
+data/distilled_tokens/shards`, `--ckpt-dir checkpoints_distilled/` and
+`--base-ckpt checkpoints_ft/step_0003000.pt`, tagged `--stage-tag N3` so
+checkpoints and metrics never get mixed up with the Stage L run. The 5-minute
+wall-clock checkpoint, auto-resume and SIGTERM/SIGUSR1 handling below are what
+make the 15-minute MaxWall survivable for both stages.
 """
 from __future__ import annotations
 
@@ -80,6 +88,13 @@ def parse_args():
                    help="pre-training checkpoint whose weights we start from")
     p.add_argument("--ckpt-dir", default=CKPT_DIR,
                    help="where fine-tune checkpoints are written (never the base dir)")
+    p.add_argument("--shard-dir", default=SHARD_DIR,
+                   help="directory of shard_*.npy training rows "
+                        "(Stage K: data/instruct_tokens/shards, "
+                        "Stage N.3: data/distilled_tokens/shards)")
+    p.add_argument("--stage-tag", default="L",
+                   help="provenance label stored in checkpoints and metrics "
+                        "(L = Dolly instruction tune, N3 = 7B-teacher distillation)")
     p.add_argument("--eval-only", action="store_true",
                    help="report held-out loss for --eval-ckpt and exit (no training)")
     p.add_argument("--eval-ckpt", default="",
@@ -102,13 +117,14 @@ def set_lr(opt, lr):
         g["lr"] = lr
 
 
-def load_shards(val_shards=1):
-    paths = sorted(glob.glob(os.path.join(SHARD_DIR, "shard_*.npy")))
+def load_shards(val_shards=1, shard_dir=None):
+    shard_dir = shard_dir or SHARD_DIR
+    paths = sorted(glob.glob(os.path.join(shard_dir, "shard_*.npy")))
     if not paths:
-        raise SystemExit("no shards in %s" % SHARD_DIR)
+        raise SystemExit("no shards in %s" % shard_dir)
     if not 0 <= val_shards < len(paths):
-        raise SystemExit("--val-shards=%d invalid for %d shards"
-                         % (val_shards, len(paths)))
+        raise SystemExit("--val-shards=%d invalid for %d shards in %s"
+                         % (val_shards, len(paths), shard_dir))
 
     def load(ps):
         return [(p, np.load(p, mmap_mode="r")) for p in ps]
@@ -148,7 +164,7 @@ def save_ckpt(path, model, opt, step, tokens_seen, args, losses, meta=None):
         "model_config": model.cfg.to_dict(),
         "train_args": vars(args),
         "losses": losses[-200:],
-        "stage": "L",
+        "stage": getattr(args, "stage_tag", "L"),
         "torch_version": torch.__version__,
         "saved_at": time.strftime("%Y-%m-%dT%H:%M:%S"),
     }
@@ -197,7 +213,7 @@ def eval_only(a, device):
     cfg = ModelConfig(**blob["model_config"])
     model = TransformerLM(cfg).to(device)
     model.load_state_dict(blob["model"])
-    _, val_shards = load_shards(a.val_shards)
+    _, val_shards = load_shards(a.val_shards, a.shard_dir)
     vrng = random.Random(a.seed + 991)
     eloss = val_loss(model, val_shards, a.batch_size, device, vrng, rounds=16)
     print("EVAL_ONLY ckpt=%s step=%s" % (path, blob.get("step")))
@@ -242,10 +258,12 @@ def main():
     print("torch         :", torch.__version__, flush=True)
     print("args          :", json.dumps(vars(a), indent=2), flush=True)
 
-    train_shards, val_shards = load_shards(a.val_shards)
+    train_shards, val_shards = load_shards(a.val_shards, a.shard_dir)
     train_rows, train_tokens = shard_stats(train_shards)
     val_rows, val_tokens = shard_stats(val_shards)
     total_tokens = train_tokens
+    print("shard dir    : %s" % a.shard_dir, flush=True)
+    print("stage tag    : %s" % a.stage_tag, flush=True)
     print("train shards   : %d  rows=%d  tokens=%d"
           % (len(train_shards), train_rows, train_tokens), flush=True)
     print("val shards     : %d  rows=%d  tokens=%d  (held out)"
@@ -373,7 +391,7 @@ def main():
                   % (step, eloss, math.exp(min(eloss, 20.0)),
                      sum(tail) / len(tail)), flush=True)
             with open(metrics_path, "a") as fh:
-                fh.write(json.dumps({"stage": "L", "step": step,
+                fh.write(json.dumps({"stage": a.stage_tag, "step": step,
                                      "train_loss": loss_val, "eval_loss": eloss,
                                      "lr": lr, "tokens_seen": tokens_seen,
                                      "wall_s": time.time() - start_wall}) + "\n")
