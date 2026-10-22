@@ -42,10 +42,10 @@ ROOT = os.path.expanduser("~/bdw-llm")
 TEACHER = os.path.join(ROOT, "teacher_model_7b")
 TEACHER_ID = "Qwen/Qwen2.5-7B-Instruct"
 DOLLY = os.path.join(ROOT, "data/raw/dolly15k.jsonl")
-OUT = os.path.join(ROOT, "data/distilled_teacher_data.jsonl")
+OUT = os.path.join(ROOT, "data/distilled_teacher_data_v2.jsonl")
 LIMIT = 11 * 60         # stop with ~4 min of walltime left for the final flush
 BATCH = 8               # measured 1.39 prompts/s on the A100 (pilot job 32336)
-MAX_NEW = 224
+MAX_NEW = 512           # N.4: 224 truncated 80% of domain answers mid-sentence
 TEMP, TOP_P = 0.3, 0.9  # low temperature: factual stability over diversity
 SEED = 1234
 DOLLY_PER_CAT = 40      # 8 categories -> 320 dolly rows
@@ -282,6 +282,24 @@ def qkey(question):
     return hashlib.md5(question.strip().encode("utf-8")).hexdigest()[:16]
 
 
+FLUFF_RE = re.compile(
+    r"^(?:certainly|sure|of\s+course|absolutely|great|yeah|yes|no\s+problem|"
+    r"sure\s+thing|i'?d\s+be\s+happy|i'?m\s+happy|happy\s+to\s+(?:help|assist)|"
+    r"i'?d\s+be\s+glad|i'?ll\s+help)[,!.:;]*\s+",
+    re.IGNORECASE)
+
+
+def strip_fluff(text):
+    """N.4: drop chat-style openers ('Certainly! In static timing...') so the
+    student is not trained on 25%-of-rows pleasantries. Prefix-only, looped
+    so 'Certainly! Sure, ...' chains collapse too."""
+    prev = None
+    while prev != text:
+        prev = text
+        text = FLUFF_RE.sub("", text, count=1).lstrip()
+    return text
+
+
 def build_prompts():
     prompts = []
     seen = set()
@@ -398,7 +416,7 @@ def main():
                     eos_token_id=tok.eos_token_id)
             gen = out[:, n_prompt_tok:]
             for p, ids in zip(batch, gen):
-                ans = tok.decode(ids, skip_special_tokens=True).strip()
+                ans = strip_fluff(tok.decode(ids, skip_special_tokens=True).strip())
                 rec = {"id": p["id"], "category": p["category"],
                        "source": p["source"], "question": p["question"],
                        "response": ans, "teacher": TEACHER_ID,

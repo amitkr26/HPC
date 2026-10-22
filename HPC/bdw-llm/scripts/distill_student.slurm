@@ -22,23 +22,23 @@ echo
 echo "base checkpoint (Stage L best):"
 ls -lh $HOME/bdw-llm/checkpoints_ft/step_0003000.pt
 echo
-echo "existing checkpoints_distilled/ (resume if present):"
-ls -lh $HOME/bdw-llm/checkpoints_distilled/ 2>/dev/null || echo "  (none yet)"
+echo "existing checkpoints_distilled_v2/ (resume if present):"
+ls -lh $HOME/bdw-llm/checkpoints_distilled_v2/ 2>/dev/null || echo "  (none yet)"
 echo
 nvidia-smi -L
 echo
 
 ARGS="--shard-dir $HOME/bdw-llm/data/distilled_tokens/shards"
-ARGS="$ARGS --ckpt-dir $HOME/bdw-llm/checkpoints_distilled"
+ARGS="$ARGS --ckpt-dir $HOME/bdw-llm/checkpoints_distilled_v2"
 ARGS="$ARGS --base-ckpt $HOME/bdw-llm/checkpoints_ft/step_0003000.pt"
-ARGS="$ARGS --stage-tag N3"
+ARGS="$ARGS --stage-tag N4"
 
 echo "=== baseline: Stage L checkpoint scored on the distilled held-out shard ==="
 python $HOME/bdw-llm/src/finetune.py $ARGS \
   --eval-only --eval-ckpt $HOME/bdw-llm/checkpoints_ft/step_0003000.pt
 echo "baseline rc=$?"
 echo
-echo "=== distillation fine-tune (7B teacher data, resumes from checkpoints_distilled/) ==="
+echo "=== distillation fine-tune (N.4 v2 data, resumes from checkpoints_distilled_v2/) ==="
 exec python $HOME/bdw-llm/src/finetune.py $ARGS \
   --total-steps 200 \
   --warmup-steps 20 \

@@ -183,3 +183,152 @@ and N.3 records coexist in one file without ambiguity.
   steps over the same rows.
 * Logit/KL distillation stays off the table until the student's vocabulary
   grows past the Stage P gate (see `docs/BDW_INTEGRATION.md` §8.2).
+
+---
+
+# Stage O — Context-Grounded Distillation
+
+**Executed:** 2026-10-22 12:45–15:15 IST
+**Where:** login node (context fetch), compute node `rdgpu01` (A100 80GB) for
+generation, expansion, paraphrase and fine-tuning
+**Naming:** the operator's *Stage O* workstream — distinct from the repo's own
+Stage O (Phase-0 export test, commit `0de518c`). Training metrics carry stage
+tag `OG`.
+**Scripts:** `src/fetch_vlsi_context.py`, `src/generate_grounded_qa.py`,
+`src/expand_grounded_qa.py`, `src/paraphrase_grounded_qa.py`,
+`src/compare_distill.py`; `scripts/ground_gen.slurm`,
+`scripts/ground_train.slurm`, `scripts/expand_gen.slurm`,
+`scripts/para_gen.slurm`
+**Outputs:** `data/raw/vlsi_wikipedia.json`, `data/grounded_qa{,_final,_aug}.jsonl`,
+`data/distilled_tokens/grounded_shards/`, `checkpoints_grounded/`
+
+Free-form teacher generation failed twice (N.2/N.4), so Stage O changes the
+*shape* of distillation: the 7B teacher may only write answers **grounded in
+real Wikipedia text fetched first**, every non-grounded or truncated answer is
+gated out, and the 27.8 M student trains on exactly that.
+
+## 1. Why grounded — the N.4 pivot
+
+| attempt | setting | outcome |
+|---|---|---|
+| N.2 (job 32338) | `max_new_tokens=224`, free prompts | 72.1 % of domain answers cut **mid-sentence** (median need ≈280 tok); N.3a gated truncation out, but the surviving answers were still fabrications in miniature |
+| N.4 (job 32340) | `max_new=512`, fluff strip, v2 out | generation hit the 660 s `LIMIT` at 432/528 → `N2_TEACHER_GENERATION_FAILED`; even finished rows: only 49.5 % of domain answers reached a clean ending at 512 → `N4_QUAL_FAIL` |
+| Stage O | grounded extraction from fetched text | no truncation possible (gated), no entity to invent (source-bound) |
+
+The N.3c A/B (`src/compare_distill.py`, greedy, 4 fixed questions) is the
+scoreboard throughout: Stage L loops and fabricates (*"ATPG is a video game …
+Steve Jobs"*); everything below is judged against that bar.
+
+## 2. O.1 — fetch real context (login node; compute nodes have no internet)
+
+The `wikipedia` package's search endpoint has returned non-JSON since Stage M,
+so `fetch_vlsi_context.py` talks to the MediaWiki API directly
+(`prop=extracts&explaintext=1&redirects=1`, custom UA, candidate-title lists).
+
+* First pass: the 5 mandated concepts → 131 chunks / 74,439 chars
+  (`RESULT: O1_FETCH_OK pages=5 chunks=131`).
+* Deepening pass (+8 pages, dedupe by resolved title): **13/13 pages,
+  207,108 chars → 353 chunks** (target 700 / max 1100 / min 200 chars),
+  `data/raw/vlsi_wikipedia.json` 254,545 B,
+  `RESULT: O1_FETCH_OK pages=13 chunks=353`.
+
+Resolutions worth recording: *Setup and hold time* → `Setup time` →
+**Flip-flop (electronics)** 38,669 chars; *Design for testability* → **Design
+for testing**; *FinFET* → **Fin field-effect transistor**; exact hits include
+ATPG 11,956, STA 12,593, CDC 3,724, Semicon. fabrication 47,756, Verilog
+20,256, ASIC 18,802, Metastability 7,931.
+
+## 3. O.2 — teacher re-verified
+
+`src/download_teacher.py` re-verified `~/bdw-llm/teacher_model_7b/`
+(**15.24 GB / 14 files**, `RESULT: N1_TEACHER_DOWNLOAD_OK`), offline bf16 load
+7,615,616,512 params. Key md5s unchanged from §2 above.
+
+## 4. O.3a — grounded generation: three hardening passes
+
+`ground_gen.slurm` (`bdw_ground`) runs `generate_grounded_qa.py`: per chunk,
+one teacher call for 3 pairs (`INSTRUCTION` verbatim from the operator,
+`apply_chat_template`, temp 0.3 / top-p 0.9, seed 1234, batch 4,
+`max_new_tokens=512`), then gates — **answer must end in terminal punctuation
+(the truncation gate)**, ≥5-word answer, ≥4-word question, no refusal, no
+`Human:`/`Assistant:` leak, no *"the text above"* meta-reference, question
+dedupe. Chunks that yield zero usable pairs are marked with a sentinel row so
+resume can never loop on them; resume is by chunk id, tokenization runs only
+when all 353 chunks are written, and the full 10-check Stage K suite must pass
+before `RESULT`.
+
+Failures fixed on the way (all re-verified, not assumed):
+
+| job | failure | fix |
+|---|---|---|
+| 32341 | `device_map` requires `accelerate` (absent on cluster) | `from_pretrained(...).to("cuda")` |
+| 32342 | `NameError: gen` (function named `generate`) | call fixed |
+| 32343 | `KeyError: 'parse_fail'` + chunks that parse to 0 pairs never marked done | `.get()` counter + sentinel rows |
+| 32344 | **right-padding** on a decoder-only model → 44/131 chunks unparseable (8 warnings) | `t_tok.padding_side = "left"` (the Stage N.2 lesson, initially missed) |
+
+Data iterations after v1 proved too small (9 rows / 2 shards):
+
+| version | job | change | result |
+|---|---|---|---|
+| v1 | 32344 | 5 pages, right-pad, 60-word cap | 218 pairs, 9,655 tok, **9 rows** — rejected |
+| v2 | 32352 | left-pad, 13 pages | 1,029 pairs, 53,528 tok, 52 rows, shards 18/17/17 (`4e2492ea…`, `635e5440…`, `ec73cf1f…`); answers still **median 18 words** (teacher ignores length floors) |
+| v3 | 32361 | explicit *"40 to 90 words"* spec | 1,050 pairs, 60,125 tok, 58 rows — median only 21 words: **instruction-level length floors do not work** |
+| v4 | 32362 | `expand_grounded_qa.py`: rewrite every <40-word answer to 40–70 words *from the same chunk*; accept only if the full grounded gate passes, else keep the original (accuracy cannot regress) | 529/1,018 rewrites accepted, 489 originals kept, **median 40 words**; 78,322 tok, 76 rows, shards 26/25/25 (`184a63fe…`, `c7d807ab…`, `cc17ced1…`) → **canonical dataset** |
+| v5 | 32368/32369 | `paraphrase_grounded_qa.py`: 2 question rephrasings per pair, answers reused verbatim | 2,090/2,100 accepted → 3,140 rows, 238,210 tok, 232 rows, shards 78/77/77 (`31eec8b3…`, `fbc3b905…`, `8e4af234…`) |
+
+Every version ends in the same `tokenize_and_shard()` with all 10 checks true
+(`O3A_GROUNDED_OK`). v5's attempt 1 reported a spurious
+`O3A_PARA_PARTIAL missing=1050` (the in-memory `done` map was not refreshed
+after the loop) — attempt 2 only re-assembled; cost one 10 s job.
+
+## 5. O.3b — four training runs and the auto-resume trap
+
+`ground_train.slurm` = `--eval-only` baseline (explicit `--eval-ckpt`) then a
+fresh fine-tune from `checkpoints_ft/step_0003000.pt`, batch 8, warmup 15,
+lr 1.5e-5 → 1.5e-6, `--val-shards 1`, tag `OG`.
+
+| job | data | steps | baseline ppl | final ppl (held out) | verdict |
+|---|---|---|---|---|---|
+| 32357 | v2 (52 rows) | 150 | 20.17 | **14.10** | clean but one-liner answers |
+| 32364 | — | — | 23.24 | *none* | **trap:** auto-resumed the finished checkpoint, trained 0 steps (see below) |
+| **32365** | **v4 expanded (76 rows)** | **150** | **23.24** | **15.15** (best eval 14.57 @135) | **canonical** — no loops, no entity fabrication |
+| 32366 | v4 | 450 | 23.24 | 15.66 (best 14.08 @225) | val plateaued at ~225; train loss 1.56 = memorisation; answers grew mushier, invented *"1970s"* |
+| 32370 | v5 (232 rows) | 300 | 10.98 | 4.66 | **leaky val** (paraphrase siblings split across train/val — not comparable); Q2 regressed into a 180-token loop |
+
+**Auto-resume trap (32364):** `finetune.py:279` auto-loads the newest
+checkpoint in `--ckpt-dir`; `step >= total_steps` then exits immediately
+(`stop reason: total-steps`). Symptoms: A/B output byte-identical to the
+previous run, metrics `wall_s` identical to the nanosecond, no `[eval]` lines.
+Fix: archive `checkpoints_grounded/step_*.pt*` before every fresh run (all
+drivers do), and check the log for a missing `[resume]` line.
+
+## 6. O.4 — the A/B verdict (4 questions, greedy, `RESULT: N3C_QUAL_OK`)
+
+| | Stage L (before) | grounded (canonical, 962ba530…) |
+|---|---|---|
+| setup/hold | 180-token *"...you can use a flip-flop"* loop | 15 tok, terse, no loop, content weak |
+| ATPG | *"a video game … CEO, Steve Jobs"* | 15 tok, tautological but **no fabricated entity** |
+| FinFET | *"late 19th century … 1965"* | 46 tok, coherent sentences, **wrong decade persists** (1965) |
+| CDC | 36-token loop | 18 tok, domain-flavoured, no loop |
+
+Honest conclusion: grounding **eliminated degenerate loops and entity
+fabrication** (the N.3c failure modes) and held-out ppl improved 23.24 → 15.15
+on a clean split — but a 27.8 M / 6-layer student does associative recall of
+extractive fragments, not exam-grade retrieval: answers stay thin and the
+1965-decade error survived every data trick. More steps (>225) and paraphrase
+augmentation did **not** help qualitatively (memorisation + sibling leakage +
+looping). Further gains need *more grounded source text and questions*, not
+more epochs over the same 1,050 pairs.
+
+## 7. Stage O artefacts
+
+| artefact | bytes / md5 |
+|---|---|
+| `data/raw/vlsi_wikipedia.json` | 254,545 / 13 pages, 353 chunks |
+| `data/grounded_qa_final.jsonl` | 1,050 pairs (canonical v4) |
+| `data/grounded_qa_aug.jsonl` | 3,140 rows (v5) |
+| `data/distilled_tokens/grounded_shards/` | 26/25/25 rows (`184a63fe…`, `c7d807ab…`, `cc17ced1…`) |
+| `checkpoints_grounded/step_0000150.pt` | 333,675,442 / `962ba530c7b78d45b90786f0e9d1194f` (job 32365) |
+| alternates kept | `checkpoints_grounded_alt/` (v5: 196/300), `checkpoints_grounded_v2data/` (450-step) |
+| metrics | `logs/finetune_metrics.jsonl`, stage tag `OG` |
+| jobs | fetch on login; 32341–32344, 32352, 32361, 32362, 32368/32369 (generation); 32357, 32364, 32365, 32366, 32370 (training); A/Bs `RESULT: N3C_QUAL_OK` |

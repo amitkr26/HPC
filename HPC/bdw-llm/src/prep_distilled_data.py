@@ -1,6 +1,6 @@
 """Stage N.3a: format and tokenise the 7B teacher's answers with our 16K BPE.
 
-Input : data/distilled_teacher_data.jsonl   (Qwen2.5-7B-Instruct, Stage N.2)
+Input : data/distilled_teacher_data_v2.jsonl (Qwen2.5-7B-Instruct, Stage N.4)
 Output: data/distilled_tokens/{stream.npy, shards/shard_*.npy, distill_meta.json}
 
 The conversational layout and the id construction are byte-for-byte the Stage K
@@ -30,7 +30,7 @@ import sys
 import time
 
 ROOT = os.path.expanduser("~/bdw-llm")
-IN_JSONL = os.path.join(ROOT, "data/distilled_teacher_data.jsonl")
+IN_JSONL = os.path.join(ROOT, "data/distilled_teacher_data_v2.jsonl")
 OUT_DIR = os.path.join(ROOT, "data/distilled_tokens")
 STREAM = os.path.join(OUT_DIR, "stream.npy")
 SHARD_DIR = os.path.join(OUT_DIR, "shards")
