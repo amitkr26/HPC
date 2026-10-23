@@ -1,0 +1,16 @@
+{
+  "note": "P2.1 canonical-field map for Supabase tables (docs/PHASE2_7B_BLUEPRINT.md 5.2). Generators resolve each canonical field as the FIRST candidate column present in a row; never hardcode raw column names in recipes.",
+  "canonical": {
+    "id": ["id", "uuid", "slug"],
+    "title": ["title", "post", "post_name", "designation", "role", "name"],
+    "org": ["org", "organization", "organisation", "agency", "department", "body", "employer"],
+    "location": ["location", "place", "city", "job_location", "state"],
+    "eligibility": ["eligibility", "qualification", "qualifications", "education", "criteria", "eligible"],
+    "stipend": ["stipend", "salary", "salary_range", "pay_scale", "remuneration", "ctc", "pay"],
+    "deadline": ["last_date", "deadline", "due_date", "apply_by", "last_date_to_apply", "closing_date"],
+    "posted": ["posted_date", "posted_on", "published_on", "publish_date", "date", "created_at"],
+    "url": ["url", "link", "source_url", "external_url"],
+    "description": ["description", "details", "summary", "content", "body", "about", "jd"],
+    "category": ["category", "type", "job_type", "kind", "stream"]
+  }
+}

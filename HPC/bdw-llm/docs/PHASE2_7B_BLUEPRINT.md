@@ -359,3 +359,32 @@ before commit, `git status` clean between milestones, version tags preserved
 (`v1.0-research-complete` must survive all Phase 2 history). Estimates are
 labelled estimates; every number promoted to "measured" is read back from
 live cluster output.
+
+---
+
+## 12. Errata — measured results (P2.1, 2026-10-23)
+
+`RESULT: P2_SFT_BUILD_OK kept=11628 domain=11436 refusal=192`
+
+| Metric | Measured |
+|---|---|
+| Schema snapshot | Supabase OpenAPI = **70 tables**; 13 content tables extracted (2,949 rows) via `limit`/`offset` paging — `Range:` headers proved stale on the cluster (`Content-Range` stuck at `0-999/1122`) |
+| R1 field QA | made 5,369 → **kept 4,023** |
+| R2 eligibility restatement | made 835 → **kept 761** |
+| R3 teacher grounded QA | 1,498 deduped contexts (10 tables, 1.22 M chars) + 44 BDW pages → 3 GPU slices (jobs 32641/32642/32645, 660 s wall each, resume-by-doc-id) → 4,485 pairs → **kept 3,512** |
+| R4 VLSI augment | **kept 3,140** (Phase 1 `grounded_qa_aug.jsonl`) |
+| R5 refusals | made 192 (32 topics × 6 Q-variants × 3 A-variants) → **kept 192** |
+| Gates rejected | dup 1,954 · field_fidelity 171 · number_fidelity 268 (**439** fabricated / in-fidelity candidates) |
+| Splits | train **11,049** / val **579** (5 %) |
+| Tokens (Qwen chat template, ≤1024) | min 44 · med 77 · max 229 · **sum 950,567** |
+| Output | `data/bdw_sft.jsonl` 5,525,456 B, md5 `d3943b76a7703f4ec5567159aee9097c` |
+
+Scope correction (found by reviewing R1 phrasing): recipe templates assume job
+rows, so R1/R2 run only over `JOB_TABLES = {opportunities, jobs,
+job_occurrences}`; news/learning/content tables feed R3 teacher contexts via
+`bdw_make_contexts.py` instead. Field-fidelity was likewise fixed from a
+whole-answer substring test (false-flagged every templated sentence) to
+numeric fidelity — dates/amounts in answers must exist verbatim in the row.
+
+Slice estimate unchanged: ≈0.95 M SFT tokens stays inside the 4–7 slice band;
+P2.2 profiling decides the final number.
