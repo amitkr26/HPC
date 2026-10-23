@@ -444,3 +444,49 @@ on `kill -0`.
   after the first full slice confirms the watermark.
 - Loss at 0.82 after one slice: do **not** chase train loss (O.4 lesson) —
   val loss per slice decides early stop.
+
+---
+
+## 14. Results — P2.3 LoRA SFT COMPLETE (2026-10-23)
+
+**Batch bump taken** (errata §13.3): per-device 8 × grad-accum 4 = 32
+rows/step, `max_steps = 692` (= 2 × ceil(11,049/32) — 2 exact epochs).
+Deliverables: final adapter `lora_snap/final` + `eval/p2_sft_metrics.jsonl`
+(143 lines: 138 loss, 3 val, 2 slice summaries).
+
+### 14.1 Slice chain (2 slices, 15-min regime, zero SIGKILL)
+
+| Job | Slice | Result | Steps | Train wall | Notes |
+|---|---|---|---|---|---|
+| 32742 | 1 | `SLICE_OK reason=usr1` | 0 → **474** | 780 s | fresh; mid-wall ckpt @327; USR1 save @474 + snapshot |
+| 32745 | 2 (try 1) | `FAIL resume_guard` | — | — | transformers 4.57.6 `check_torch_load_is_safe()` refuses `torch.load` on torch 2.5.1 (CVE-2025-32434) — loud failure, no 0-step run |
+| 32746 | 2 (try 2) | **`P2_SFT_COMPLETE`** | 474 → **692** | 360 s | `patch_torch_load_gate()` applied; resumed optimizer+scheduler; completed with time to spare |
+
+The CVE gate fix: the gated calls in the resume path are only
+`_load_optimizer_and_scheduler` / `_load_rng_state` loading **our own**
+`optimizer.pt`/`scheduler.pt`/`rng_state` from our previous slice minutes
+earlier, with `weights_only=True` (restricted unpickler, tensors only) on a
+trusted offline filesystem. `patch_torch_load_gate()` nulls the check across
+loaded transformers modules; safetensors model/adapter loads never touch it.
+
+Resume fidelity proof: LR continued on the same cosine (2.486e-5 @470 →
+2.386e-5 @475), train loss continuous (0.3895 @470 → 0.4454 @475), batch
+rotation kept 2/2, no re-epoch or data loss.
+
+### 14.2 Training outcome
+
+| Metric | Value |
+|---|---|
+| Train loss | 3.8235 (step 5) → **0.3192** (step 690); slice-2 mean token accuracy 0.917 |
+| **Val loss (579 rows)** | **3.7764 @step 0 → 0.4309 @474 → 0.3982 @692** (monotonic) |
+| Throughput | **19.44 rows/s · 1,587 tok/s** (+42 % rows/s vs the bs-16 profile) |
+| VRAM | peak alloc **18.51 GiB** / reserved 27.43 GiB of 80 — batch 4→8 as planned |
+| Final adapter | `lora_snap/final/adapter_model.safetensors` 338.9 MB, 392 tensors, r=32/α=64, md5 `b6a9d9d97210504b833fa9c36f748b89` |
+| Snapshots (keep 3) | `step_000474`, `step_000692`, `final` |
+| Checkpoints (keep 2) | `checkpoint-474`, `checkpoint-692` (962 MB total) |
+
+Slice count: **2** (plan said 3) — the batch bump + higher rows/s landed 692
+steps in 1,140 s of GPU train time. Every save passed the atomic
+.tmp → verify (r + 392 tensors) → rename protocol; USR1 at T-60 s never lost
+a step. Next: **P2.4** — rerun the frozen baseline with `--adapter
+lora_snap/final` and score the gates.
