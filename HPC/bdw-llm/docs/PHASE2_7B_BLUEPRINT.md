@@ -388,3 +388,59 @@ numeric fidelity — dates/amounts in answers must exist verbatim in the row.
 
 Slice estimate unchanged: ≈0.95 M SFT tokens stays inside the 4–7 slice band;
 P2.2 profiling decides the final number.
+
+---
+
+## 13. Errata — P2.2 measured results (2026-10-23)
+
+**Deliverables:** `eval/p2_baseline.json` (suite `p2-v1`, 30 prompts,
+95,660 B) + `eval/p2_profile.json`; jobs 32652 (baseline) / 32658 (profile).
+
+### 13.1 Baseline — base Qwen2.5-7B-Instruct, greedy, seed 1337 (137 s)
+
+| Metric | Baseline | Notes |
+|---|---|---|
+| ExactMatch (10) | **2/10** | zero-shot model guesses orgs/dates; strict normalized substring vs source-row ground truth |
+| EligibilityVerbatim (4) | **0/4** | never restates the circular's own eligibility text |
+| FieldFidelity (22 domain) | **17/22 prompts · 2/13 numbers** | passes come from answers that cite *no* numbers; of the 13 concrete numbers emitted, 2 exist in the source row |
+| CitationResolution | **0 cites** | base model never emits `(Ref: id)` |
+| RefusalCorrect | should-refuse **2/4** · should-answer **26/26** | answers the astrology/gemstone asks substantively instead of declining; never refuses on-domain |
+| GeneralEnglish (4) | **4/4 on-task** | zero-degradation reference for P2.4 |
+
+These are the gates post-training must beat (blueprint §7: criteria set after
+the baseline is read). The suite is val-disjoint — never trained on.
+
+### 13.2 Profiling slice — job 32661, `RESULT: P2_PROFILE_OK`
+
+Config as §6 (LoRA r=32/α=64, 7 targets, 4×4×1024, bf16+tf32+grad ckpt,
+paged_adamw_8bit): **677 steps in 793 s** before the scheduler's USR1.
+
+| Metric | Measured |
+|---|---|
+| Throughput | **0.854 steps/s · 13.66 rows/s · 1,115 useful tok/s** (81.6 tok/row) |
+| VRAM | **peak alloc 16.60 GiB · reserved 26.49 GiB** of 80 GiB — large headroom |
+| Loss | 3.878 (step 5) → **0.821** (step 675) — ≈1 epoch already moved it |
+| Wall-clock save | step 254 snapshot: 338.9 MB, 1.14 s, 392 tensors, r=32, atomic rename OK (continued training) |
+| USR1 save+kill | `[signal] 10 received` → step 677 snapshot in 1.09 s → `RESULT` → exit **rc=0**, no SIGKILL, no data loss |
+| Atomicity | save to `.tmp` → verify adapter_config r + 392 safetensors tensors → `os.rename` |
+
+Two bugs found and fixed en route (both committed): the trainer callback must
+subclass `TrainerCallback` (job 32653), and bash's `wait` returns
+`128+signo` the instant a trap fires — without a re-wait loop the script exited
+mid-save and Slurm tore python down (job 32654); `p2_profile.slurm` now loops
+on `kill -0`.
+
+### 13.3 Recomputed slice plan (supersedes §9 estimate)
+
+- 1 epoch = 11,049 rows ÷ 13.656 rows/s ≈ **809 s**; usable train window per
+  slice = **793 s** (measured, USR1@60 s) ⇒ 2 epochs = 1,618 s
+  → **3 slices ≈ 45 min wall** for 2 epochs + val eval + full ckpt saves
+  (was: 4–7 slices). One epoch in reserve if val plateaus later.
+- P2.3 must set `max_steps = ceil(2 × 11049 / 16) = 1382` so the cosine
+  schedule reaches 1e-4 and decays (the profile's `max_steps=100000` only
+  reached 2.2e-5 — fine for profiling, wrong for training).
+- VRAM headroom allows `per_device_train_batch_size` 4→8 (32 rows/step,
+  ≈405 s/epoch, **2 slices**); P2.3 starts at 4 (conservative) and may bump
+  after the first full slice confirms the watermark.
+- Loss at 0.82 after one slice: do **not** chase train loss (O.4 lesson) —
+  val loss per slice decides early stop.

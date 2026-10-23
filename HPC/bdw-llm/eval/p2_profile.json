@@ -1,0 +1,44 @@
+{
+ "reason": "usr1",
+ "steps": 677,
+ "elapsed_s": 793.2,
+ "train_s": 793.2,
+ "steps_per_s": 0.854,
+ "rows": 10832,
+ "rows_per_s": 13.656,
+ "mean_tokens_per_row": 81.6,
+ "tok_s": 1114.7,
+ "peak_alloc_gib": 16.6,
+ "peak_reserved_gib": 26.49,
+ "loss_first": {
+  "step": 5,
+  "loss": 3.878,
+  "lr": 1.3333333333333334e-07
+ },
+ "loss_last": {
+  "step": 675,
+  "loss": 0.8206,
+  "lr": 2.2466666666666666e-05
+ },
+ "save": "/home/tutor/3ioip3lt/bdw-llm/lora_profile/step_000677",
+ "lora": {
+  "r": 32,
+  "alpha": 64,
+  "targets": [
+   "q_proj",
+   "k_proj",
+   "v_proj",
+   "o_proj",
+   "gate_proj",
+   "up_proj",
+   "down_proj"
+  ],
+  "tensors": 392
+ },
+ "batch": {
+  "per_device": 4,
+  "grad_accum": 4,
+  "seq": 1024,
+  "effective_rows": 16
+ }
+}
