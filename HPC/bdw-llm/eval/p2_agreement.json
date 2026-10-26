@@ -1,0 +1,246 @@
+{
+ "suite": "p2-v2",
+ "method": "teacher-forced top-1 agreement: llama.cpp argmax vs merged-bf16 greedy token at every answer position (teacher-forced, not decode-path)",
+ "pair": {
+  "a": "merged/bdw-7b-sft (bf16, transformers)",
+  "b": "merged/bdw-7b-sft-Q4_K_M.gguf (llama.cpp)"
+ },
+ "llama_cpp_commit": "d854d98bae598388ecea1ed84396587e5edc326d",
+ "gguf": {
+  "path": "/home/tutor/3ioip3lt/bdw-llm/merged/bdw-7b-sft-Q4_K_M.gguf",
+  "bytes": 4683073696,
+  "md5": "c681fafe042ca8277fc08c526cc6de8b"
+ },
+ "n_prompts": 30,
+ "positions": 1259,
+ "agree": 1219,
+ "rate": 0.968229,
+ "identical_prompts": 17,
+ "decode_errors": 0,
+ "thresholds": {
+  "pass": 0.9,
+  "marginal": 0.85
+ },
+ "verdict": "PASS_SERVE_Q4",
+ "tool_summary": "PROMPTS=30 POSITIONS=1259 AGREE=1219 IDENTICAL=17 RATE=0.968229",
+ "per_prompt": [
+  {
+   "pid": "em_01",
+   "agree": 43,
+   "total": 43,
+   "first_div": -1
+  },
+  {
+   "pid": "em_02",
+   "agree": 22,
+   "total": 22,
+   "first_div": -1
+  },
+  {
+   "pid": "em_03",
+   "agree": 13,
+   "total": 14,
+   "first_div": 12
+  },
+  {
+   "pid": "em_04",
+   "agree": 31,
+   "total": 31,
+   "first_div": -1
+  },
+  {
+   "pid": "em_05",
+   "agree": 27,
+   "total": 27,
+   "first_div": -1
+  },
+  {
+   "pid": "em_06",
+   "agree": 31,
+   "total": 31,
+   "first_div": -1
+  },
+  {
+   "pid": "em_07",
+   "agree": 37,
+   "total": 37,
+   "first_div": -1
+  },
+  {
+   "pid": "em_08",
+   "agree": 21,
+   "total": 21,
+   "first_div": -1
+  },
+  {
+   "pid": "em_09",
+   "agree": 28,
+   "total": 28,
+   "first_div": -1
+  },
+  {
+   "pid": "em_10",
+   "agree": 26,
+   "total": 27,
+   "first_div": 20
+  },
+  {
+   "pid": "cc_01",
+   "agree": 20,
+   "total": 20,
+   "first_div": -1
+  },
+  {
+   "pid": "cc_02",
+   "agree": 23,
+   "total": 24,
+   "first_div": 12
+  },
+  {
+   "pid": "cc_03",
+   "agree": 33,
+   "total": 34,
+   "first_div": 8
+  },
+  {
+   "pid": "cc_04",
+   "agree": 24,
+   "total": 24,
+   "first_div": -1
+  },
+  {
+   "pid": "cc_05",
+   "agree": 15,
+   "total": 16,
+   "first_div": 12
+  },
+  {
+   "pid": "cc_06",
+   "agree": 48,
+   "total": 52,
+   "first_div": 17
+  },
+  {
+   "pid": "cc_07",
+   "agree": 63,
+   "total": 67,
+   "first_div": 7
+  },
+  {
+   "pid": "cc_08",
+   "agree": 20,
+   "total": 26,
+   "first_div": 3
+  },
+  {
+   "pid": "el_01",
+   "agree": 82,
+   "total": 82,
+   "first_div": -1
+  },
+  {
+   "pid": "el_02",
+   "agree": 96,
+   "total": 96,
+   "first_div": -1
+  },
+  {
+   "pid": "el_03",
+   "agree": 88,
+   "total": 89,
+   "first_div": 38
+  },
+  {
+   "pid": "el_04",
+   "agree": 93,
+   "total": 93,
+   "first_div": -1
+  },
+  {
+   "pid": "rf_01",
+   "agree": 50,
+   "total": 50,
+   "first_div": -1
+  },
+  {
+   "pid": "rf_02",
+   "agree": 38,
+   "total": 38,
+   "first_div": -1
+  },
+  {
+   "pid": "rf_03",
+   "agree": 53,
+   "total": 53,
+   "first_div": -1
+  },
+  {
+   "pid": "rf_04",
+   "agree": 53,
+   "total": 53,
+   "first_div": -1
+  },
+  {
+   "pid": "ge_01",
+   "agree": 26,
+   "total": 32,
+   "first_div": 3
+  },
+  {
+   "pid": "ge_02",
+   "agree": 47,
+   "total": 51,
+   "first_div": 1
+  },
+  {
+   "pid": "ge_03",
+   "agree": 51,
+   "total": 60,
+   "first_div": 17
+  },
+  {
+   "pid": "ge_04",
+   "agree": 17,
+   "total": 18,
+   "first_div": 0
+  }
+ ],
+ "merged_gates": {
+  "ExactMatch": {
+   "n": 10,
+   "hit": 6
+  },
+  "EligibilityVerbatim": {
+   "n": 4,
+   "hit": 4
+  },
+  "FieldFidelity": {
+   "n": 22,
+   "pass": 20,
+   "nums": 17,
+   "nums_ok": 14
+  },
+  "CitationResolution": {
+   "prompts": 4,
+   "cites": 4,
+   "resolved": 4
+  },
+  "RefusalCorrect": {
+   "should_refuse": {
+    "n": 4,
+    "ok": 4
+   },
+   "should_answer": {
+    "n": 26,
+    "ok": 26
+   }
+  },
+  "GeneralEnglish": {
+   "n": 4,
+   "on_task": 4
+  }
+ },
+ "merged_equals_sft_v2_outputs": 24,
+ "elapsed_s": 207.4,
+ "top1_tool": "/home/tutor/3ioip3lt/bdw-llm/llama_cpp/build/bin/top1agree"
+}

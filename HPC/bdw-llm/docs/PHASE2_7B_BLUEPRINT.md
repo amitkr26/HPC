@@ -645,3 +645,88 @@ md5 `38fbff352b80e5d5f4e50e2690a67a50`); the repo copy was never touched.
 
 **Verdict: green.** P2.5 complete — next the ship-gate writeup
 (`PHASE2_EVAL.md` A/B, StyleRubric, merged `bdw-7b-sft/` package).
+
+---
+
+## 17. Results — P2.5 GGUF export + top-1 agreement (2026-10-26)
+
+Closes §9's P2.5 row: Q4_K_M GGUF, agreement report, handoff README
+(`docs/HANDOFF.md`), tag `v2.0-bdw7b-sft`.
+
+### 17.1 Getting llama.cpp without a network (site egress outage)
+
+Login-node egress was **down for the whole session** — no DNS
+(`resolv.conf` nameserver answers nothing), no direct TCP/443, UDP/53 to
+public resolvers all timeout, ping 100% loss; Phase 0 audit §6 had it up on
+Oct 13, so this is a site outage, not a config change. Workaround: pinned
+llama.cpp master tarball at commit
+`d854d98bae598388ecea1ed84396587e5edc326d` (0.7.0-dev, 38.6 MB) and the
+`cmake-3.31.6` manylinux wheel (26.8 MB) were fetched on the *workstation*
+(has internet) and pushed via **SFTP** (`open_sftp()` works even though the
+shell egress path does not). CMake installed into `venv_p2` offline
+(`--no-index`); the bundled `gguf-py` is importable straight from the
+source tree, so no `pip install gguf` was needed.
+
+### 17.2 Where C++ can be built here (probe jobs 33495 + 33496)
+
+Compute nodes **cannot compile at all**: both the system gcc 8.5 and
+`/home/apps/gcc-12.3` die on `#include <stdint.h>` — `include_next` finds no
+`/usr/include/stdint.h` (no glibc headers installed on rdgpu). Additionally
+the login's CMake defaults `CXX` to `/usr/bin/c++` (g++ 8), whose
+`std::filesystem` lives in `-lstdc++fs`; linking a mixed-toolchain binary
+produces `__cxx11::path::parent_path()` undefined references that
+`-DCMAKE_EXE_LINKER_FLAGS=-lstdc++fs` cannot fix (flag lands before the
+`.so` inputs). **Resolution: build on the login node with the explicit
+pair** `-DCMAKE_C_COMPILER=/home/apps/gcc-12.3/bin/gcc
+-DCMAKE_CXX_COMPILER=/home/apps/gcc-12.3/bin/g++`, **plus
+`-DGGML_NATIVE=OFF`** — non-portable `-march=native` is disabled while
+ggml's runtime CPU dispatch still picks the best kernel, and the gcc-12
+`libstdc++` (6.0.30) resolves everywhere (it is already in the system
+ldconfig path). Result: clean configure + build in **126 s at `-j4`**,
+`RESULT: P2_GGUF_BUILD_OK`, binaries smoke-tested on *both* login and
+compute (`llama-quantize --version`, `top1agree` usage). Recipe committed as
+`scripts/p2_gguf_build.slurm` (with the executed flags inline).
+
+### 17.3 Export — job 33497 (`scripts/p2_gguf_convert.slurm`)
+
+`convert_hf_to_gguf.py --outtype f16` (339 tensors) then `llama-quantize …
+Q4_K_M`, both idempotent behind `test -s` guards; 5 m 19 s wall:
+
+| file | bytes | md5 |
+|---|---|---|
+| `merged/bdw-7b-sft-f16.gguf` | 15,237,853,344 | `f2dfcb4de60e6e036c86bc6c16bca02c` |
+| `merged/bdw-7b-sft-Q4_K_M.gguf` | 4,683,073,696 (4.91 BPW) | `c681fafe042ca8277fc08c526cc6de8b` |
+
+4.91 BPW is the canonical Q4_K_M ratio (16.00 → 4.91); quantizer log shows
+the expected q4_K/q6_K mix across all 339 tensors. `RESULT:
+P2_GGUF_QUANT_OK`; md5s in `merged/gguf_md5.txt`, mirrored at
+`docs/bdw_gguf_md5_manifest.txt`.
+
+### 17.4 Agreement — job 33498 (`src/p2_agreement.py` + `tools/top1agree.cpp`)
+
+Teacher-forced top-1 (Phase-0 `export_test.py` metric, re-pointed at the
+quantisation pair): merged-bf16 greedy trajectories over the frozen suite
+p2-v2, then a custom tool linked against the pinned llama.cpp reports
+Q4_K_M's argmax at each answer position under the same prefix — one
+`llama_decode` per prompt, 0 decode errors. Thresholds declared before the
+run: PASS ≥ 0.90, MARGINAL ≥ 0.85, else serve bf16.
+
+| | |
+|---|---|
+| positions | 1,259 across 30 prompts |
+| agree | **1,219 → rate 0.9682** |
+| identical trajectories | 17/30 |
+| **verdict** | **`PASS_SERVE_Q4`** |
+| wall | 207 s (top1agree 135 s, 4 threads) |
+
+Folded into the same pass: merged-bf16 re-scored with the exact §16.4 gate
+code reproduces the scorecard bit-for-bit (EM 6/10, elig 4/4, cites 4/4,
+fidelity 20/22, refuse 4/4 + 26/26, GE 4/4) and is string-identical to
+base+adapter outputs on 24/30 prompts — merge correctness, not just
+quantisation, checked in one job. Evidence `eval/p2_agreement.json`
+(3,786 B, md5 `1da97da336165267fa1a739c9d4f4c78`).
+
+**Verdict: green.** Q4_K_M is the serving target; bf16 stays as fallback
+(per the pre-declared rule). Owner sign-off on the Zone 3 placement
+(`BDW_INTEGRATION.md` S2) is the handoff-review item; `docs/HANDOFF.md`
+carries inventory, run recipes and limitations.
