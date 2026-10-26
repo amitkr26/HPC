@@ -490,3 +490,60 @@ steps in 1,140 s of GPU train time. Every save passed the atomic
 .tmp → verify (r + 392 tensors) → rename protocol; USR1 at T-60 s never lost
 a step. Next: **P2.4** — rerun the frozen baseline with `--adapter
 lora_snap/final` and score the gates.
+
+---
+
+## 15. Results — P2.4 post-SFT evaluation (2026-10-26)
+
+Job **33489** (`RESULT: P2_BASELINE_OK prompts=30 … elapsed=104s`), run as
+`sbatch scripts/p2_baseline.slurm --adapter ~/bdw-llm/lora_snap/final
+--out …/eval/p2_post_sft.json` — the slurm now forwards `"$@"` so the frozen
+harness serves both pre- and post-SFT scoring. Identical suite (`p2-v1`),
+greedy, seed 1337, same scoring code. Evidence: `eval/p2_post_sft.json`
+(74,850 B).
+
+### 15.1 Gate scorecard
+
+| Metric | Base | Post-SFT | Δ | Gate |
+|---|---|---|---|---|
+| ExactMatch | 2/10 | **5/10** | +3 | **PASS** (improvement target) |
+| EligibilityVerbatim | 0/4 | **3/4** | +3 | improved |
+| FieldFidelity prompts | 17/22 | 14/22 | −3 | **FAIL** (≥ baseline) |
+| FieldFidelity numbers | 2/13 | **8/16** | +6 | improved sub-metric |
+| CitationResolution | 0 cites | 4 prompts cited, 0/4 resolve | emission +4 | partial |
+| Refusal should-refuse | 2/4 | **4/4** | +2 | **PASS** |
+| Refusal should-answer | 26/26 | 25/26 | −1 | FAIL (ge_02) |
+| GeneralEnglish | 4/4 | 3/4 | −1 | **FAIL** (zero-degradation) |
+
+**Verdict: not green.** Answer quality, verbatim extraction and refusal
+behaviour all improved; the fidelity and general-English gates regressed.
+
+### 15.2 Failure taxonomy
+
+1. **Citation suffix hallucination (4× eligibility).** Post outputs append
+   `(Ref: <3 real UUID groups>-<12 fake all-digit chars>)` e.g.
+   `2164378f-9b0d-4a2c-b1e0-272221111111` — correct-looking prefix, invented
+   last group → 0/4 resolve; each invented digit run also trips
+   FieldFidelity (4 of the 8 post failures).
+2. **Fabricated small numbers:** em_09/em_10 output `0-2`, cc_05 `1985`
+   (neither in the fidelity source text; base emitted no numbers there).
+3. **Over-refusal bleed:** ge_02 (polite meeting-decline email) answered
+   with the R5 refusal script — *"I can't help with personal questions --
+   BerojgarDegreeWala focuses on…"* — the single should-answer failure and
+   the whole GE regression.
+
+Fixed vs base: em_01/em_07 salary-range hallucinations gone (fidelity pass),
+eligibility answers now quote the verbatim criteria (base only gave generic
+advice), should-refuse perfect 4/4. Remaining EM misses: em_01, em_03,
+em_07, em_09, em_10.
+
+### 15.3 Remediation candidates (P2.5)
+
+1. **Anti-over-refusal:** keep R5 rows but pair them with benign-personal
+   counter-examples (ge_02-family prompts with on-task answers) or down-
+   weight R5 loss, then re-eval.
+2. **Citation copy-fidelity:** ensure R2/R3/R4 SFT answers carry the full
+   qid/row-id so the last UUID group is copyable from context; optionally
+   score nearest-real-id prefix match as a secondary metric.
+3. **Number fabrication:** val loss 0.398 vs train 0.319 — mild gap; test
+   3rd slice/epoch or loss-masked citation-heavy rows before raising LR.

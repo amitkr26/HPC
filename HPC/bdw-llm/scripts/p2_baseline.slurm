@@ -20,7 +20,10 @@ ls -lh $HOME/bdw-llm/data/bdw_sft.jsonl
 echo
 nvidia-smi -L
 echo
-python $HOME/bdw-llm/src/p2_baseline.py
+# args are forwarded, e.g.:
+#   sbatch p2_baseline.slurm --adapter ~/bdw-llm/lora_snap/final \
+#                            --out ~/bdw-llm/eval/p2_post_sft.json
+python $HOME/bdw-llm/src/p2_baseline.py "$@"
 rc=$?
 echo "baseline rc=$rc"
 exit $rc
