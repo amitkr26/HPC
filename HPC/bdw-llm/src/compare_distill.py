@@ -69,14 +69,13 @@ def ask_one(model, tok, bos, eos, question, args):
     ids = tok.encode(prompt, add_special_tokens=False).ids
     torch.manual_seed(args.seed)
     t0 = time.time()
-    out = generate_ids(model, list(ids), args.max_new_tokens,
-                       args.temperature, 0, eos,          # top_k 0 -> pure argmax
-                       repetition_penalty=args.repetition_penalty,
-                       penalize_prompt=False, loop_stop=8)
+    out, hit_eos = generate_ids(model, list(ids), args.max_new_tokens,
+                                args.temperature, 0, eos,  # top_k 0 -> argmax
+                                repetition_penalty=args.repetition_penalty,
+                                penalize_prompt=False, loop_stop=8)
     dt = time.time() - t0
     new_ids = out[len(ids):]
     text = tok.decode(new_ids, skip_special_tokens=True).strip()
-    hit_eos = bool(new_ids) and out[-1] == eos
     return text, len(new_ids), dt, hit_eos, ids[:1] == [bos]
 
 

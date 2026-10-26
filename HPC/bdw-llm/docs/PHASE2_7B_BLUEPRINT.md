@@ -289,6 +289,10 @@ Instruct zero-shot` vs `7B BDW-SFT`) → `docs/PHASE2_EVAL.md` with
 representative transcripts. **Known bug to fix while in there:** the latent
 `hit_eos` truncation bug in `compare_distill.py` / `chat_with_rag.ask` (noted
 in Stage O) skews truncation reporting — small, in-scope fix for P2.4.
+**Fixed 2026-10-26:** `generate_ids` now returns `(ids, hit_eos)` with a
+real flag set when `nxt == eos_id` — the old `out[-1] == eos` was always
+False because the decode loop breaks *before* appending eos, so truncation
+was reported as max-new in every run.
 
 ---
 

@@ -211,9 +211,12 @@ def generate_ids(model, ids, max_new_tokens, temperature, top_k, eos_id,
     tokens already emitted are divided by `repetition_penalty`. By default
     only the generated continuation is penalised -- the retrieved context
     is left alone so the model can still reuse wording from it.
+    Returns (token_ids, hit_eos): hit_eos is True only when generation ended
+    by emitting eos_id -- never for max_new_tokens or the loop guard.
     """
     model.eval()
     generated = []
+    hit_eos = False
     for _ in range(max_new_tokens):
         idx = torch.tensor([ids], dtype=torch.long)
         idx_cond = idx[:, -model.cfg.seq_len:]
@@ -233,13 +236,14 @@ def generate_ids(model, ids, max_new_tokens, temperature, top_k, eos_id,
         probs = F.softmax(logits, dim=-1)
         nxt = int(torch.multinomial(probs, 1).item())
         if nxt == eos_id:
+            hit_eos = True
             break
         ids.append(nxt)
         generated.append(nxt)
         if loop_stop and len(generated) >= 2 * loop_stop:
             if generated[-loop_stop:] == generated[-2 * loop_stop:-loop_stop]:
                 break
-    return ids
+    return ids, hit_eos
 
 
 def load_model(ckpt, device):
@@ -285,17 +289,17 @@ def ask(model, tok, bos, eos, question, args, use_rag=True):
         print("[warn] prompt does not start with <|bos|>")
 
     t0 = time.time()
-    out_ids = generate_ids(model, list(ids), args.max_new_tokens,
-                           args.temperature, args.top_k_sample, eos,
-                           repetition_penalty=args.repetition_penalty,
-                           penalize_prompt=args.penalize_prompt,
-                           loop_stop=args.loop_stop)
+    out_ids, hit_eos = generate_ids(model, list(ids), args.max_new_tokens,
+                                    args.temperature, args.top_k_sample, eos,
+                                    repetition_penalty=args.repetition_penalty,
+                                    penalize_prompt=args.penalize_prompt,
+                                    loop_stop=args.loop_stop)
     dt = time.time() - t0
     new_ids = out_ids[len(ids):]
     text = tok.decode(new_ids, skip_special_tokens=True)
     print("[gen] %d new tokens in %.1fs (%.1f tok/s)  hit_eos=%s"
           % (len(new_ids), dt, len(new_ids) / max(dt, 1e-9),
-             bool(new_ids) and out_ids[-1] == eos))
+             hit_eos))
     if args.show_specials:
         print("[gen] raw ids  : %s" % new_ids)
         print("[gen] raw text : %r" % tok.decode(new_ids, skip_special_tokens=False))
