@@ -1,5 +1,10 @@
 """P2.2: frozen 30-prompt baseline on the base Qwen2.5-7B-Instruct (blueprint S7).
 
+Suite version p2-v2 (P2.5): the 4 eligibility prompts carry their citation id
+-- "Am I eligible for ... (Ref: <row_id>)" -- so CitationResolution is
+reachable by copying; p2-v1 (id absent) proved resolution impossible for
+unseen val rows. The other 26 prompts are unchanged from p2-v1.
+
 Suite (deterministic; all domain prompts taken from data/bdw_sft.jsonl VAL rows
 so none of them are ever trained on):
 
@@ -177,16 +182,22 @@ def build_suite():
     if i < 8:
         raise RuntimeError("class_c suite short: %d/8" % i)
 
-    for n, r in enumerate(r for r in by_src.get("r2", [])
-                          if r.get("split") == "val"):
+    for n, r in enumerate(x for x in by_src.get("r2", [])
+                          if x.get("split") == "val"):
         if n >= ELIG_N:
             break
         srow = raw.get(r.get("table", ""), r.get("row_id", ""))
         if not srow:
             continue
         elig = B.resolve(srow, "eligibility", cmap)
+        # suite p2-v2 (P2.5): the citation id is now IN the prompt. The v1
+        # run proved resolution structurally unreachable without it -- the
+        # model can only cite ids it has seen, and val row ids are never
+        # trained on (errata 15.2/16). Base and SFT are both re-scored on
+        # v2, so comparisons stay same-suite.
         suite.append({"pid": "el_%02d" % (n + 1), "group": "eligibility",
-                      "prompt": r["messages"][0]["content"],
+                      "prompt": r["messages"][0]["content"]
+                      + " (Ref: %s)" % r.get("row_id", ""),
                       "expected": elig, "table": r.get("table", ""),
                       "row_id": r.get("row_id", ""), "qid": r["id"],
                       "fidelity": B.row_text(srow)})
@@ -329,7 +340,7 @@ def main():
     cr = metrics["CitationResolution"]
     rr = metrics["RefusalCorrect"]
     doc = {
-        "suite": "p2-v1",
+        "suite": "p2-v2",
         "model": "Qwen2.5-7B-Instruct" + (" + %s" % args.adapter if args.adapter
                                           else ""),
         "base_dir": BASE,

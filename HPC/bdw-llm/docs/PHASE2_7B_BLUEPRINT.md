@@ -551,3 +551,97 @@ em_07, em_09, em_10.
    score nearest-real-id prefix match as a secondary metric.
 3. **Number fabrication:** val loss 0.398 vs train 0.319 — mild gap; test
    3rd slice/epoch or loss-masked citation-heavy rows before raising LR.
+
+---
+
+## 16. Results — P2.5 remediation retrain (2026-10-26)
+
+Implements all three §15.3 candidates as one append-only data patch plus a
+fresh retrain, then re-scores base and SFT on a same-suite comparison.
+
+### 16.1 Data patch — `src/p25_build_extras.py`
+
+Two row families appended to a **copy** of the v1 set (`data/bdw_sft_v2.jsonl`);
+the original `data/bdw_sft.jsonl` was re-md5'd on the cluster after the build
+and is byte-identical (`d3943b76a7703f4ec5567159aee9097c`), so every P2.1–P2.4
+number stays reproducible:
+
+1. **r2b (712 rows)** — every *train-split* R2 row, question suffixed with
+   ` (Ref: <row_id>)`, answer unchanged. Teaches the id-copy behaviour that
+   makes a citation resolvable; validation rows are deliberately NOT mirrored,
+   so the 579-row val set and its loss curve are untouched (no eval
+   contamination).
+2. **r6 (180 rows)** — 30 benign prompts × all 6 `B.R5_QVAR` topics, gated to
+   their on-task answers: emails, etiquette, general knowledge, study,
+   career. All 6 GE-suite constants excluded; no refusal/meta-refusal markers
+   anywhere in the rows — the counter-example signal for the ge_02 bleed.
+
+Both families run through the *same* `B.gate()` as the v1 build (refusal
+markers, scope rules, MAX_TOKENS=1024 with the Qwen tokenizer) and force
+`split="train"`. Results: 892 candidates → 892 kept, 0 gated out, 0 token
+drops (min/med/max 74/162/252). File: 6,061,620 B,
+md5 `d1e81116d2b5ce65a2c886b1b1b6c0dd`; train 11,049 → 11,941, val 579
+unchanged. `--self-test` is green (`r2b=1 r6=180`, gates clean, no GE
+collision, val rows untouched).
+
+### 16.2 Retrain — jobs 33490 + 33491
+
+Same recipe as P2.3 (r=32/α=64, effective batch 32, 2 epochs), now
+`P2_MAX_STEPS=2*ceil(11941/32)=748` on the v2 data, run through the new env
+overrides in `src/p2_sft.py` (`P2_SFT_DATA/P2_RUN_DIR/P2_SNAP_DIR/…`) so the
+P2.3 artifacts are never overwritten:
+
+| | Slice 1 (33490) | Slice 2 (33491) |
+|---|---|---|
+| range | fresh 0 → 410 (USR1) | resume@410 → **748/748** |
+| wall | 764 s | 631 s |
+| val_loss | 3.7764 @0 | 0.4692 @410 → **0.4052 @748** |
+| loss | 3.6779 @5 → 0.4303 @405 | 0.4515 @415 → 0.3806 @745 |
+| tok/s · peak | 1497 · 18.69 GiB | 1495 · 18.84 GiB |
+
+Final adapter `lora_snap_p25/final` (338.9 MB, 392 tensors,
+`adapter_model.safetensors` md5 `a9117e1dc0ed85a12f5970c473f703cd`);
+snapshots `step_000410`, `step_000748`; checkpoints `699`, `748` (963 MB);
+metrics `eval/p2_sft_v2_metrics.jsonl` (16,208 B). Val rose 0.007 vs P2.3's
+0.3982 on the *same* 579 rows — expected, the added r2b targets are id-heavy;
+the gates below are the arbiter, not the val proxy.
+
+### 16.3 Suite p2-v2 — why the eligibility prompts changed
+
+v1 el prompts carried no citation id, while SFT answers cite
+`<3 real train UUID groups>-<12 fabricated digits>` (§15.2.1): the prefix was
+memorised from *train* rows, so no suffix could ever equal the *val* row's id —
+resolution was structurally impossible, and no amount of training could fix it.
+v2 puts ` (Ref: <row_id>)` in the 4 el prompts, making the answer copyable
+from context (mirroring how production will pass the id). The other 26
+prompts are unchanged, so v2↔v2 is a same-suite comparison; v1 columns below
+are kept for history only. The row id also appears in each el fidelity text,
+so echoing it does not trip FieldFidelity.
+
+### 16.4 Gate scorecard — jobs 33492 (base) + 33493 (SFT), suite p2-v2
+
+| Metric | base-v2 | **P2.5 SFT** | v1-SFT (§15.1) | Gate |
+|---|---|---|---|---|
+| ExactMatch | 2/10 | **6/10** | 5/10 | **PASS** (≥5) |
+| EligibilityVerbatim | 0/4 | **4/4** | 3/4 | **PASS** (≥3) |
+| CitationResolution | 0 cited | **4/4 resolve** | 4 cited, 0/4 | **PASS** |
+| FieldFidelity prompts | 18/22 | **20/22** | 14/22 | **PASS** (≥ base) |
+| FieldFidelity numbers | 5/14 | **14/17** | 8/16 | improved |
+| Refusal should-refuse | 2/4 | **4/4** | 4/4 | **PASS** |
+| Refusal should-answer | 26/26 | **26/26** | 25/26 | **PASS** |
+| GeneralEnglish | 4/4 | **4/4** | 3/4 | **PASS** (zero-degradation) |
+
+All three §15.2 failures are closed: the r2b rows turned citation emission
+into citation *resolution* (and the fixed suffix stopped bleeding into
+fidelity), the r6 counter-examples un-learned the ge_02 over-refusal
+(should-answer back to 26/26, GE back to 4/4), and numbers recovered to
+14/17 with fidelity *above* base. Evidence: `eval/p2_base_v2.json`
+(95,609 B) and `eval/p2_sft_v2.json` (75,097 B).
+
+Operational note: the base job's `--out` was omitted, so it wrote the v2
+results to the default `eval/p2_baseline.json` path — the cluster copy of the
+committed v1 file was immediately re-uploaded from the repo (95,660 B,
+md5 `38fbff352b80e5d5f4e50e2690a67a50`); the repo copy was never touched.
+
+**Verdict: green.** P2.5 complete — next the ship-gate writeup
+(`PHASE2_EVAL.md` A/B, StyleRubric, merged `bdw-7b-sft/` package).

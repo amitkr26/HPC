@@ -18,7 +18,7 @@ echo "which py  : $(which python)"
 echo "CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES:-unset}"
 echo "signal    : B:USR1@60 (python checkpoints atomically and exits at T-60s)"
 echo
-ls -lh $HOME/bdw-llm/data/bdw_sft.jsonl
+ls -lh ${P2_SFT_DATA:-$HOME/bdw-llm/data/bdw_sft.jsonl}
 echo
 nvidia-smi -L
 echo

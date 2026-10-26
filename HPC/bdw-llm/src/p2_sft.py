@@ -34,19 +34,25 @@ import traceback
 from transformers import TrainerCallback
 
 ROOT = os.path.expanduser("~/bdw-llm")
-SFT = os.path.join(ROOT, "data/bdw_sft.jsonl")
+# P2.5 re-run overrides (env only; defaults reproduce the P2.3 run exactly):
+#   P2_SFT_DATA, P2_RUN_DIR, P2_SNAP_DIR, P2_METRICS, P2_PROGRESS, P2_MAX_STEPS
+SFT = os.environ.get("P2_SFT_DATA",
+                     os.path.join(ROOT, "data/bdw_sft.jsonl"))
 BASE = os.path.join(ROOT, "teacher_model_7b")
-RUN = os.path.join(ROOT, "sft_runs/p2_sft")
-SNAP = os.path.join(ROOT, "lora_snap")
-METRICS = os.path.join(ROOT, "logs/p2_sft_metrics.jsonl")
-PROGRESS = os.path.join(ROOT, "logs/p2_sft_progress.json")
+RUN = os.environ.get("P2_RUN_DIR", os.path.join(ROOT, "sft_runs/p2_sft"))
+SNAP = os.environ.get("P2_SNAP_DIR", os.path.join(ROOT, "lora_snap"))
+METRICS = os.environ.get("P2_METRICS",
+                         os.path.join(ROOT, "logs/p2_sft_metrics.jsonl"))
+PROGRESS = os.environ.get("P2_PROGRESS",
+                          os.path.join(ROOT, "logs/p2_sft_progress.json"))
 TARGETS = ["q_proj", "k_proj", "v_proj", "o_proj",
            "gate_proj", "up_proj", "down_proj"]
 LORA_R, LORA_ALPHA = 32, 64
 EXPECTED_LORA_TENSORS = 392   # 28 layers x 7 targets x (A + B)
 PER_DEVICE, GRAD_ACCUM = 8, 4
 EFFECTIVE = PER_DEVICE * GRAD_ACCUM          # 32 rows/step
-MAX_STEPS = 692                              # 2 epochs: 2 * ceil(11049/32)
+MAX_STEPS = int(os.environ.get(
+    "P2_MAX_STEPS", "692"))                  # 2 epochs: 2 * ceil(11049/32)
 MID_SAVE_S = 540
 WALL_ALARM_S = 870
 DEADLINE_S = 895
