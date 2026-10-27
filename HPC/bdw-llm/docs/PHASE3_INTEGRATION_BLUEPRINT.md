@@ -104,3 +104,60 @@ CPU-first until queue depth proves otherwise — High); 7B decode speed on
 8 vCPU may land under the §6.2 latency budget for class C (the P3.2
 measurement decides frontier-fallback thresholds; a GPU is bought by
 queue depth, not by diagram — §5.4 instinct kept).
+
+---
+
+## 7. P3.2 preliminary measurement — login node (2026-10-27)
+
+`llama-server` rebuilt on the login node with `-DLLAMA_BUILD_SERVER=ON`
+added to the existing P2.5 build tree (incremental, same
+gcc-12.3 + `-DGGML_NATIVE=OFF` flags, `RESULT: P3_SERVER_BUILD_OK`);
+binary self-reports `0.7.0-dev f7872cd` — the pinned tarball `d854d98`
+extract carries no `.git`, so the CI build stamp differs; the API was
+verified live, matching the P2.5 `top1agree` tree.
+
+Setup: direct login run (no sbatch), 4 threads / batch 4, ctx 2048,
+`merged/bdw-7b-sft-Q4_K_M.gguf`, RSS **7.76 GB resident** (warm — the host
+had 141 GB page-cache from P2.5; a bare VM's first cold load adds a
+disk-read delay to record at deploy time). 30 suite prompts, exact Qwen chat
+template applied by the same transformers path as p2-v2, greedy, seed 1337.
+All timings below are server-reported (`/completion` stream stop-chunk):
+`eval/p3_zone3_latency.json` (+ `p3_zone3_gen.jsonl` for P3.5).
+
+| Metric | Value | Notes |
+|---|---|---|
+| First-token latency (TTFT) | **p50 1.01 s, p95 2.89 s** | prefill-dominated; el prompts (68–72 ctx tok) worst |
+| Decode throughput | **7.20 tok/s mean** (7.08–7.27 across 30) | ±1.3% — flat, no stragglers |
+| Prefill throughput | 18.99 tok/s p50 | 4 threads |
+| Prompt / predicted tokens | mean 26.9 / 43.0, max 72 / 96 | suite answers 16–96 tok |
+| Resident RAM | 7.76 GB | + KV for ctx 2048 included |
+
+Comparability row: the 28 M baseline measured **14–55 tok/s decode** on this
+same host class and thread count (`BDW_INTEGRATION.md` §2.4) — the 7B
+Q4_K_M is ~2–7.6× slower but every run kept within one request-stream, and
+the suite's typical 43-token answer completes in ≈7.1 s total (TTFT +
+decode). The **96-token worst case (el_02) lands at ≈16.3 s** — past the
+§6 15 s Zone-3 cap — so the gateway shape that fits: **(a)** 8-vCPU host
+class target (expect roughly proportional decode; measured on the actual
+host in P3.2 before it is chosen), **(b)** `n_predict` cap ≈ 96–128 as the
+initial gate with abstention/`/opportunities` link on overflow, and
+**(c)** streaming from first token — TTFT ≤ 2.9 s reads as responsive UX
+even when total generation runs longer. Frontier fallback (§6) stays for
+classes E/F regardless of choice.
+
+Behaviour sanity: outputs open exactly like the teacher-forced agree run
+(`em_01` prefix match, 43/43 identical positions there), refusal prompts
+render in brand voice, el prompts emit citations — the decode path reproduces
+the SFT behaviour on the serve target, qualitatively consistent with the
+0.9682 agreement.
+
+Ops lesson (recorded for P3.3): the native `/completion` API takes the
+`stream` flag **in the request body**; setting only the HTTP client's
+streaming flag yields a full-JSON non-SSE response that a naive
+line-parser reads as nothing — the first attempt silently empty (caught by
+the last-chunk debug print, fixed with `"stream": true`, rerun clean).
+
+**Status:** preliminary — login node is a low-bound proxy for the target
+VM class. `RESULT: P3_ZONE3_MEASURE_OK n=30` recorded; the `P3_ZONE3_OK`
+acceptance still requires the Docker-on-target-host measurement with the
+owner before that host is picked.
