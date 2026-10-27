@@ -7,8 +7,10 @@ reproducible from the evidence chain: `PHASE2_7B_BLUEPRINT.md` errata §12–§1
 
 **One-line recommendation:** serve **`bdw-7b-sft-Q4_K_M.gguf`** (agreement
 rate **0.9682 ≥ 0.90 → `PASS_SERVE_Q4`**, job 33498); keep the merged bf16
-weights as the fidelity fallback. Owner sign-off on the placement (Zone 3,
-offline llama.cpp — `BDW_INTEGRATION.md` §4/S2) happens at handoff review.
+weights as the fidelity fallback. **Owner sign-off recorded (2026-10-27):**
+serving placement confirmed — Zone 3, offline llama.cpp, Q4_K_M serve target,
+merged bf16 retained for fidelity-critical workloads (§8.3 rule). Phase 2 is
+closed; no open items.
 
 ---
 

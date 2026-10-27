@@ -727,6 +727,7 @@ quantisation, checked in one job. Evidence `eval/p2_agreement.json`
 (3,786 B, md5 `1da97da336165267fa1a739c9d4f4c78`).
 
 **Verdict: green.** Q4_K_M is the serving target; bf16 stays as fallback
-(per the pre-declared rule). Owner sign-off on the Zone 3 placement
-(`BDW_INTEGRATION.md` S2) is the handoff-review item; `docs/HANDOFF.md`
-carries inventory, run recipes and limitations.
+(per the pre-declared rule). **Owner sign-off recorded (2026-10-27):** Zone 3
+placement confirmed — offline llama.cpp serves Q4_K_M, merged bf16 retained
+for fidelity-critical workloads (`BDW_INTEGRATION.md` S2; `docs/HANDOFF.md`
+carries inventory, recipes and limitations). Phase 2 officially closed.
