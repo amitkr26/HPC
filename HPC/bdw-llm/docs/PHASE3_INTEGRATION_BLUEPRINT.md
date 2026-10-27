@@ -1,0 +1,106 @@
+# Phase 3 blueprint — BDW integration: Supabase + Zone 2/3 execution
+
+| | |
+|---|---|
+| **Document** | `docs/PHASE3_INTEGRATION_BLUEPRINT.md` — Phase 3 of the BDW LLM project |
+| **Date** | 2026-10-27 |
+| **Status** | Plan for execution — supersedes the 28 M-sized zones in `BDW_INTEGRATION.md` §5–§6 with the Phase 2 serving decision |
+| **Baseline** | Phase 2 shipped and tagged `v2.0-bdw7b-sft` (`d028cfa`); owner sign-off `d5963e8`: Zone 3 serves **`bdw-7b-sft-Q4_K_M.gguf`** via llama.cpp, merged bf16 = fidelity fallback |
+
+---
+
+## 1. What changed since `BDW_INTEGRATION.md` (the delta this plan absorbs)
+
+The integration proposal (2026-10-21) was sized for the 27.8 M research model
+(138 MB ONNX, 2 vCPU/4 GB VM). Phase 2 changed the serving candidate:
+
+| Concern | `BDW_INTEGRATION.md` said | Phase 3 reality |
+|---|---|---|
+| Zone 3 model | 28 M ONNX fp32 | **7B SFT Q4_K_M GGUF** (4,683,073,696 B, `c681…de8b`, 4.91 BPW) — agreement 0.9682 `PASS_SERVE_Q4`, owner-signed 2026-10-27 |
+| Zone 3 host | 2 vCPU / 4 GB, US$6–12 | **8 vCPU / 16 GB class** (Oracle Free ARM 4 OCPU/24 GB at $0, or Hetzner/Render 8 vCPU). Sizing finalised by the P3.2 measurement, not assumed |
+| Zone 3 runtime | ONNX Runtime CPU | **llama.cpp `llama-server`** (pinned `d854d98`), OpenAI-compatible API, boot-time md5 gate (S8) |
+| Fidelity fallback | frontier gateway only | **merged bf16 (15.25 GB)** for fidelity-critical paths pre-declared in `HANDOFF.md`; frontier "Auto Gateway" stays the §6 failure-mode fallback |
+| Zones 2/4 (gateway, Supabase), S1–S12 | unchanged | unchanged — the whole security model is adopted verbatim (§5 below) |
+| Intent router / reranker | 28 M jobs a/b/c | 7B absorbs class-B query understanding, grounded class-C first-pass, refusals (suite p2-v2 proves the behaviour: refuse 4/4, cites 4/4, answer 26/26). 28 M/ONNX stays available for the §7.3 cross-encoder reranker if telemetry demands it (P3.6) |
+
+The migration ladder in `BDW_INTEGRATION.md` §11.4 maps to this phase as:
+its Phase 0 (containerise + deploy VM) → **P3.2**; its Phase 1 (retrieval
+swap, zero third-party search calls) → **P3.0–P3.3**; its Phase 2 (routing +
+verification) → **P3.3–P3.5**; its Phase 3/4 (domain BPE ≥50 MB gate, cross-
+encoder, scale) → **P3.6, telemetry-gated and out of scope until P3.5 data
+exists**.
+
+## 2. Milestones
+
+| ID | Deliverable | Acceptance |
+|---|---|---|
+| **P3.0** | Supabase wiring: schema audit (table/field inventory vs `src/bdw_column_map.json`), `phase3/supabase/migrations/0001_bdw_chunks.sql` applied (pgvector + FTS + RLS), env contract in `.env.example` (names only), owner-provided secrets never committed | `bdw_chunks` has RLS + read policy + service-role writes; env names resolve in the owner's Supabase project; `RESULT: P3_WIRING_OK` |
+| **P3.1** | Corpus ingestion: `phase3/gateway/ingest.py` pulls openings/resources/FAQ/orgs/news via REST (column map — never hardcoded columns), chunks by semantic unit (§7.2), writes parent IDs + `source_url` + denormalised `verified`, computes `bge-small-en-v1.5` (384-d) embeddings locally, instruction-pattern scan quarantines bad chunks (S3/§10.4), incremental refresh by `updated_at` | ≥0 chunks with missing parent ID (the §7.2 hard rule); md5 manifest of seeded corpus; `RESULT: P3_INGEST_OK chunks=N quarantined=M` |
+| **P3.2** | Zone 3 runtime: `phase3/zone3/` Dockerfile + compose (internal network, notes on VM-level egress-deny for S2), boot checksum gate script, `llama-server` with 15 s cap + 4–8 threads; **decode tok/s + prefill tok/s measured on the target host class**; pgvector+BM25 retrieval measured from the same host | measured table: load time, tok/s, RAM peak; host class chosen with owner; weights mounted read-only; `RESULT: P3_ZONE3_OK load=..s decode=..tok/s` |
+| **P3.3** | Zone 2 gateway: FastAPI (container), SFT chat template assembly (Qwen template, retrieved chunks delimited as data per S3), hybrid retrieval (pgvector cosine + GIN FTS, reciprocal-rank fusion), citation verifier port (`src/citation_verifier.py` → `phase3/gateway/verifier.py`), abstain path (§10.3), OpenAI-compatible client to Zone 3 with hard timeout; frontier fallback hook (§6 failure mode) | injection-set drafts: 3/3 fabricated-sentence draft fails (mirrors §10.3.1 condition B); abstention renders link to `/opportunities`; `RESULT: P3_GATEWAY_OK` |
+| **P3.4** | Next.js wiring (owner's platform): `/api/ask` proxy → gateway (session JWT, S1: no service key or Zone 3 URL in browser bundle), zod-validated structured queries for class B (S4), quota generalised from the 35/35 Lab-Tools pattern (S7), streaming UI, "AI-assisted" label (S12) | e2e smoke from the live app: class B returns result cards, class C returns cited+verifier-passed text, class G refused in brand voice; `RESULT: P3_UI_OK` |
+| **P3.5** | Build-vs-teacher eval gate: replay the frozen 30-prompt suite p2-v2 through the deployed Zone 2→3 chain and diff against `eval/p2_sft_v2.json` gates; red-team prompt-injection set (§12.2 gate 2); p95 latency budget per class (§12.2 gate 3); published release-gate report | served gates match the p2-v2 scorecard within pre-declared margins; abstention rate reported; `RESULT: P3_RELEASE_OK` / named misses |
+| **P3.6** | Telemetry-gated follow-ons, **not started**: cross-encoder reranker on click/accept data (§7.3); domain BPE only if corpus ≥ ~50 MB (§8.3); queue-depth scale decision | each item carries an explicit telemetry trigger; nothing starts before P3.5 publishes its numbers |
+
+`RESULT:` lines are the machine-checkable contracts, same discipline as
+P2.0–P2.5; every artefact md5-manifested; every commit linted + secret-scanned
++ byte-verified.
+
+## 3. Repository layout introduced by this phase
+
+```
+bdw-llm/phase3/
+  .env.example          env names only (values live in owner's secret store)
+  supabase/migrations/  applied SQL, versioned; seed code next to gateway
+  gateway/              Zone 2 FastAPI: ingest, retrieve, assemble, verify, proxy
+  zone3/Dockerfile      llama.cpp pinned build + boot checksum gate
+  zone3/compose.yml     zone3 internal network; gateway joins it
+```
+
+Phase 1–2 code under `src/` stays untouched (reproducibility of shipped
+numbers); the gateway imports the SFT-era `citation_verifier.py` by vendoring
+it, not by reaching back into `src/`.
+
+## 4. First actionable steps (P3.0 + the P3.2 measurement — this week)
+
+1. **Owner: schema audit.** From the Supabase dashboard (or a `psql` dump):
+   table names + row counts for openings, organizations, resources, FAQ,
+   news + whether the `verified` flag lives on `openings` only. Output:
+   `phase3/supabase/schema_audit.md` (names/marks, no data, no keys).
+2. **Apply `0001_bdw_chunks.sql`**: `create extension vector`, `bdw_chunks`
+   (384-d bge embeddings, `tsvector` GIN for BM25-style FTS, RLS on with
+   anon-`select` only). Idempotent; applied via dashboard SQL editor or
+   `psql`.
+3. **Owner: secrets.** Add `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` to the
+   gateway secret store (never Vercel env used by the browser bundle — S1).
+   Verify `.env.example` names match before writing values.
+4. **P3.2 measurement now, on assets already built**: rebuild llama.cpp on
+   the cluster login node with `-DLLAMA_BUILD_SERVER=ON` (126 s build class),
+   run `llama-server -m merged/bdw-7b-sft-Q4_K_M.gguf -c 4096 -t4`, measure
+   decode tok/s + p50/p95 first-token latency over the 30 suite prompts.
+   That number sizes the VM class (§1 row 2) before any cloud bill.
+5. **Scaffold→code**: `ingest.py` (P3.1 recipes), `gateway/main.py` +
+   `verifier.py` port, Zone 3 compose smoke on the owner's dev box.
+6. Commit discipline unchanged: per-milestone commits, `result` lines in
+   the doc errata, byte-verified pushes; tag `v3.0-bdw-integration` when
+   P3.5 is green.
+
+## 5. Binding security rules (adopted verbatim from `BDW_INTEGRATION.md` §10.2)
+
+S1, S2 (no egress; Supabase-only), S3 (corpus text as delimited data),
+S4 (tool calls only from zod-validated structure), S5 (server-side citation
+verifier, §10.3 clause attach rule), S6 (PII redaction on frontier path),
+S7 (rate limit + daily quota + max_tokens), S8 (gitleaks + checksummed
+weights at boot), S9 (India-region residency), S10 (no raw weight download;
+signed URLs from Zone 5), S11 (cite-and-link-out, no republish), S12
+(AI-assisted labelling). Deviations require an errata entry, never silence.
+
+## 6. Honest risks carried over
+
+Prompt-injection through scraped circulars (S2/S3/S4 + ingest quarantine —
+Medium); abstention rate too strict for UX (tune on P3.5 telemetry —
+Medium); single-maintainer load (one gateway container, one Zone 3 box,
+CPU-first until queue depth proves otherwise — High); 7B decode speed on
+8 vCPU may land under the §6.2 latency budget for class C (the P3.2
+measurement decides frontier-fallback thresholds; a GPU is bought by
+queue depth, not by diagram — §5.4 instinct kept).

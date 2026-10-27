@@ -1,0 +1,25 @@
+# Zone 3 dev compose. Production notes (S2): run llama on a network with no
+# external egress — enforce default-deny OUTPUT at the VM firewall and keep
+# only the app's internal bridge; here `internal: true` already blocks
+# outbound routes from the compose network for local testing, and the zone-2
+# gateway container joins the same network with no public ingress (S1).
+
+services:
+  llama:
+    build:
+      context: .
+      dockerfile: zone3/Dockerfile
+    networks: [zone3]
+    environment:
+      ZONE3_MODEL_MD5: ${ZONE3_MODEL_MD5}
+      ZONE3_MODEL_PATH: /models/bdw-7b-sft-Q4_K_M.gguf
+    volumes:
+      - ${ZONE3_MODEL_PATH}:/models/bdw-7b-sft-Q4_K_M.gguf:ro
+    deploy:
+      resources:
+        limits:
+          memory: 8g
+
+networks:
+  zone3:
+    internal: true
