@@ -132,15 +132,24 @@ All timings below are server-reported (`/completion` stream stop-chunk):
 | Prompt / predicted tokens | mean 26.9 / 43.0, max 72 / 96 | suite answers 16–96 tok |
 | Resident RAM | 7.76 GB | + KV for ctx 2048 included |
 
+**8-thread pass (same protocol, same day, `P3_THREADS=8`,
+`eval/p3_zone3_latency_t8.json`):** decode **10.12 tok/s mean** (9.36–10.42,
++40.6% over 4 threads — sublinear CPU scaling as expected), prefill
+**34.48 tok/s p50** (+82%), TTFT **p50 0.56 s / p95 1.65 s**, RSS unchanged
+at 7.76 GB. Predicted-token counts are identical to the 4-thread run on all
+30 prompts (greedy determinism holds). The 96-token worst case drops to
+≈9.5 s decode + 1.7 s TTFT ≈ **11.2 s total — inside the 15 s cap**.
+
 Comparability row: the 28 M baseline measured **14–55 tok/s decode** on this
 same host class and thread count (`BDW_INTEGRATION.md` §2.4) — the 7B
 Q4_K_M is ~2–7.6× slower but every run kept within one request-stream, and
 the suite's typical 43-token answer completes in ≈7.1 s total (TTFT +
 decode). The **96-token worst case (el_02) lands at ≈16.3 s** — past the
-§6 15 s Zone-3 cap — so the gateway shape that fits: **(a)** 8-vCPU host
-class target (expect roughly proportional decode; measured on the actual
-host in P3.2 before it is chosen), **(b)** `n_predict` cap ≈ 96–128 as the
-initial gate with abstention/`/opportunities` link on overflow, and
+so the gateway shape that fits: **(a)** 8-vCPU host class — **now
+validated** by the login 8-thread pass (worst suite answer ≈11.2 s inside
+the cap; re-measure on the actual host in P3.2 before provisioning as
+planned), **(b)** `n_predict` cap ≈ 96–128 kept as the overflow gate with
+abstention/`/opportunities` link, and
 **(c)** streaming from first token — TTFT ≤ 2.9 s reads as responsive UX
 even when total generation runs longer. Frontier fallback (§6) stays for
 classes E/F regardless of choice.
@@ -158,6 +167,10 @@ line-parser reads as nothing — the first attempt silently empty (caught by
 the last-chunk debug print, fixed with `"stream": true`, rerun clean).
 
 **Status:** preliminary — login node is a low-bound proxy for the target
-VM class. `RESULT: P3_ZONE3_MEASURE_OK n=30` recorded; the `P3_ZONE3_OK`
-acceptance still requires the Docker-on-target-host measurement with the
-owner before that host is picked.
+VM class. `RESULT: P3_ZONE3_MEASURE_OK n=30` recorded twice (4T + 8T);
+both artefacts committed. One ISA caveat: both passes ran on the login
+node's **x86** cores — the $0 Oracle candidate is **Arm Ampere**, where
+per-core and scaling characteristics differ; the P3.2 Docker measurement
+must run on the chosen host class (x86 8-vCPU or Arm) before provisioning.
+The `P3_ZONE3_OK` acceptance still requires that Docker-on-target-host
+run with the owner before the host is picked.

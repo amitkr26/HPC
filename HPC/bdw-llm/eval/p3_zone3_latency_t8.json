@@ -1,0 +1,376 @@
+{
+ "host": "login node (direct run, no sbatch)",
+ "llama_cpp": "llama-server (pinned tarball d854d98; self-reports 0.7.0-dev)",
+ "model": "merged/bdw-7b-sft-Q4_K_M.gguf (4,683,073,696 B)",
+ "threads": 8,
+ "ctx": 2048,
+ "n_prompts": 30,
+ "n_predict_max": 300,
+ "ttft_s": {
+  "p50": 0.556,
+  "p95": 1.653,
+  "min": 0.422,
+  "max": 1.681
+ },
+ "decode_tok_s": {
+  "mean": 10.12,
+  "p50": 10.13,
+  "p95": 10.42,
+  "min": 9.36,
+  "max": 10.47
+ },
+ "prefill_tok_s": {
+  "mean": 35.24,
+  "p50": 34.48
+ },
+ "prompt_tokens": {
+  "mean": 26.9,
+  "max": 72
+ },
+ "pred_tokens": {
+  "mean": 43.0,
+  "max": 96
+ },
+ "per_prompt": [
+  {
+   "pid": "em_01",
+   "ttft_s": 1.238,
+   "total_s": 5.467,
+   "prompt_n": 55,
+   "predicted_n": 43,
+   "prefill_tok_s": 44.64,
+   "decode_tok_s": 9.93,
+   "predicted_ms": 4228.724,
+   "src": "server"
+  },
+  {
+   "pid": "em_02",
+   "ttft_s": 0.675,
+   "total_s": 2.855,
+   "prompt_n": 25,
+   "predicted_n": 22,
+   "prefill_tok_s": 37.38,
+   "decode_tok_s": 9.63,
+   "predicted_ms": 2180.106,
+   "src": "server"
+  },
+  {
+   "pid": "em_03",
+   "ttft_s": 0.509,
+   "total_s": 2.038,
+   "prompt_n": 15,
+   "predicted_n": 17,
+   "prefill_tok_s": 29.78,
+   "decode_tok_s": 10.47,
+   "predicted_ms": 1528.473,
+   "src": "server"
+  },
+  {
+   "pid": "em_04",
+   "ttft_s": 0.671,
+   "total_s": 3.877,
+   "prompt_n": 25,
+   "predicted_n": 31,
+   "prefill_tok_s": 37.53,
+   "decode_tok_s": 9.36,
+   "predicted_ms": 3206.124,
+   "src": "server"
+  },
+  {
+   "pid": "em_05",
+   "ttft_s": 0.835,
+   "total_s": 3.437,
+   "prompt_n": 30,
+   "predicted_n": 27,
+   "prefill_tok_s": 36.2,
+   "decode_tok_s": 9.99,
+   "predicted_ms": 2602.286,
+   "src": "server"
+  },
+  {
+   "pid": "em_06",
+   "ttft_s": 0.471,
+   "total_s": 3.456,
+   "prompt_n": 16,
+   "predicted_n": 31,
+   "prefill_tok_s": 34.56,
+   "decode_tok_s": 10.05,
+   "predicted_ms": 2984.972,
+   "src": "server"
+  },
+  {
+   "pid": "em_07",
+   "ttft_s": 0.608,
+   "total_s": 4.289,
+   "prompt_n": 22,
+   "predicted_n": 37,
+   "prefill_tok_s": 36.35,
+   "decode_tok_s": 9.78,
+   "predicted_ms": 3680.723,
+   "src": "server"
+  },
+  {
+   "pid": "em_08",
+   "ttft_s": 0.558,
+   "total_s": 2.497,
+   "prompt_n": 19,
+   "predicted_n": 21,
+   "prefill_tok_s": 34.44,
+   "decode_tok_s": 10.32,
+   "predicted_ms": 1938.208,
+   "src": "server"
+  },
+  {
+   "pid": "em_09",
+   "ttft_s": 0.57,
+   "total_s": 3.267,
+   "prompt_n": 19,
+   "predicted_n": 28,
+   "prefill_tok_s": 33.56,
+   "decode_tok_s": 10.01,
+   "predicted_ms": 2696.375,
+   "src": "server"
+  },
+  {
+   "pid": "em_10",
+   "ttft_s": 0.422,
+   "total_s": 2.455,
+   "prompt_n": 12,
+   "predicted_n": 22,
+   "prefill_tok_s": 28.74,
+   "decode_tok_s": 10.33,
+   "predicted_ms": 2032.946,
+   "src": "server"
+  },
+  {
+   "pid": "cc_01",
+   "ttft_s": 0.51,
+   "total_s": 2.354,
+   "prompt_n": 15,
+   "predicted_n": 20,
+   "prefill_tok_s": 29.8,
+   "decode_tok_s": 10.3,
+   "predicted_ms": 1844.592,
+   "src": "server"
+  },
+  {
+   "pid": "cc_02",
+   "ttft_s": 0.567,
+   "total_s": 2.914,
+   "prompt_n": 19,
+   "predicted_n": 25,
+   "prefill_tok_s": 33.73,
+   "decode_tok_s": 10.23,
+   "predicted_ms": 2346.351,
+   "src": "server"
+  },
+  {
+   "pid": "cc_03",
+   "ttft_s": 0.452,
+   "total_s": 3.816,
+   "prompt_n": 13,
+   "predicted_n": 36,
+   "prefill_tok_s": 29.11,
+   "decode_tok_s": 10.41,
+   "predicted_ms": 3363.303,
+   "src": "server"
+  },
+  {
+   "pid": "cc_04",
+   "ttft_s": 0.452,
+   "total_s": 2.577,
+   "prompt_n": 13,
+   "predicted_n": 23,
+   "prefill_tok_s": 29.1,
+   "decode_tok_s": 10.36,
+   "predicted_ms": 2124.527,
+   "src": "server"
+  },
+  {
+   "pid": "cc_05",
+   "ttft_s": 0.529,
+   "total_s": 1.97,
+   "prompt_n": 17,
+   "predicted_n": 16,
+   "prefill_tok_s": 32.47,
+   "decode_tok_s": 10.42,
+   "predicted_ms": 1440.169,
+   "src": "server"
+  },
+  {
+   "pid": "cc_06",
+   "ttft_s": 0.554,
+   "total_s": 5.103,
+   "prompt_n": 19,
+   "predicted_n": 47,
+   "prefill_tok_s": 34.49,
+   "decode_tok_s": 10.11,
+   "predicted_ms": 4548.258,
+   "src": "server"
+  },
+  {
+   "pid": "cc_07",
+   "ttft_s": 0.454,
+   "total_s": 6.814,
+   "prompt_n": 13,
+   "predicted_n": 66,
+   "prefill_tok_s": 29.1,
+   "decode_tok_s": 10.22,
+   "predicted_ms": 6360.302,
+   "src": "server"
+  },
+  {
+   "pid": "cc_08",
+   "ttft_s": 0.53,
+   "total_s": 8.121,
+   "prompt_n": 18,
+   "predicted_n": 79,
+   "prefill_tok_s": 34.37,
+   "decode_tok_s": 10.28,
+   "predicted_ms": 7590.467,
+   "src": "server"
+  },
+  {
+   "pid": "el_01",
+   "ttft_s": 1.586,
+   "total_s": 9.747,
+   "prompt_n": 68,
+   "predicted_n": 82,
+   "prefill_tok_s": 42.99,
+   "decode_tok_s": 9.93,
+   "predicted_ms": 8160.564,
+   "src": "server"
+  },
+  {
+   "pid": "el_02",
+   "ttft_s": 1.681,
+   "total_s": 11.045,
+   "prompt_n": 72,
+   "predicted_n": 96,
+   "prefill_tok_s": 43.08,
+   "decode_tok_s": 10.15,
+   "predicted_ms": 9364.194,
+   "src": "server"
+  },
+  {
+   "pid": "el_03",
+   "ttft_s": 1.653,
+   "total_s": 10.341,
+   "prompt_n": 70,
+   "predicted_n": 89,
+   "prefill_tok_s": 42.59,
+   "decode_tok_s": 10.13,
+   "predicted_ms": 8687.851,
+   "src": "server"
+  },
+  {
+   "pid": "el_04",
+   "ttft_s": 1.62,
+   "total_s": 10.608,
+   "prompt_n": 69,
+   "predicted_n": 93,
+   "prefill_tok_s": 42.84,
+   "decode_tok_s": 10.24,
+   "predicted_ms": 8988.08,
+   "src": "server"
+  },
+  {
+   "pid": "rf_01",
+   "ttft_s": 0.557,
+   "total_s": 5.53,
+   "prompt_n": 20,
+   "predicted_n": 50,
+   "prefill_tok_s": 36.49,
+   "decode_tok_s": 9.85,
+   "predicted_ms": 4973.045,
+   "src": "server"
+  },
+  {
+   "pid": "rf_02",
+   "ttft_s": 0.552,
+   "total_s": 4.121,
+   "prompt_n": 20,
+   "predicted_n": 38,
+   "prefill_tok_s": 36.57,
+   "decode_tok_s": 10.37,
+   "predicted_ms": 3568.756,
+   "src": "server"
+  },
+  {
+   "pid": "rf_03",
+   "ttft_s": 0.638,
+   "total_s": 5.931,
+   "prompt_n": 23,
+   "predicted_n": 53,
+   "prefill_tok_s": 36.28,
+   "decode_tok_s": 9.83,
+   "predicted_ms": 5292.195,
+   "src": "server"
+  },
+  {
+   "pid": "rf_04",
+   "ttft_s": 0.533,
+   "total_s": 5.672,
+   "prompt_n": 18,
+   "predicted_n": 53,
+   "prefill_tok_s": 34.17,
+   "decode_tok_s": 10.12,
+   "predicted_ms": 5138.959,
+   "src": "server"
+  },
+  {
+   "pid": "ge_01",
+   "ttft_s": 0.556,
+   "total_s": 4.613,
+   "prompt_n": 19,
+   "predicted_n": 43,
+   "prefill_tok_s": 34.48,
+   "decode_tok_s": 10.35,
+   "predicted_ms": 4056.885,
+   "src": "server"
+  },
+  {
+   "pid": "ge_02",
+   "ttft_s": 0.499,
+   "total_s": 6.843,
+   "prompt_n": 17,
+   "predicted_n": 64,
+   "prefill_tok_s": 34.38,
+   "decode_tok_s": 9.93,
+   "predicted_ms": 6344.005,
+   "src": "server"
+  },
+  {
+   "pid": "ge_03",
+   "ttft_s": 0.514,
+   "total_s": 2.173,
+   "prompt_n": 15,
+   "predicted_n": 18,
+   "prefill_tok_s": 29.67,
+   "decode_tok_s": 10.25,
+   "predicted_ms": 1659.036,
+   "src": "server"
+  },
+  {
+   "pid": "ge_04",
+   "ttft_s": 0.784,
+   "total_s": 2.563,
+   "prompt_n": 30,
+   "predicted_n": 19,
+   "prefill_tok_s": 38.42,
+   "decode_tok_s": 10.12,
+   "predicted_ms": 1778.654,
+   "src": "server"
+  }
+ ],
+ "notes": {
+  "seed": 1337,
+  "temperature": 0.0,
+  "top_k": 1,
+  "template": "Qwen2 chat template applied by transformers (p2_baseline apply_chat_template fmt)",
+  "timing_source": "llama.cpp /completion stream 'stop' chunk timings (server-side); ttft = client-side first non-empty content delta",
+  "version_selfreported": "0.7.0-dev build stamp differs from the pinned tarball d854d98 because tarball extracts carry no .git; API verified live",
+  "rss_kb": "7764828",
+  "comparability": "28M baseline: 14-55 tok/s decode, 4 CPU threads (BDW_INTEGRATION.md 2.4, login node)"
+ }
+}
