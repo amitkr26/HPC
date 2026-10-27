@@ -100,6 +100,57 @@ def load_audit(path):
     return tables
 
 
+class PgDirect:
+    """REST-free fallback: seeds/checks bdw_chunks over a direct Postgres
+    connection (phase3/pg_url.txt holding the Supabase connection URI).
+    Used only while PostgREST's schema-cache reflection is wedged —
+    see errata section 8 in the blueprint."""
+
+    def __init__(self, url):
+        import psycopg
+        self.psycopg = psycopg
+        self.conn = psycopg.connect(url, connect_timeout=30,
+                                    prepare_threshold=None)
+
+    def pull(self, table, page=1000, cap=None, where=None):
+        sql = "select * from " + table
+        params = []
+        if where:
+            terms = []
+            for k, v in where.items():
+                val = v.split(".", 1)[1] if v.startswith("eq.") else v
+                terms.append(k + " = %s")
+                params.append(val)
+            sql += " where " + " and ".join(terms)
+        with self.conn.cursor() as cur:
+            cur.execute(sql, tuple(params) if params else None)
+            names = [d.name for d in cur.description]
+            return [dict(zip(names, r)) for r in cur.fetchall()]
+
+    def chunk_count(self):
+        with self.conn.cursor() as cur:
+            cur.execute("select count(*) from bdw_chunks")
+            return cur.fetchone()[0]
+
+    def clear_chunks(self):
+        with self.conn.cursor() as cur:
+            cur.execute("delete from bdw_chunks")
+            self.conn.commit()
+
+    def insert(self, rows):
+        with self.conn.cursor() as cur:
+            args = [(r["parent_type"], r["parent_id"], r["source_url"],
+                     r["title"], r["content"], r["verified"],
+                     "[" + ",".join("%s" % x for x in r["embedding"]) + "]")
+                    for r in rows]
+            cur.executemany(
+                "insert into bdw_chunks (parent_type, parent_id, source_url,"
+                " title, content, verified, embedding) values"
+                " (%s,%s,%s,%s,%s,%s,%s::vector)", args)
+            self.conn.commit()
+            return len(args)
+
+
 class Supabase:
     """Minimal REST client over the service role (gateway-side only, S1)."""
 
@@ -258,6 +309,9 @@ def main():
                     help="wipe existing bdw_chunks, then reseed")
     ap.add_argument("--keep", action="store_true",
                     help="snapshot only; no Supabase writes or checks")
+    ap.add_argument("--pg-direct", action="store_true",
+                    help="bypass PostgREST: seed over the direct connection "
+                         "URI in phase3/pg_url.txt (REST-cache fallback)")
     args = ap.parse_args()
 
     t0 = time.time()
@@ -265,7 +319,13 @@ def main():
     audit = load_audit(os.path.join(PH3, "supabase", "schema_audit.md"))
     with open(SRCMAP, encoding="utf-8") as fh:
         cmap = json.load(fh)
-    sb = Supabase(env["SUPABASE_URL"], env["SUPABASE_SERVICE_ROLE_KEY"])
+    if args.pg_direct:
+        pg_url = open(os.path.join(PH3, "pg_url.txt"), encoding="utf-8"
+                      ).read().strip()
+        sb = PgDirect(pg_url)
+        print("client: PgDirect (REST bypass active)", flush=True)
+    else:
+        sb = Supabase(env["SUPABASE_URL"], env["SUPABASE_SERVICE_ROLE_KEY"])
 
     from sentence_transformers import SentenceTransformer
     bge = os.environ.get("BGE_MODEL_DIR", DEFAULT_BGE)
@@ -285,18 +345,11 @@ def main():
 
     stats = {"chunks": 0, "quarantined": 0, "no_id": 0, "empty": 0}
     orgmap = {}
-    if any(s.get("org_via") for s in audit.values()):
-        for ptype, spec in audit.items():
-            if spec.get("org_via") and "organization" in audit:
-                src = audit["organization"]["table"]
-                q = urllib.parse.urlencode(
-                    {"select": "*", "limit": "10000"})
-                r = sb.rq.get("%s/rest/v1/%s?%s" % (sb.url, src, q),
-                              headers=sb.headers, timeout=120)
-                r.raise_for_status()
-                orgmap = {p["id"]: p["title"] for p in
-                          (pick(o, cmap) for o in r.json())
-                          if p["id"] and p["title"]}
+    if any(s.get("org_via") for s in audit.values()) and "organization" in audit:
+        src = audit["organization"]["table"]
+        orgmap = {p["id"]: p["title"] for p in
+                  (pick(o, cmap) for o in sb.pull(src))
+                  if p["id"] and p["title"]}
         print("org join: %d names loaded" % len(orgmap), flush=True)
     per_type, all_chunks = {}, []
     for ptype, spec in audit.items():

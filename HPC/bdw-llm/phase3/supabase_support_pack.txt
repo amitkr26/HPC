@@ -1,0 +1,31 @@
+
+SUBJECT: PostgREST schema cache frozen; new DDL invisible after reload + full pause/resume
+
+Project ref: aqauempuwmbizqoaolop (Direct connection host aws-1-ap-southeast-1.pooler.supabase.com)
+Region: ap-southeast-1
+Time span: 2026-10-27 ~17:20-21:30 UTC+540 (all probes below documented in chat transcript)
+
+SYMPTOM
+1. DDL executed in dashboard SQL editor: create extension vector; create table public.bdw_chunks
+   (vector(384) embedding + generated tsvector, ivfflat, RLS policy, GRANT verified); create
+   or replace functions public.match_chunks_vec/fts (SECURITY DEFINER). Editor reports success.
+2. Postgres-side verification in the SAME editor tab succeeds:
+     - select to_regclass('public.bdw_chunks') -> non-null
+     - information_schema.role_table_grants shows GrantAll to anon, authenticated, service_role
+     - select count(*) -> 0 (works)
+3. PostgREST for the SAME project returns PGRST205 'not in schema cache' for bdw_chunks AND
+   for a brand-new trivial probe table public.probe_p3_a (id int) and probe_p3_b
+   (id int, v vector(384), t tsvector generated always as ...) created ~21:00 UTC+540.
+   Pre-existing tables (e.g. public.link_check_logs, hinted by PGRST205) still serve fine.
+4. Attempted resets, all ineffective:
+     - notify pgrst, 'reload schema' (explicit + implicit via editor)
+     - pause project -> fully paused -> restore -> active, retry probes immediately after
+   PostgREST 404 persists with identical response for all NEW relations.
+5. REST MUST see bdw_chunks for the app (service_role over PostgREST) - the freeze blocks
+   the RAG pipeline. Both direct 5432 and 6543 pooler ports time out from our public IP
+   (firewall on our side), so REST-only is currently our only channel.
+
+ASK
+- identify why PostgREST's schema cache is not rebuilding on SQL-period DDL or on
+  pause/resume, and refresh it.
+- confirm action plan needed on our side for future DDL (e.g. specific GRANT? notify channel?).
