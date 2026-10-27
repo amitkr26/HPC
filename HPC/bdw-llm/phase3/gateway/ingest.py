@@ -29,8 +29,9 @@ import time
 import traceback
 import urllib.parse
 
-BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-PH3 = os.path.join(BASE, "phase3")
+GATEWAY = os.path.dirname(os.path.abspath(__file__))
+PH3 = os.path.dirname(GATEWAY)                    # ...HPC/bdw-llm/phase3
+BASE = os.path.dirname(PH3)                       # ...HPC/bdw-llm
 SRCMAP = os.path.join(BASE, "src", "bdw_column_map.json")
 DEFAULT_BGE = os.path.join(PH3, "models", "bge-small-en-v1.5")
 
@@ -109,11 +110,12 @@ class Supabase:
         self.headers = {"apikey": svc, "Authorization": "Bearer " + svc,
                         "Content-Type": "application/json"}
 
-    def pull(self, table, page=1000, cap=None):
+    def pull(self, table, page=1000, cap=None, where=None):
         rows, offset = [], 0
+        base = {} if not where else dict(where)
         while True:
-            q = urllib.parse.urlencode({"select": "*", "limit": str(page),
-                                        "offset": str(offset)})
+            q = urllib.parse.urlencode(dict(
+                base, select="*", limit=str(page), offset=str(offset)))
             r = self.rq.get("%s/rest/v1/%s?%s" % (self.url, table, q),
                             headers=self.headers, timeout=120)
             r.raise_for_status()
@@ -185,7 +187,7 @@ def split_paragraphs(body):
     return units
 
 
-def make_chunks(ptype, pk, verified_col, row, stats):
+def make_chunks(ptype, pk, spec, row, cmap, orgmap, stats):
     """Build all chunks for one source row (openings = a single semantic unit)."""
     pid = pk["id"]
     if not pid:
@@ -193,25 +195,38 @@ def make_chunks(ptype, pk, verified_col, row, stats):
         return []
     title = pk["title"] or "(untitled)"
     url = pk["url"] or ""
-    verified = bool(row.get(verified_col, False)) if verified_col else False
+    vcol = spec.get("verified")
+    if vcol:
+        vvals = spec.get("verified_values")
+        verified = (row.get(vcol) in vvals) if vvals else bool(row.get(vcol))
+    else:
+        verified = False
+    org = pk.get("org")
+    if not org and spec.get("org_via"):
+        org = orgmap.get(row.get(spec["org_via"]))
 
     def seg(k, cap=240, label=None):
         v = pk.get(k)
         return ("%s: %s" % (label or k, v[:cap])) if v else ""
 
     if ptype == "opportunity":
-        head = " | ".join(x for x in (title, seg("org"), seg("location"),
+        head = " | ".join(x for x in (title, seg("org", label="organization")
+                                      if org else "", seg("location"),
                                       seg("category")) if x)
         facts = " | ".join(x for x in (seg("eligibility"), seg("stipend"),
                                        seg("deadline"), seg("posted")) if x)
         body = head + (("\n" + facts) if facts else ""
                        ) + ("\n" + (pk.get("description") or "")[:DESC_CAP])
         units = [body]
-    elif ptype in ("organization", "resource", "faq", "news", "lab_tool"):
-        body = (title + "\n" + (pk.get("description") or "")).strip()
-        units = split_paragraphs(body) or ([body] if body else [])
     else:
-        raise RuntimeError("unreach: %s" % ptype)
+        body = (title + "\n" + (pk.get("description") or "")).strip()
+        extra = " | ".join(x for x in (seg("org", label="organization")
+                                       if org else "", seg("location"),
+                                       seg("category"), seg("stipend",
+                                       label="salary"), seg("url")) if x)
+        if extra:
+            body = (body + "\n" + extra).strip()
+        units = split_paragraphs(body) or ([body] if body else [])
 
     out = []
     for n, content in enumerate(units):
@@ -269,10 +284,25 @@ def main():
         print("refresh: cleared existing chunks", flush=True)
 
     stats = {"chunks": 0, "quarantined": 0, "no_id": 0, "empty": 0}
+    orgmap = {}
+    if any(s.get("org_via") for s in audit.values()):
+        for ptype, spec in audit.items():
+            if spec.get("org_via") and "organization" in audit:
+                src = audit["organization"]["table"]
+                q = urllib.parse.urlencode(
+                    {"select": "*", "limit": "10000"})
+                r = sb.rq.get("%s/rest/v1/%s?%s" % (sb.url, src, q),
+                              headers=sb.headers, timeout=120)
+                r.raise_for_status()
+                orgmap = {p["id"]: p["title"] for p in
+                          (pick(o, cmap) for o in r.json())
+                          if p["id"] and p["title"]}
+        print("org join: %d names loaded" % len(orgmap), flush=True)
     per_type, all_chunks = {}, []
     for ptype, spec in audit.items():
         table, vcol = spec["table"], spec.get("verified")
-        rows = sb.pull(table, cap=spec.get("row_limit"))
+        rows = sb.pull(table, cap=spec.get("row_limit"),
+                       where=spec.get("where"))
         if not rows:
             stats["empty"] += 1
             print("pull %-12s -> 0 rows (recheck audit name)" % table,
@@ -280,7 +310,8 @@ def main():
             continue
         made = []
         for row in rows:
-            made.extend(make_chunks(ptype, pick(row, cmap), vcol, row, stats))
+            made.extend(make_chunks(ptype, pick(row, cmap), spec, row, cmap,
+                                    orgmap, stats))
         plant = [c for c in made if not c["quarantined"]]
         quar = [c for c in made if c["quarantined"]]
         per_type[ptype] = {"table": table, "rows": len(rows),

@@ -16,7 +16,14 @@ Rules:
 - `verified` is the exact column name carrying the platform's verification
   flag (checked against EVERY row via `row.get(col)`); `null` means
   "treat as unverified for now" (conservative for the S5 citation gate).
-- `row_limit` is optional — omit it for a full pull; set it for a pilot.
+- Optional per-type keys (v0.2, used by the live audit):
+  `verified_values` — list making the flag truthy when the column is an
+  enum/string rather than a boolean (e.g. `["verified"]`);
+  `org_via` — row column holding the organization id, joined against the
+  organization table's resolved `title` and spliced into chunk content;
+  `where` — REST eq-filter dict applied to the pull (e.g.
+  `{"is_active": "eq.true"}` to match the UI's active surface);
+  `row_limit` — optional cap for pilot pulls (omit for full).
 - Do not paste any data rows or credentials into this file.
 
 ```json

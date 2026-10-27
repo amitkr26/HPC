@@ -174,3 +174,43 @@ per-core and scaling characteristics differ; the P3.2 Docker measurement
 must run on the chosen host class (x86 8-vCPU or Arm) before provisioning.
 The `P3_ZONE3_OK` acceptance still requires that Docker-on-target-host
 run with the owner before the host is picked.
+
+## 8. Errata — P3.1 ingest (2026-10-27, work in session)
+
+Owner's P3.0 checklist said the artifacts existed, but on inspection the
+workspace had neither `phase3/.env` nor `supabase/schema_audit.md`; the
+db still has no `bdw_chunks` table either (70-table OpenAPI introspection).
+Resolution in session:
+
+- **Self-audit instead of owner audit.** With the staged service key the
+  schema was audited from the live PostgREST OpenAPI spec (`GET /rest/v1/`,
+  70 tables) + count/sample probes. Result (v0.2, committed):
+  opportunity→`opportunities`, organization→`organizations`,
+  resource→`resources`, news→`news_articles`, all filtered
+  `is_active=eq.true`; `faq` (no table; `announcements` EMPTY), `lab_tool`
+  (absent), `resources`-sibling `resource_bank` (10 metadata-only rows) and
+  `jobs`/`job_occurrences` (5-row radar) rejected with reasons recorded in
+  the audit file.
+- **Live totals (2026-10-27):** opportunities 1,090 (923 `verified` /
+  167 `expired` verification_status; 511 active), organizations 288
+  (283 active), resources 23, news_articles 1,486 (1,279 active).
+  Ingest scope = the active UI surface: **2,093 chunks** seed-row estimate.
+- **Audit contract v0.2:** optional per-type keys `verified_values`
+  (status-enum → truthy mapping, e.g. `verification_status=="verified"`),
+  `org_via` (e.g. `organization_id`, resolved through an organization
+  name lookup), `where` (REST eq-filters), `row_limit`. Schema drift vs
+  the P2.1 map: opportunities has no text `organization` column (FK only)
+  → the join carries org names into chunk content.
+- **`--keep` dry run PASSED:** pull → canonical chunk → bge embed with
+  zero Supabase writes; `RESULT: P3_INGEST_OK chunks=2093 quarantined=0
+  no_id=0 types=opportunity:511,organization:280,resource:23,news:1279`
+  (3 organizations skipped: sub-30-char name-only bodies; no parent-key
+  dupes).
+- **Model runtime staged locally:** bge-small-en-v1.5 downloaded to
+  `phase3/models/bge-small-en-v1.5/` (model.safetensors 133,462,128 B,
+  dim 384, L2-normalized smoke PASS), excluded from git via .gitignore.
+- **P3.1 execution blocked on `0001_bdw_chunks.sql` (+ `0002` RPCs) which
+  the owner's checklist claimed applied but is not in the live schema;
+  DDL cannot go through PostgREST with the service key, so the two SQL
+  files must be run in the dashboard SQL editor. Real seed run, FTS +
+  cosine e2e spot test land after that.
