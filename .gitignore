@@ -26,3 +26,8 @@ credentials.txt
 
 # Other independent repos
 BerojgarDegreeWala/
+
+# Python caches + sqlite journal noise (course workspaces)
+__pycache__/
+*.pyc
+*.db-journal
