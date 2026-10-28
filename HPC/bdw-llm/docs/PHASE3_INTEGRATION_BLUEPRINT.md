@@ -284,3 +284,38 @@ Zone 2 gains an optional web-search route so freshness-shaped questions
   local-sufficient no-op, forced-on, disabled, error degrade, web-id
   citations surviving S5, dedupe, `_clean`, HTTP override incl. 400) -
   full suite `RESULT: P3_ZONE2_UNIT_OK`.
+
+## 11. Agentic Loop scaffold (ReAct), added 2026-10-28
+
+`phase3/agent/loop_controller.py` (stdlib + requests only, self-contained
+Zone 3 client) - foundation for giving the BDW 7B model bounded
+software-engineering autonomy. Status: scaffold, unit-verified against a
+scripted stub server; not yet driven by the real model (Zone 3 lives on
+the cluster, unreachable during the site outage).
+
+- **Protocol:** strict one-JSON-object-per-turn ReAct - `{"thought",
+  "action", "action_input"}`; robust extraction (first decodable JSON
+  object with the required keys anywhere in the completion; parse failure
+  feeds an ERROR observation instead of crashing the loop).
+- **Tools (sandbox-jailed):** `terminal` (shell=True, cwd=sandbox,
+  denylist for destructive patterns, per-command timeout, output capped
+  2000 chars), `read_file` (cap 4000), `write_file`, `list_files`, and
+  `task_complete` {"summary"}. All paths are resolved against the
+  sandbox root and must stay inside it (no absolute, no `..`, no `~`,
+  realpath-verified; violations become observations, never exceptions
+  that escape the loop).
+- **Loop:** max 10 iterations (CLI-overridable); each turn rebuilds the
+  prompt (system + task + full transcript) for the stateless /completion
+  endpoint; OBSERVATION is appended verbatim; terminates on
+  `task_complete` (or a bare TASK_COMPLETE string) or the cap.
+- **Logging:** real-time `[iter N] [THOUGHT] / [ACTION] / [OBSERVATION]`
+  lines, flushed.
+- **Config:** `--task --max-iters --cmd-timeout --zone3-url --sandbox`;
+  defaults from phase3/.env (ZONE3_BASE_URL, ZONE3_TIMEOUT_S=120 for
+  generation). Sandbox defaults to `phase3/agent/sandbox/` (gitignored).
+- **Self-test (`--self-test`):** offline stub llama server scripts
+  write_file -> terminal -> task_complete (asserts the file lands, the
+  subprocess output returns as observation, summary returned) then a
+  sandbox-escape attempt (`../../evil.txt` -> blocked, nothing written
+  outside). Marker: `P3_AGENT_SELFTEST_OK`; live-run markers
+  `P3_AGENT_DONE` / `P3_AGENT_MAXITERS`.

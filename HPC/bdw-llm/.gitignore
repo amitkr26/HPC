@@ -35,10 +35,12 @@ __pycache__/
 *.key
 
 # phase 3: embedding model files, seeded corpus + quarantine snapshots,
-# gateway run state (code, migrations and manifests stay tracked)
+# gateway run state, agent sandbox scratch space
+# (code, migrations and manifests stay tracked)
 phase3/models/
 phase3/gateway/data/
 phase3/pg_url.txt
+phase3/agent/sandbox/
 
 # per-stage run logs (the job output under scripts/ is kept on purpose:
 # docs/*.md cite those exact lines as evidence)
