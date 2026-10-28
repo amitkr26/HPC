@@ -353,3 +353,20 @@ the cluster, unreachable during the site outage).
   bottom-anchored composer, typing indicator, health dot, settings popover,
   cite-chips + routing pills + collapsible sources per answer. Gateway
   unchanged (already serves / + CORS).
+
+## 13. Multi-turn conversation (added 2026-10-28)
+
+`/ask` now accepts an optional `"history"` array ([(role "user"|
+"assistant", content str), ...]); the handler rejects a non-list with
+400 and `build_ask_prompt()` (gateway-side prompt single-source, mirroring
+the agent's build_prompt pattern) filters entries, caps to the last
+HISTORY_TURNS=12 turns and HISTORY_CHAR_CAP=1500 chars per turn, and
+threads a "Conversation so far:" block between the context (+ web
+preamble) and the final question. SYSTEM_TEMPLATE now states earlier
+turns are background but every new claim must be grounded + cited.
+`meta.routing.history_turns` reports how many turns were threaded. The
+chat UI accumulates turns client-side and sends the last 12 each ask
+(history stays client-side; the gateway remains stateless). Unit groups:
+prompt-builder (threading/filter/caps), gateway ask w/ history, HTTP
+(+400 bad type), live 2-turn stub round-trip
+(`P3_MULTITURN_UNIT_OK`, `LIVE_MULTITURN_OK`).

@@ -38,7 +38,9 @@ FRESH_RE = re.compile(
     r"announce\w*|openings?|admissions?|results?)\b", re.I)
 SYSTEM_TEMPLATE = (
     "You are the BDW assistant. Answer the student's question ONLY from the "
-    "numbered context below. After each claim, cite the source chunk with "
+    "numbered context below. Earlier conversation turns (if present) are "
+    "background you may refer to, but every NEW claim must be grounded in "
+    "the context and cited. After each claim, cite the source chunk with "
     "<cite id=\"N\"/> (0-indexed). If the context does not answer the "
     "question, state that plainly. Context:\n{context}")
 WEB_PREAMBLE = (
@@ -46,6 +48,9 @@ WEB_PREAMBLE = (
     "question. They are supplementary to the course database, may change "
     "over time, and were not verified by BDW. Cite them with the same "
     "<cite id=\"N\"/> form when you use them.")
+HISTORY_TURNS = 12
+HISTORY_CHAR_CAP = 1500
+CONV_HEADER = "\n\nConversation so far:"
 
 
 def _clean(text, cap):
@@ -65,6 +70,30 @@ def should_web(question, n_local, mode):
     if n_local == 0:
         return True, "weak-local"
     return False, "local-sufficient"
+
+
+def build_ask_prompt(context, history, question, web_used=False):
+    """Gateway-side single source of truth for the /ask prompt: context
+    (+ web preamble), then the threaded conversation, then the question.
+    History entries are filtered to role in user|assistant, capped to the
+    last HISTORY_TURNS turns and HISTORY_CHAR_CAP chars per turn."""
+    prompt = SYSTEM_TEMPLATE.format(context=context)
+    if web_used:
+        prompt += WEB_PREAMBLE
+    turns = [h for h in (history or [])
+             if isinstance(h, dict)
+             and h.get("role") in ("user", "assistant")
+             and isinstance(h.get("content"), str)
+             and h["content"].strip()]
+    turns = turns[-HISTORY_TURNS:]
+    if turns:
+        lines = [CONV_HEADER]
+        for h in turns:
+            lines.append("%s: %s" % (h["role"].capitalize(),
+                                     h["content"].strip()[:HISTORY_CHAR_CAP]))
+        prompt += "\n".join(lines)
+    prompt += "\nQuestion: %s" % question
+    return prompt, len(turns)
 
 
 def fmt_chunks(ranked):
@@ -121,7 +150,7 @@ class Gateway:
         self.lim = RateLimiter(cfg["RATE_LIMIT_PER_USER_DAY"])
         self.cfg = cfg
 
-    def ask(self, question, user_id, web_mode=None):
+    def ask(self, question, user_id, web_mode=None, history=None):
         if not self.lim.hit(user_id):
             return None, 429, {"error": "rate limit reached; retry tomorrow"}
         mode = web_mode or self.cfg.get("WEB_RAG_MODE", "auto")
@@ -142,16 +171,14 @@ class Gateway:
                         ranked.append(w)
                 web_used = True
         context, ids = fmt_chunks(ranked)
-        prompt = SYSTEM_TEMPLATE.format(context=context)
-        if web_used:
-            prompt += WEB_PREAMBLE
-        prompt += "\nQuestion: %s" % question
+        prompt, n_turns = build_ask_prompt(context, history, question,
+                                           web_used)
         answer = self.llm.complete(
             prompt, max_tokens=self.cfg["MAX_TOKENS"])
         clean, kept, stale = verify_citations(
             answer, len(ranked), ids)
         meta = {"routing": {"mode": mode, "web_used": web_used,
-                            "reason": reason},
+                            "reason": reason, "history_turns": n_turns},
                 "citations_kept": kept, "citations_dropped": stale,
                 "chunks": [{"id": c, "title": ranked[i].get("title"),
                             "url": ranked[i].get("source_url"),
@@ -294,10 +321,13 @@ def handler_class(g):
             web_mode = body.get("web")
             if web_mode is not None and web_mode not in ("auto", "on", "off"):
                 return self._send(400, {"error": "web must be auto|on|off"})
+            history = body.get("history")
+            if history is not None and not isinstance(history, list):
+                return self._send(400, {"error": "history must be a list"})
             if not q or len(q) > 600:
                 return self._send(400, {"error": "question 1..600 chars"})
             try:
-                data, code, err = g.ask(q, uid, web_mode)
+                data, code, err = g.ask(q, uid, web_mode, history)
             except Exception as exc:  # noqa: BLE001
                 data, code = {"error": "upstream failure", "detail":
                               str(exc)[:160]}, 502
