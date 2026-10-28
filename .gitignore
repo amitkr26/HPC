@@ -31,3 +31,8 @@ BerojgarDegreeWala/
 __pycache__/
 *.pyc
 *.db-journal
+
+# weather_dashboard_project runtime state (logs, sqlite db, archive dir)
+HPC/06-PYTHON-PROGRAMMING/weather_dashboard_project/weather_dashboard/app.log
+HPC/06-PYTHON-PROGRAMMING/weather_dashboard_project/weather_dashboard/weather.db
+HPC/06-PYTHON-PROGRAMMING/weather_dashboard_project/weather_dashboard/archives/
