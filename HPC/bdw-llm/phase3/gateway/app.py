@@ -19,6 +19,7 @@ behaves exactly as before.
 from __future__ import annotations
 
 import json
+import os
 import re
 import threading
 import time
@@ -270,11 +271,12 @@ def handler_class(g):
         def log_message(self, *a):
             pass
 
-        def _send(self, code, body):
-            raw = json.dumps(body).encode()
+        def _send(self, code, body, ctype="application/json"):
+            raw = body if isinstance(body, bytes) else json.dumps(body).encode()
             self.send_response(code)
-            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Type", ctype)
             self.send_header("Content-Length", str(len(raw)))
+            self.send_header("Access-Control-Allow-Origin", "*")
             self.end_headers()
             self.wfile.write(raw)
 
@@ -301,8 +303,28 @@ def handler_class(g):
                               str(exc)[:160]}, 502
             self._send(code, err or data)
 
+        def do_OPTIONS(self):
+            self.send_response(204)
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.send_header("Access-Control-Allow-Methods",
+                             "GET, POST, OPTIONS")
+            self.send_header("Access-Control-Allow-Headers",
+                             "Content-Type, X-User-Id")
+            self.send_header("Access-Control-Max-Age", "86400")
+            self.end_headers()
+
         def do_GET(self):
-            if self.path == "/health":
+            path = urllib.parse.urlparse(self.path).path
+            if path in ("/", "/index.html"):
+                page = os.path.join(os.path.dirname(
+                    os.path.abspath(__file__)), "static", "index.html")
+                try:
+                    with open(page, "rb") as fh:
+                        return self._send(200, fh.read(),
+                                          ctype="text/html; charset=utf-8")
+                except OSError:
+                    return self._send(404, {"error": "static page missing"})
+            if path == "/health":
                 return self._send(200, {"ok": True,
                                         "ts": time.strftime("%H:%M:%S")})
             self._send(404, {"error": "not found"})

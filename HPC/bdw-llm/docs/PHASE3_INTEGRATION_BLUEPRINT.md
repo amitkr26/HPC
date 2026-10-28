@@ -319,3 +319,30 @@ the cluster, unreachable during the site outage).
   sandbox-escape attempt (`../../evil.txt` -> blocked, nothing written
   outside). Marker: `P3_AGENT_SELFTEST_OK`; live-run markers
   `P3_AGENT_DONE` / `P3_AGENT_MAXITERS`.
+
+## 12. Local prep kit (built during the wait, 2026-10-28)
+
+- **`phase3/gateway/run_stack.sh`** (commit 875870f): cluster-side stack
+  launcher - boots llama-server (merged GGUF, env-overridable
+  LLAMA_BIN/GGUF/CTX/THREADS/ports) then the gateway, health-waits both,
+  pidfile-managed with `--stop`/`--status`; refuses to start without a
+  `.env` beside app.py (SFTP step). Bash-syntax verified.
+- **`phase3/agent/sft_traces.py`** (commits e66f6c8, c37b4ed): ReAct-trace
+  SFT pipeline. Validates traces (schema, per-action keys,
+  task_complete-last, negatives rejected) and emits JSONL
+  instruction/completion pairs with REAL ground-truth observations -
+  actions are executed through the same Sandbox jail as the runtime.
+  Prompt parity is structural: both loop_controller and sft_traces build
+  prompts via the shared `build_prompt()`; a parity check asserts
+  record[i].instruction == runtime prompt at every step. Demo evidence:
+  `agent_sft_demo.jsonl` (8 records, `P3_AGENT_SFT_OK n=8 rejected=0`).
+  Note: bdw-llm/.gitignore's bare `data/` rule is reserved for the
+  training corpus - agent data artifacts live beside the scripts.
+- **`phase3/gateway/static/index.html`** + app.py GET `/` + CORS
+  (commits in the static-cors change): Zone 1 demo client - question
+  box, web-mode selector (auto/on/off), answers rendered with clickable
+  `[N]` citation anchors over the allowlisted chunks, routing badge
+  (local db vs web+local + reason), S5-strip warning, per-source
+  verified/unverified list. Zero dependencies; served by the gateway at
+  `/` (works same-origin) or opened as a file (gateway sends
+  `Access-Control-Allow-Origin: *` + OPTIONS preflight).
