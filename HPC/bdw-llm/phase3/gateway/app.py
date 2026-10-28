@@ -334,8 +334,11 @@ def handler_class(g):
 def main():
     import os
     ph3 = os.path.dirname(os.path.abspath(__file__))
+    env_path = os.path.join(ph3, ".env")
+    if not os.path.isfile(env_path):
+        env_path = os.path.join(os.path.dirname(ph3), ".env")
     env = {}
-    with open(os.path.join(ph3, ".env"), encoding="utf-8") as fh:
+    with open(env_path, encoding="utf-8-sig") as fh:
         for line in fh:
             line = line.strip()
             if line and not line.startswith("#"):
