@@ -254,3 +254,33 @@ tails — the P3.1 close needs no human step beyond the support reply.
 Zone 2 gateway skeleton (`gateway/app.py`, commit 41a8657) landed during
 the wait: RPC retriever + Zone 3 client + S5 citation verifier + rate
 limiter, unit-passed against stubs (`P3_ZONE2_UNIT_OK`).
+
+## 10. Web-RAG routing layer (added during the P3.1 wait, 2026-10-28)
+
+Zone 2 gains an optional web-search route so freshness-shaped questions
+(deadlines, admissions, news) are not answered only from the static seed.
+
+- **Router** (`should_web`, pure): mode `auto` escalates to web when the
+  question matches a freshness regex or local retrieval returned zero
+  rows; `on`/`off` force either way. Per-request override via
+  `{"web": "auto"|"on"|"off"}` in the /ask body; default from
+  `WEB_RAG_MODE` env (auto).
+- **Client** (`WebSearchClient`): Tavily or Serper placeholder, chosen by
+  `WEB_SEARCH_PROVIDER` (tavily). Key from `TAVILY_API_KEY` /
+  `SERPER_API_KEY`; **no key -> web disabled and /ask behaves exactly as
+  in the base design** (start-up log prints `web=disabled`). Snippets are
+  capped (`WEB_SNIPPET_MAX_CHARS`, 1200) and control-char-stripped before
+  touching the prompt (untrusted-content hygiene).
+- **Shape contract:** every web hit becomes a row identical to a
+  bdw_chunks row - `id=uuid5(NAMESPACE_URL, url)`, `verified=False`,
+  `parent_type="web"` - appended after local chunks with id-dedupe, so
+  `fmt_chunks`, the citation allowlist and the S5 verifier work without
+  modification. When web rows are present the prompt gets a `[web]`
+  preamble warning the model the snippets are unverified and volatile.
+- **Degradation:** a web-client exception logs reason `web-error` in
+  `meta.routing` and the answer falls back to local-only with HTTP 200;
+  /ask never fails because search failed.
+- **Tests:** 10 new offline stub groups (router purity, merge+meta,
+  local-sufficient no-op, forced-on, disabled, error degrade, web-id
+  citations surviving S5, dedupe, `_clean`, HTTP override incl. 400) -
+  full suite `RESULT: P3_ZONE2_UNIT_OK`.

@@ -1,10 +1,20 @@
-"""Zone 2 gateway — P3.4 (blueprint): retrieval -> prompt -> Zone 3 -> S5
+"""Zone 2 gateway - P3.4 (blueprint): retrieval -> prompt -> Zone 3 -> S5
 citation verifier -> respond. Stdlib http.server + requests only; the
-retriever and LLM call are injected so unit runs can stub them offline.
+retriever, LLM call and web-search client are injected so unit runs can
+stub them offline.
 
 Handlers:
-  POST /ask   {"question": str, "user_id": str?}   200 {"answer", "citations", "meta"}
+  POST /ask   {"question": str, "user_id": str?, "web": "auto"|"on"|"off"?}
+              200 {"answer", "citations", "meta"}
   GET  /health
+
+Web-RAG routing: when the question smells fresh (deadlines, news, dates)
+or local retrieval comes back weak, the router escalates to a search API
+(Tavily/Serper placeholder). Snippets are shaped exactly like bdw_chunks
+rows - id=uuid5(url), verified=False, parent_type="web" - and appended
+after local chunks, so fmt_chunks, the citation allowlist and the S5
+verifier work unchanged. No key configured -> web is disabled and /ask
+behaves exactly as before.
 """
 from __future__ import annotations
 
@@ -22,11 +32,38 @@ import requests
 PH3 = None  # set by main()
 Z3_DEFAULT_TIMEOUT = 15
 CITE_RE = re.compile(r'<cite\s+id="([^"]+)"\s*/?>', re.I)
+FRESH_RE = re.compile(
+    r"\b(latest|current|today|recent\w*|news|now|202[5-9]|deadlines?|"
+    r"announce\w*|openings?|admissions?|results?)\b", re.I)
 SYSTEM_TEMPLATE = (
     "You are the BDW assistant. Answer the student's question ONLY from the "
     "numbered context below. After each claim, cite the source chunk with "
     "<cite id=\"N\"/> (0-indexed). If the context does not answer the "
     "question, state that plainly. Context:\n{context}")
+WEB_PREAMBLE = (
+    "\n\nSources marked [web] are live internet results fetched for this "
+    "question. They are supplementary to the course database, may change "
+    "over time, and were not verified by BDW. Cite them with the same "
+    "<cite id=\"N\"/> form when you use them.")
+
+
+def _clean(text, cap):
+    out = re.sub(r"[\x00-\x08\x0b\x0c\x0e-\x1f]", " ", str(text or ""))
+    out = re.sub(r"[ \t]+", " ", out).strip()
+    return out[:cap]
+
+
+def should_web(question, n_local, mode):
+    """Pure router: returns (use_web, reason). mode in auto|on|off."""
+    if mode == "off":
+        return False, "forced-off"
+    if mode == "on":
+        return True, "forced-on"
+    if FRESH_RE.search(question):
+        return True, "freshness"
+    if n_local == 0:
+        return True, "weak-local"
+    return False, "local-sufficient"
 
 
 def fmt_chunks(ranked):
@@ -76,28 +113,49 @@ class RateLimiter:
 
 
 class Gateway:
-    def __init__(self, retriever, llm, cfg):
+    def __init__(self, retriever, llm, cfg, web=None):
         self.retriever = retriever
         self.llm = llm
+        self.web = web
         self.lim = RateLimiter(cfg["RATE_LIMIT_PER_USER_DAY"])
         self.cfg = cfg
 
-    def ask(self, question, user_id):
+    def ask(self, question, user_id, web_mode=None):
         if not self.lim.hit(user_id):
             return None, 429, {"error": "rate limit reached; retry tomorrow"}
+        mode = web_mode or self.cfg.get("WEB_RAG_MODE", "auto")
         ranked = self.retriever.search(question,
                                        self.cfg["RETRIEVAL_TOPK"])
+        use_web, reason = should_web(question, len(ranked), mode)
+        web_used = False
+        if use_web and self.web is not None:
+            try:
+                web_rows = self.web.search(
+                    question, int(self.cfg.get("WEB_TOPK", 5)))
+            except Exception:  # noqa: BLE001
+                web_rows, reason = [], "web-error"
+            if web_rows:
+                have = {r.get("id") for r in ranked}
+                for w in web_rows:
+                    if w.get("id") not in have:
+                        ranked.append(w)
+                web_used = True
         context, ids = fmt_chunks(ranked)
         prompt = SYSTEM_TEMPLATE.format(context=context)
+        if web_used:
+            prompt += WEB_PREAMBLE
         prompt += "\nQuestion: %s" % question
         answer = self.llm.complete(
             prompt, max_tokens=self.cfg["MAX_TOKENS"])
         clean, kept, stale = verify_citations(
             answer, len(ranked), ids)
-        meta = {"citations_kept": kept, "citations_dropped": stale,
+        meta = {"routing": {"mode": mode, "web_used": web_used,
+                            "reason": reason},
+                "citations_kept": kept, "citations_dropped": stale,
                 "chunks": [{"id": c, "title": ranked[i].get("title"),
                             "url": ranked[i].get("source_url"),
-                            "verified": ranked[i].get("verified")}
+                            "verified": ranked[i].get("verified"),
+                            "source": ranked[i].get("parent_type")}
                            for i, c in enumerate(ids)]}
         if stale:
             clean += ("\n\n[Note: one or more citation marks were removed "
@@ -106,7 +164,7 @@ class Gateway:
 
 
 class SupabaseRetriever:
-    """Calls match_chunks_vec then match_chunks_fts; raises高新 if REST 404s."""
+    """Calls match_chunks_vec then match_chunks_fts; 404-tolerant."""
 
     def __init__(self, url, svc):
         self.url = url.rstrip("/")
@@ -134,6 +192,64 @@ class SupabaseRetriever:
             if "404" not in msg:
                 raise
         return []
+
+
+class WebSearchClient:
+    """Placeholder search-API client: Tavily or Serper, key from env.
+
+    Returns rows shaped like bdw_chunks (id/title/content/source_url/
+    verified/parent_type) so the rest of the pipeline is untouched.
+    """
+
+    TAVILY_URL = "https://api.tavily.com/search"
+    SERPER_URL = "https://google.serper.dev/search"
+
+    def __init__(self, provider, api_key, timeout=10,
+                 snippet_cap=1200, topk=5):
+        self.provider = provider
+        self.key = api_key
+        self.timeout = timeout
+        self.cap = snippet_cap
+        self.topk = topk
+
+    def _doc(self, title, url, content):
+        return {"id": str(uuid.uuid5(uuid.NAMESPACE_URL, url or title)),
+                "title": _clean(title, 200),
+                "content": _clean(content, self.cap),
+                "source_url": url or "",
+                "verified": False,
+                "parent_type": "web"}
+
+    def search(self, query, k=None):
+        k = k or self.topk
+        if self.provider == "serper":
+            r = requests.post(
+                self.SERPER_URL, timeout=self.timeout,
+                headers={"X-API-KEY": self.key,
+                         "Content-Type": "application/json"},
+                json={"q": query, "num": k})
+        else:
+            r = requests.post(
+                self.TAVILY_URL, timeout=self.timeout,
+                json={"api_key": self.key, "query": query,
+                      "max_results": k, "search_depth": "basic",
+                      "include_answer": False})
+        r.raise_for_status()
+        body = r.json()
+        if self.provider == "serper":
+            raw = [(o.get("title"), o.get("link"), o.get("snippet"))
+                   for o in body.get("organic", [])]
+        else:
+            raw = [(x.get("title"), x.get("url"), x.get("content"))
+                   for x in body.get("results", [])]
+        seen, out = set(), []
+        for title, url, content in raw:
+            d = self._doc(title, url, content)
+            if d["id"] in seen:
+                continue
+            seen.add(d["id"])
+            out.append(d)
+        return out[:k]
 
 
 class Zone3LLM:
@@ -173,10 +289,13 @@ def handler_class(g):
             q = (body.get("question") or "").strip()
             uid = body.get("user_id") or self.headers.get(
                 "X-User-Id") or "guest"
+            web_mode = body.get("web")
+            if web_mode is not None and web_mode not in ("auto", "on", "off"):
+                return self._send(400, {"error": "web must be auto|on|off"})
             if not q or len(q) > 600:
                 return self._send(400, {"error": "question 1..600 chars"})
             try:
-                data, code, err = g.ask(q, uid)
+                data, code, err = g.ask(q, uid, web_mode)
             except Exception as exc:  # noqa: BLE001
                 data, code = {"error": "upstream failure", "detail":
                               str(exc)[:160]}, 502
@@ -205,14 +324,27 @@ def main():
                                   env["SUPABASE_SERVICE_ROLE_KEY"])
     llm = Zone3LLM(env.get("ZONE3_BASE_URL", "http://127.0.0.1:8080"),
                    int(env.get("ZONE3_TIMEOUT_S", "15")))
+    provider = env.get("WEB_SEARCH_PROVIDER", "tavily")
+    web_key = env.get("TAVILY_API_KEY" if provider == "tavily"
+                      else "SERPER_API_KEY", "")
+    web = None
+    if web_key:
+        web = WebSearchClient(provider, web_key,
+                              timeout=int(env.get("WEB_TIMEOUT_S", "10")),
+                              snippet_cap=int(
+                                  env.get("WEB_SNIPPET_MAX_CHARS", "1200")),
+                              topk=int(env.get("WEB_TOPK", "5")))
     cfg = {"RETRIEVAL_TOPK": int(env.get("RETRIEVAL_TOPK", "20")),
            "MAX_TOKENS": int(env.get("MAX_TOKENS", "1024")),
            "RATE_LIMIT_PER_USER_DAY": int(
-               env.get("RATE_LIMIT_PER_USER_DAY", "35"))}
-    gate = Gateway(retriever, llm, cfg)
+               env.get("RATE_LIMIT_PER_USER_DAY", "35")),
+           "WEB_RAG_MODE": env.get("WEB_RAG_MODE", "auto"),
+           "WEB_TOPK": int(env.get("WEB_TOPK", "5"))}
+    gate = Gateway(retriever, llm, cfg, web=web)
     port = int(env.get("ZONE2_PORT", "8787"))
     srv = ThreadingHTTPServer(("0.0.0.0", port), handler_class(gate))
-    print("RESULT: P3_ZONE2_UP port=%d" % port, flush=True)
+    print("RESULT: P3_ZONE2_UP port=%d web=%s provider=%s"
+          % (port, "on" if web else "disabled", provider), flush=True)
     srv.serve_forever()
 
 
