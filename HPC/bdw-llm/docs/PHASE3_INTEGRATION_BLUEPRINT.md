@@ -346,3 +346,10 @@ the cluster, unreachable during the site outage).
   verified/unverified list. Zero dependencies; served by the gateway at
   `/` (works same-origin) or opened as a file (gateway sends
   `Access-Control-Allow-Origin: *` + OPTIONS preflight).
+
+- **Zone 1 chat UI overhaul** (this commit): static/index.html rebuilt as a
+  Claude-style conversational client - Tailwind CDN (no build step), marked
+  + DOMPurify markdown rendering, vertical message history with bubbles,
+  bottom-anchored composer, typing indicator, health dot, settings popover,
+  cite-chips + routing pills + collapsible sources per answer. Gateway
+  unchanged (already serves / + CORS).
