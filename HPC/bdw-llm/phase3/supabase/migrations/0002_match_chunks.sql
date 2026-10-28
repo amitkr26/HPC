@@ -5,7 +5,7 @@
 -- gateway calls these through the service role; search_path is pinned.
 
 create or replace function public.match_chunks_vec(
-  query_embedding vector(384),
+  query_embedding extensions.vector(384),
   match_count int default 8,
   verified_only boolean default false)
 returns table (
@@ -15,10 +15,10 @@ language sql stable security definer set search_path = ''
 as $$
   select c.id, c.parent_type, c.parent_id, c.source_url,
          c.title, c.content,
-         1 - (c.embedding <=> query_embedding) as similarity
+         1 - (c.embedding operator(extensions.<=>) query_embedding) as similarity
   from public.bdw_chunks c
   where (not verified_only) or c.verified
-  order by c.embedding <=> query_embedding
+  order by c.embedding operator(extensions.<=>) query_embedding
   limit greatest(match_count, 1);
 $$;
 
@@ -42,7 +42,7 @@ as $$
   limit greatest(match_count, 1);
 $$;
 
-grant execute on function public.match_chunks_vec(vector, int, boolean)
+grant execute on function public.match_chunks_vec(extensions.vector, int, boolean)
   to service_role;
 grant execute on function public.match_chunks_fts(text, int, boolean)
   to service_role;

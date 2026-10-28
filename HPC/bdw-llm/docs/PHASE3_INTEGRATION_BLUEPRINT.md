@@ -370,3 +370,38 @@ chat UI accumulates turns client-side and sends the last 12 each ask
 prompt-builder (threading/filter/caps), gateway ask w/ history, HTTP
 (+400 bad type), live 2-turn stub round-trip
 (`P3_MULTITURN_UNIT_OK`, `LIVE_MULTITURN_OK`).
+
+## 14. P3.1 CLOSED - root-cause reversal + SQL-route heal (2026-10-28)
+
+The "frozen PostgREST schema cache" theory (errata 9) is OVERTURNED.
+Direct-SQL probes from the cluster (which regained full egress the same
+day) proved the plain truth: **the migrations had never been applied** -
+to_regclass('public.bdw_chunks') = NULL, zero bdw% tables, pgvector not
+even installed. PostgREST's PGRST205 messages were accurate all along;
+the repeated owner "applied it" reports were phantom applies.
+
+Resolution, via the restored cluster->Postgres route (pooler 6543/5432
+both reachable from login02):
+
+- pgvector 0.8.0 installed into schema `extensions`; 0001 + 0002 applied
+  by direct psycopg from the cluster; `notify pgrst, 'reload schema'` ->
+  **REST served bdw_chunks within seconds (probe 200)** - the cache was
+  never stuck. 0002 needed a real fix: with `set search_path = ''` the
+  SECURITY DEFINER RPCs must qualify pgvector - `extensions.vector(384)`
+  and `operator(extensions.<=>)` (committed here; grant signature too).
+- The 5-minute heal-poller caught the 200 at 14:30:25 and auto-seeded:
+  **RESULT: P3_INGEST_OK** (its e2e leg then crashed on the .env naive-
+  split bug introduced by the TAVILY line; fixed in the local copy and
+  rerun by hand).
+- **RESULT: P3_E2E_OK chunks=2164 l2max=1.0000 fts=1 cos_top1=0.7887**
+  (gates: >=2000, [0.94,1.02], >=1, >=0.40). Count is 2164, not the
+  2093 dry-run figure - the live tables grew between the snapshot and
+  the seed; schema_audit v0.2 row counts are now historical.
+- Cluster environment notes: bdw-llm venv gained psycopg 3.3.6 +
+  sentence-transformers 6.2.0 with transformers pinned 4.55.4 (5.x
+  demands torch >= 2.6; cluster torch is 2.5.1+cu121). The staged bge
+  dir needed its 1_Pooling/ and 2_Normalize/ SUBDIRS - top-level-file
+  sync broke Pooling load (st 6.x requires embedding_dimension from
+  1_Pooling/config.json).
+- Open follow-up: Supabase support ticket now moot - close it when the
+  reply arrives.
