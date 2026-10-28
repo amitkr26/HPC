@@ -187,6 +187,14 @@ class Zone3:
         return r.json().get("content", "")
 
 
+def build_prompt(task, transcript_lines):
+    """Single source of truth for the inference-time prompt; the SFT
+    pipeline reuses this so trained format == served format."""
+    return (SYSTEM_PROMPT + "\n\nTASK: " + task
+            + "\n\nTRANSCRIPT:\n" + "\n".join(transcript_lines)
+            + "\n\nYour move (one JSON object):")
+
+
 class AgentLoop:
     def __init__(self, llm, sandbox, max_iters, log=print):
         self.llm = llm
@@ -197,9 +205,7 @@ class AgentLoop:
     def run(self, task):
         transcript = []
         for i in range(1, self.max_iters + 1):
-            prompt = (SYSTEM_PROMPT + "\n\nTASK: " + task
-                      + "\n\nTRANSCRIPT:\n" + "\n".join(transcript)
-                      + "\n\nYour move (one JSON object):")
+            prompt = build_prompt(task, transcript)
             raw = self.llm.complete(prompt)
             parsed = parse_action(raw)
             if parsed is None:
