@@ -329,8 +329,8 @@ def handler_class(g):
             try:
                 data, code, err = g.ask(q, uid, web_mode, history)
             except Exception as exc:  # noqa: BLE001
-                data, code = {"error": "upstream failure", "detail":
-                              str(exc)[:160]}, 502
+                import traceback; traceback.print_exc()
+                data, code, err = {"error": "upstream failure", "detail": str(exc)[:160]}, 502, None
             self._send(code, err or data)
 
         def do_OPTIONS(self):
@@ -374,6 +374,8 @@ def main():
             if line and not line.startswith("#"):
                 k, _, v = line.partition("=")
                 env[k.strip()] = v.strip()
+    for k, v in os.environ.items():
+        env[k] = v
 
     retriever = SupabaseRetriever(env["SUPABASE_URL"],
                                   env["SUPABASE_SERVICE_ROLE_KEY"])

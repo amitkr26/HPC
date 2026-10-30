@@ -1,12 +1,12 @@
 {
- "run": "2026-10-27 11:29",
- "elapsed_s": 16.8,
- "mode": "keep",
+ "run": "2026-10-28 14:33",
+ "elapsed_s": 198.6,
+ "mode": "seed",
  "audit_tables": {
   "opportunity": {
    "table": "opportunities",
-   "rows": 511,
-   "chunks": 511
+   "rows": 532,
+   "chunks": 532
   },
   "organization": {
    "table": "organizations",
@@ -20,17 +20,17 @@
   },
   "news": {
    "table": "news_articles",
-   "rows": 1279,
-   "chunks": 1279
+   "rows": 1329,
+   "chunks": 1329
   }
  },
- "chunks": 2093,
+ "chunks": 2164,
  "quarantined": 0,
  "no_id": 0,
  "empty_tables": 0,
- "upserted_to_supabase": 0,
+ "upserted_to_supabase": 2164,
  "bge_dir": "C:\\Users\\STUDENT\\Desktop\\Amit\\HPC\\bdw-llm\\phase3\\models\\bge-small-en-v1.5",
  "bge_safetensors_md5": "754e1c8b5c2ec958717665f1f4d12fc5",
  "snapshot": "phase3\\gateway\\data\\seed_chunks.jsonl",
- "snapshot_md5": "484084ac2c823e4a26949ab8f0cabc55"
+ "snapshot_md5": "5232e22d242636d21682647dfdf4122b"
 }

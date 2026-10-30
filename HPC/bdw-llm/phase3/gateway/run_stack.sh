@@ -17,9 +17,11 @@ LLAMA_BIN="${LLAMA_BIN:-$BASE/llama_cpp/build/bin/llama-server}"
 GGUF="${GGUF:-$BASE/merged/bdw-7b-sft-Q4_K_M.gguf}"
 CTX="${CTX:-4096}"
 THREADS="${THREADS:-4}"
-LLM_PORT="${LLM_PORT:-8080}"
+LLM_PORT="${LLM_PORT:-8081}"
 GW_PORT="${GW_PORT:-8787}"
 GW_DIR="${GW_DIR:-$BASE/phase3/gateway}"
+PYTHON="${PYTHON:-$BASE/venv/bin/python3}"
+[ ! -x "$PYTHON" ] && PYTHON="python3"
 RUN_DIR="$BASE/run"
 LOG_LLM="$RUN_DIR/llama.log"
 LOG_GW="$RUN_DIR/gateway.log"
@@ -89,7 +91,8 @@ nohup "$LLAMA_BIN" -m "$GGUF" --host 127.0.0.1 --port "$LLM_PORT" \
 echo $! >"$PID_LLM"
 
 nohup env ZONE3_BASE_URL="http://127.0.0.1:$LLM_PORT" \
-    python3 -X utf8 "$GW_DIR/app.py" >"$LOG_GW" 2>&1 &
+    ZONE3_TIMEOUT_S="${ZONE3_TIMEOUT_S:-300}" \
+    "$PYTHON" -X utf8 "$GW_DIR/app.py" >"$LOG_GW" 2>&1 &
 echo $! >"$PID_GW"
 
 if ! wait_http "http://127.0.0.1:$LLM_PORT/health" "llama-server" 60; then
