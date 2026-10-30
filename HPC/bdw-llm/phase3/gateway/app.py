@@ -30,6 +30,13 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 import requests
 
+import sys
+_PH4_ROUTER = os.path.join(os.path.dirname(os.path.dirname(
+    os.path.dirname(os.path.abspath(__file__)))), "phase4", "router")
+if _PH4_ROUTER not in sys.path:
+    sys.path.insert(0, _PH4_ROUTER)
+from domain_classifier import DomainClassifier, RoutingDecision
+
 PH3 = None  # set by main()
 Z3_DEFAULT_TIMEOUT = 15
 CITE_RE = re.compile(r'<cite\s+id="([^"]+)"\s*/?>', re.I)
@@ -72,12 +79,16 @@ def should_web(question, n_local, mode):
     return False, "local-sufficient"
 
 
-def build_ask_prompt(context, history, question, web_used=False):
-    """Gateway-side single source of truth for the /ask prompt: context
-    (+ web preamble), then the threaded conversation, then the question.
-    History entries are filtered to role in user|assistant, capped to the
-    last HISTORY_TURNS turns and HISTORY_CHAR_CAP chars per turn."""
+def build_ask_prompt(context, history, question, web_used=False,
+                     domain_prefix=None):
+    """Gateway-side single source of truth for the /ask prompt: an optional
+    domain-specific system prefix, then context (+ web preamble), then the
+    threaded conversation, then the question. History entries are filtered
+    to role in user|assistant, capped to the last HISTORY_TURNS turns and
+    HISTORY_CHAR_CAP chars per turn."""
     prompt = SYSTEM_TEMPLATE.format(context=context)
+    if domain_prefix:
+        prompt = domain_prefix + "\n" + prompt
     if web_used:
         prompt += WEB_PREAMBLE
     turns = [h for h in (history or [])
@@ -143,10 +154,12 @@ class RateLimiter:
 
 
 class Gateway:
-    def __init__(self, retriever, llm, cfg, web=None):
+    def __init__(self, retriever, llm, cfg, web=None,
+                 classifier=None):
         self.retriever = retriever
         self.llm = llm
         self.web = web
+        self.classifier = classifier or DomainClassifier()
         self.lim = RateLimiter(cfg["RATE_LIMIT_PER_USER_DAY"])
         self.cfg = cfg
 
@@ -157,6 +170,11 @@ class Gateway:
         ranked = self.retriever.search(question,
                                        self.cfg["RETRIEVAL_TOPK"])
         use_web, reason = should_web(question, len(ranked), mode)
+        decision = self.classifier.classify(question)
+        print("P4_DOMAIN domain=%s conf=%.2f adapter=%s index=%s "
+              "reason=%s" % (decision.domain, decision.confidence,
+                             decision.adapter, decision.rag_index,
+                             decision.reason), flush=True)
         web_used = False
         if use_web and self.web is not None:
             try:
@@ -171,14 +189,16 @@ class Gateway:
                         ranked.append(w)
                 web_used = True
         context, ids = fmt_chunks(ranked)
+        domain_prefix = self.classifier.prompt_prefix(decision.domain)
         prompt, n_turns = build_ask_prompt(context, history, question,
-                                           web_used)
+                                           web_used, domain_prefix)
         answer = self.llm.complete(
             prompt, max_tokens=self.cfg["MAX_TOKENS"])
         clean, kept, stale = verify_citations(
             answer, len(ranked), ids)
         meta = {"routing": {"mode": mode, "web_used": web_used,
                             "reason": reason, "history_turns": n_turns},
+                "domain": decision.to_dict(),
                 "citations_kept": kept, "citations_dropped": stale,
                 "chunks": [{"id": c, "title": ranked[i].get("title"),
                             "url": ranked[i].get("source_url"),
