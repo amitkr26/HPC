@@ -95,11 +95,12 @@ _DOMAIN_KEYWORDS: Dict[Domain, List[str]] = {
         "distributed", "tcp/ip", "http", "database", "sql", "concurrency",
         "thread", "lock", "deadlock", "virtual memory", "paging",
         "file system", "rest", "grpc", "api", "git", "python", "java",
-        "c++", "rust", "javascript", "go",
+        "c++", "rust", "javascript",
     ],
     Domain.AIML: [
         "neural network", "transformer", "llm", "cuda", "pytorch",
-        "tensorflow", "fine-tuning", "fine tuning", "quantization",
+        "tensorflow", "backpropagation", "deep learning", "machine learning",
+        "fine-tuning", "fine tuning", "quantization",
         "embedding", "vector database", "rag", "attention", "diffusion",
         "computer vision", "nlp", "reinforcement learning", "tokenizer",
         "checkpoint", "weights", "inference", "training", "model",
@@ -183,7 +184,15 @@ class DomainClassifier:
 
         # Confidence: share of hits on the winner, floored/capped.
         confidence = min(best_hits / max(total_hits, 1), 1.0)
-        if best_hits >= 3:
+        runner_up = max(
+            [s for d, s in scores.items() if d != best_domain],
+            default=0,
+        )
+        # A clear winner (strictly more hits than any rival, >= 2 hits)
+        # is a definitive routing decision -> full confidence.
+        if best_hits >= 2 and best_hits > runner_up:
+            confidence = 1.0
+        elif best_hits >= 3:
             confidence = max(confidence, HIGH_CONFIDENCE)
         elif best_hits >= 2:
             confidence = max(confidence, MED_CONFIDENCE)
