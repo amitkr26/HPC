@@ -58,7 +58,7 @@ _PH4_ROUTER = os.path.join(os.path.dirname(os.path.dirname(
     os.path.dirname(os.path.abspath(__file__)))), "phase4", "router")
 if _PH4_ROUTER not in sys.path:
     sys.path.insert(0, _PH4_ROUTER)
-from domain_classifier import DomainClassifier, RoutingDecision
+from domain_classifier import Domain, DomainClassifier, RoutingDecision
 
 PH3 = None  # set by main()
 Z3_DEFAULT_TIMEOUT = 15
@@ -115,15 +115,21 @@ def should_web(question, n_local, mode):
 
 
 def build_ask_prompt(context, history, question, web_used=False,
-                     domain_prefix=None):
+                     domain_prefix=None, system_prompt=None):
     """Gateway-side single source of truth for the /ask prompt: an optional
-    domain-specific system prefix, then context (+ web preamble), then the
-    threaded conversation, then the question. History entries are filtered
-    to role in user|assistant, capped to the last HISTORY_TURNS turns and
+    external system prompt (BDW persona, P5), an optional domain-specific
+    system prefix, then context (+ web preamble), then the threaded
+    conversation, then the question. History entries are filtered to role in
+    user|assistant, capped to the last HISTORY_TURNS turns and
     HISTORY_CHAR_CAP chars per turn."""
     prompt = SYSTEM_TEMPLATE.format(context=context)
+    heads = []
+    if system_prompt and system_prompt.strip():
+        heads.append(system_prompt.strip())
     if domain_prefix:
-        prompt = domain_prefix + "\n" + prompt
+        heads.append(domain_prefix)
+    if heads:
+        prompt = "\n".join(heads) + "\n" + prompt
     if web_used:
         prompt += WEB_PREAMBLE
     turns = [h for h in (history or [])
@@ -199,11 +205,25 @@ class Gateway:
         self.lim = RateLimiter(cfg["RATE_LIMIT_PER_USER_DAY"])
         self.cfg = cfg
 
-    def ask(self, question, user_id, web_mode=None, history=None):
+    def ask(self, question, user_id, web_mode=None, history=None,
+            system_prompt=None, max_tokens=None, temperature=None,
+            force_domain=None):
         if not self.lim.hit(user_id):
             return None, 429, {"error": "rate limit reached; retry tomorrow"}
         mode = web_mode or self.cfg.get("WEB_RAG_MODE", "auto")
-        decision = self.classifier.classify(question)  # P4: routing FIRST
+        if force_domain:
+            try:
+                dom = (force_domain if isinstance(force_domain, Domain)
+                       else Domain(str(force_domain).lower()))
+            except ValueError:
+                raise ValueError("unsupported force_domain: %r"
+                                 % (force_domain,))
+            adapter = None if dom == Domain.GENERAL else "lora_" + dom.value
+            decision = RoutingDecision(
+                dom, 1.0, adapter, "idx_" + dom.value,
+                "forced:%s" % dom.value, [])
+        else:
+            decision = self.classifier.classify(question)  # P4: routing FIRST
         print("P4_DOMAIN domain=%s conf=%.2f adapter=%s index=%s "
               "reason=%s" % (decision.domain, decision.confidence,
                              decision.adapter, decision.rag_index,
@@ -233,14 +253,20 @@ class Gateway:
         context, ids = fmt_chunks(ranked)
         domain_prefix = self.classifier.prompt_prefix(decision.domain)
         prompt, n_turns = build_ask_prompt(context, history, question,
-                                           web_used, domain_prefix)
+                                           web_used, domain_prefix,
+                                           system_prompt)
         lora_id = self.lora_resolver(decision.adapter)
         if decision.adapter and lora_id is None:
             print("P4_ADAPTER domain=%s adapter=%s state=unavailable "
                   "(serving on base model)" % (
                       decision.domain.value, decision.adapter), flush=True)
+        mt = (int(max_tokens) if max_tokens is not None
+              else int(self.cfg["MAX_TOKENS"]))
+        mt = max(1, min(mt, 4096))
+        temp = (0.0 if temperature is None
+                else max(0.0, min(float(temperature), 2.0)))
         answer = self.llm.complete(
-            prompt, max_tokens=self.cfg["MAX_TOKENS"], lora_id=lora_id)
+            prompt, max_tokens=mt, lora_id=lora_id, temperature=temp)
         clean, kept, stale = verify_citations(
             answer, len(ranked), ids)
         meta = {"routing": {"mode": mode, "web_used": web_used,
@@ -569,7 +595,8 @@ class Zone3LLM:
         self.lora_ids = None
         return None
 
-    def complete(self, prompt, max_tokens=1024, lora_id=None):
+    def complete(self, prompt, max_tokens=1024, lora_id=None,
+                 temperature=0.0):
         """Serves through /v1/chat/completions so llama-server renders the
         merged GGUF's chat template server-side (the P2/P4 SFT rows were
         chat-templated messages; raw /completion prompts underfit the
@@ -579,7 +606,8 @@ class Zone3LLM:
         LoRA: {"lora": [{"id": N, "scale": 1.0}]} (llama ids from
         refresh_lora_map)."""
         body = {"messages": [{"role": "user", "content": prompt}],
-                "max_tokens": int(max_tokens), "temperature": 0.0,
+                "max_tokens": int(max_tokens),
+                "temperature": float(temperature),
                 "stream": False}
         if lora_id is not None:
             body["lora"] = [{"id": int(lora_id), "scale": 1.0}]
@@ -730,12 +758,13 @@ def load_env():
     if not os.path.isfile(env_path):
         env_path = os.path.join(os.path.dirname(ph3), ".env")
     env = {}
-    with open(env_path, encoding="utf-8-sig") as fh:
-        for line in fh:
-            line = line.strip()
-            if line and not line.startswith("#"):
-                k, _, v = line.partition("=")
-                env[k.strip()] = v.strip()
+    if os.path.isfile(env_path):
+        with open(env_path, encoding="utf-8-sig") as fh:
+            for line in fh:
+                line = line.strip()
+                if line and not line.startswith("#"):
+                    k, _, v = line.partition("=")
+                    env[k.strip()] = v.strip()
     for k, v in os.environ.items():
         env[k] = v
     return env
@@ -776,21 +805,14 @@ def supabase_selftest():
     return 0 if ok else 1
 
 
-def main():
-    import argparse
-    ap = argparse.ArgumentParser(description="Zone 2 gateway (P3.4 + P4)")
-    ap.add_argument("--self-test", action="store_true",
-                    help="offline P4 routing/retrieval verification; "
-                         "no server boot")
-    ap.add_argument("--supabase-selftest", action="store_true",
-                    help="live P4.4 check: domain tables + RPCs reachable")
-    args, _ = ap.parse_known_args()
-    if args.self_test:
-        return ph4_selftest()
-    if args.supabase_selftest:
-        return supabase_selftest()
+def build_gateway(env=None):
+    """Build the Zone 2 gateway from env.
 
-    env = load_env()
+    Shared by the legacy /ask server (main) and the P5 OpenAI shim
+    (phase5/serve/runtime.py) so both serve the identical router, retriever,
+    prompt builder, LoRA map and citation verifier.
+    """
+    env = dict(env or load_env())
 
     base_retriever = SupabaseRetriever(env["SUPABASE_URL"],
                                        env["SUPABASE_SERVICE_ROLE_KEY"])
@@ -855,23 +877,50 @@ def main():
 
     gate = Gateway(retriever, llm, cfg, web=web,
                    lora_resolver=lora_resolver)
+    return {"gateway": gate, "retriever": retriever, "llm": llm,
+            "web": web, "llama_ids": llama_ids,
+            "llama_attached": llama_attached, "sb_tables": sb_tables,
+            "domain_backend": domain_backend, "rag_root": rag_root,
+            "bge_dir": bge_dir, "cfg": cfg, "provider": provider}
+
+
+def main():
+    import argparse
+    ap = argparse.ArgumentParser(description="Zone 2 gateway (P3.4 + P4)")
+    ap.add_argument("--self-test", action="store_true",
+                    help="offline P4 routing/retrieval verification; "
+                         "no server boot")
+    ap.add_argument("--supabase-selftest", action="store_true",
+                    help="live P4.4 check: domain tables + RPCs reachable")
+    args, _ = ap.parse_known_args()
+    if args.self_test:
+        return ph4_selftest()
+    if args.supabase_selftest:
+        return supabase_selftest()
+
+    env = load_env()
+    rt = build_gateway(env)
+    gate = rt["gateway"]
+    retriever = rt["retriever"]
     port = int(env.get("ZONE2_PORT", "8787"))
     srv = ThreadingHTTPServer(("0.0.0.0", port), handler_class(gate))
     home = os.path.dirname(os.path.dirname(os.path.dirname(
         os.path.abspath(__file__))))
     present = [d for d in PH4_DOMAINS
-               if os.path.isfile(os.path.join(rag_root, "idx_" + d,
-                                              "vectors.npy"))]
+               if os.path.isfile(os.path.join(rt["rag_root"],
+                                              "idx_" + d, "vectors.npy"))]
     print("RESULT: P3_ZONE2_UP port=%d web=%s provider=%s"
-          % (port, "on" if web else "disabled", provider), flush=True)
+          % (port, "on" if rt["web"] else "disabled",
+             rt["provider"]), flush=True)
     print("RESULT: P4_ZONE2_UP port=%d retriever=domain_hybrid "
           "domain_backend=%s supabase_tables=%s rag_dir=%s "
           "indexes_present=%s min_sim=%.2f domain_topk=%d "
           "llama_attached=%s" % (
-              port, retriever.backend, sb_tables,
-              os.path.relpath(rag_root, home) if home else rag_root,
+              port, retriever.backend, rt["sb_tables"],
+              os.path.relpath(rt["rag_root"], home) if home
+              else rt["rag_root"],
               ",".join(present), retriever.min_sim, retriever.domain_topk,
-              ",".join(llama_attached) or "none"), flush=True)
+              ",".join(rt["llama_attached"]) or "none"), flush=True)
     srv.serve_forever()
 
 

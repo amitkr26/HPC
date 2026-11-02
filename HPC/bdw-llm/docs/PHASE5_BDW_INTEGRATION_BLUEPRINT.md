@@ -4,7 +4,7 @@
 |---|---|
 | **Document** | `docs/PHASE5_BDW_INTEGRATION_BLUEPRINT.md` |
 | **Date** | 2026-11-02 |
-| **Status** | **PLANNED** - P5.0 (OpenAI-compatible shim) starts after this document is committed |
+| **Status** | **P5.0 COMPLETE** - shim, auth, SSE and contract tests green, live staging verified; CI Docker build pending (§16) |
 | **Upstream** | Phase 4 complete: 5 domain LoRAs, hybrid router, 5 RAG indexes, Supabase domain tables, live gateway |
 | **Downstream** | `amitkr26/BerojgarDegreeWala` production (Next.js 14 / Vercel / Supabase) |
 | **Result markers** | `P5_SHIM_OK`, `P5_OPENAI_CONTRACT_OK`, `P5_BDW_PROVIDER_CONTRACT_OK`, `P5_LIVE_OK` |
@@ -463,7 +463,7 @@ phase5/serve/tests/contracts/bdw_provider_contract.mjs
 
 | Phase | Scope | Exit criteria |
 |---|---|---|
-| **P5.0** (3-5 d) | OpenAI shim, auth, SSE, Docker, pinned deps, contract tests | `P5_SHIM_OK`, `P5_OPENAI_CONTRACT_OK`, `P5_BDW_PROVIDER_CONTRACT_OK` |
+| **P5.0** (3-5 d) - **DONE** (§16) | OpenAI shim, auth, SSE, Docker, pinned deps, contract tests | `P5_SHIM_OK`, `P5_OPENAI_CONTRACT_OK`, `P5_BDW_PROVIDER_CONTRACT_OK` |
 | **P5.1** (1-2 w) | GPU host + vLLM base/5 LoRAs, warm pool, TLS, autoscaling, token streaming | SLOs measured; live staging `P5_LIVE_OK` |
 | **P5.2** (2-3 d) | Production Supabase migration/seed/parity/RLS/backups | 5 tables live; parity 8/8; keys rotated |
 | **P5.3** (3-5 d) | BDW provider metadata, technical intent split, UI badges/citations, feature flag | Canary passes; fallback verified |
@@ -524,3 +524,94 @@ phase5/serve/tests/contracts/bdw_provider_contract.mjs
 * Decide whether the shim or BDW owns the technical-intent classifier; the
   recommendation is BDW (cheap lexical/embedding gate) with the shim as the
   authoritative router for accepted technical queries.
+
+---
+
+## 16. P5.0 implementation record (2026-11-02)
+
+Base commit `fcaff61` on `amitkr26/HPC`. The P5.0 gateway changes that were live
+on the cluster but not yet committed (`phase3/gateway/app.py`, cluster blob
+`fb9593b5`) were imported into the source tree first, so the shim and the
+legacy `/ask` server share the identical construction path.
+
+### 16.1 Delivered
+
+| File | Role |
+|---|---|
+| `phase5/__init__.py`, `phase5/serve/__init__.py` | package markers |
+| `phase5/serve/main.py` | FastAPI app: `create_app` factory, settings, auth, `/healthz`, `/readyz`, `/v1/models`, `/v1/classify`, `/v1/chat/completions` (non-stream + SSE), OpenAI error envelope, `bdw` metadata, `P5_REQUEST` logs |
+| `phase5/serve/runtime.py` | lazily imports `phase3/gateway/app.py` and adapts `build_gateway()` (dict) to `(gateway, info)` |
+| `phase5/serve/requirements.txt` | runtime pins: fastapi 0.162.0, uvicorn 0.54.0, pydantic 2.14.2, requests 2.34.2, numpy 2.4.6, torch 2.5.1 (CPU index), sentence-transformers 6.2.0, transformers 4.55.4, tokenizers 0.21.4 |
+| `phase5/serve/requirements-dev.txt` | contract-test pins: pytest 9.2.0, httpx 0.28.1, fastapi/uvicorn/pydantic |
+| `phase5/serve/Dockerfile` | `python:3.11-slim`, non-root uid 10001, healthcheck, `uvicorn ...:create_app --factory` on 8090 |
+| `.dockerignore` (repo root) | excludes venvs, models, adapters, indexes, logs, test caches |
+| `phase5/serve/tests/fake_gateway.py` | deterministic gateway for CI (no model/RAG) |
+| `phase5/serve/tests/test_openai_contract.py` | 30 tests: auth, models, shape, SSE, heartbeat, in-band failures, forced aliases, limits |
+| `phase5/serve/tests/test_bdw_provider_contract.py` | starts a live uvicorn shim and runs the real `providers/bdw.ts` through Node |
+| `phase5/serve/tests/contracts/bdw_provider_contract.mjs` | Node harness importing the real TS module; `P5_CONTRACT_TIMEOUT_MS` overrides the 15 s CI timeout |
+
+Gateway seams in `phase3/gateway/app.py` match §9.2 exactly: `system_prompt` in
+`build_ask_prompt`, per-request `system_prompt/max_tokens/temperature/force_domain`
+in `Gateway.ask` (forced decisions are `confidence=1.0`, `reason=forced:<domain>`),
+`temperature` in `Zone3LLM.complete`, and `build_gateway(env=None)` returning the
+gateway plus boot facts. `load_env()` tolerates a missing `.env` for containers.
+Defaults keep the legacy `/ask` behavior unchanged.
+
+### 16.2 Verification
+
+Local (workstation, Python 3.14 test venv, Node 24):
+
+```text
+python -m py_compile phase3/gateway/app.py phase5/serve/*.py ...          OK
+python -m pytest phase5/serve/tests -q                                    32 passed
+python -m pytest phase5/serve/tests/test_openai_contract.py -q            30 passed
+python -m pytest phase5/serve/tests/test_bdw_provider_contract.py -q       2 passed
+```
+
+Cluster regression (unchanged behavior):
+
+```text
+python phase3/gateway/app.py --self-test                    RESULT: P4_ZONE2_SELFTEST_OK
+python phase3/gateway/app.py --supabase-selftest            RESULT: P4_ZONE2_SUPABASE_OK domains=5
+python phase4/router/integration_test.py                    RESULT: P4_ROUTER_INTEGRATION_OK pass=58/58
+```
+
+Staging (real Phase 4 stack: llama-server `:8081` with 5 adapters, legacy
+gateway `:8787`, shim `:8090`, `P4_DOMAIN_BACKEND=supabase`):
+
+* `/healthz` -> 200, `/readyz` -> `{"status":"ready","upstream":"ok"}`.
+* `/v1/models` -> six IDs (`bdw-career-ai`, `bdw-math`, `bdw-vlsi`,
+  `bdw-embedded`, `bdw-cs`, `bdw-aiml`); no/wrong bearer -> 401
+  `invalid_api_key`.
+* Non-stream `bdw-vlsi` ask: 200 in 13,889 ms; `P4_DOMAIN` forced vlsi;
+  `adapter=lora_vlsi`, `adapter_applied=True`, `grounded=True`, 8 citations,
+  `usage={prompt:24, completion:34, total:58}`; answer returned.
+* SSE `bdw-vlsi` ask: 56,136 ms, 6 `chat.completion.chunk` events + 5 `: ping`
+  heartbeats, `finish_reason=stop`, `[DONE]`, same adapter/citations, streamed
+  text concatenates correctly.
+* Node harness against the staging shim via an SSH tunnel (real `bdw.ts`):
+  `{"valid":true,"health":true,"content":"Setup time (tsu) is the minimum ...","error":null}`;
+  `P5_REQUEST` logged the auto-routed VLSI call in 61,191 ms.
+
+Notes and environment requirements:
+
+* `ZONE3_TIMEOUT_S` (gateway -> llama-server, default 15 s) is too low for CPU
+  prompt processing; staging used `ZONE3_TIMEOUT_S=300`. P5.1 must set a
+  production value and raise `BDW_AI_TIMEOUT_MS` accordingly.
+* The cluster's Node is v10, so native TypeScript import is not available
+  there; the harness ran on the workstation over `ssh -L`. CI must use Node
+  >= 22.6 (Node 24 on the workstation).
+* Shim `usage` is character-estimated in P5.0 (per §5) and will be replaced by
+  upstream usage in P5.1.
+
+### 16.3 Exit markers
+
+* `P5_SHIM_OK` - shim boots, serves models/chat, auth enforced.
+* `P5_OPENAI_CONTRACT_OK` - 30/30 OpenAI contract tests.
+* `P5_BDW_PROVIDER_CONTRACT_OK` - 2/2 real-provider tests (fake gateway in CI)
+  and the real provider against the staging shim.
+
+`P5_LIVE_OK` remains the P5.1 exit criterion, but live staging is already
+demonstrated. The Docker image build (acceptance §9.4 #6) was not run on the
+workstation (no Docker); the pinned Dockerfile is ready for the CI/P5.1 build.
+
