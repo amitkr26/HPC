@@ -1,4 +1,4 @@
-"""P5.0 - OpenAI-compatible inference shim for BerojgarDegreeWala.
+"""P5.0/P5.1 - OpenAI-compatible inference shim for BerojgarDegreeWala.
 
 This is the production-facing surface described in
 docs/PHASE5_BDW_INTEGRATION_BLUEPRINT.md §5/§9. It speaks the exact subset of
@@ -6,6 +6,7 @@ the OpenAI API that backend/ai-gateway/src/providers/bdw.ts uses:
 
   GET  /v1/models              -> {"object": "list", "data": [...]}
   POST /v1/chat/completions    -> chat.completion (+ SSE when stream=true)
+  GET  /metrics                -> Prometheus instrumentation (P5.1)
 
 ...and reuses the Phase 3/4 Zone 2 stack unchanged (hybrid domain router,
 Supabase domain tables with local npz fallback, per-request LoRA, citation
@@ -13,9 +14,14 @@ verifier) through phase3/gateway/app.py:build_gateway(). Domain metadata is
 returned in an additive "bdw" object; BDW reads only
 choices[0].message.content.
 
-P5.0 streams *after* generation (blueprint ADR-4) so router, RAG and the
-citation verifier stay on one code path; token-level streaming arrives with
-vLLM in P5.1.
+P5.1 live streaming (blueprint ADR-4 supersession): when the gateway
+exposes ask_stream() and P5_STREAM_UPSTREAM is on (both default), SSE
+deltas are forwarded as Zone 3 produces them - router + RAG run once in a
+producer thread, the citation gate streams per delta, heartbeats keep the
+connection warm before the first token, and failures/limits surface as
+in-band OpenAI error events followed by [DONE]. Gateways without
+ask_stream(), or P5_STREAM_UPSTREAM=0, fall back to the P5.0
+post-generation streaming path byte-for-byte.
 
 Run (from the bdw-llm repo root):
 
@@ -23,8 +29,9 @@ Run (from the bdw-llm repo root):
 
 Environment (see §9.3): P5_API_KEY, P5_AUTH_MODE=required|optional|disabled,
 P5_MAX_QUESTION_CHARS, P5_MAX_TOKENS_DEFAULT, P5_SSE_CHUNK_CHARS,
-P5_SSE_HEARTBEAT_S, P5_MODEL, P5_READY_URL, plus the Phase 3/4 variables
-(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, ZONE3_BASE_URL, ...).
+P5_SSE_HEARTBEAT_S, P5_MODEL, P5_READY_URL, P5_STREAM_UPSTREAM,
+P5_METRICS_TOKEN, plus the Phase 3/4 variables (SUPABASE_URL,
+SUPABASE_SERVICE_ROLE_KEY, ZONE3_BASE_URL, ZONE3_MODEL, ...).
 """
 from __future__ import annotations
 
@@ -33,18 +40,21 @@ import hashlib
 import hmac
 import json
 import os
+import threading
 import time
 import uuid
 from dataclasses import dataclass
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, AsyncIterator, Callable, Dict, List, Optional
 
 from fastapi import FastAPI, Header, HTTPException
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi.responses import JSONResponse, Response, StreamingResponse
 from pydantic import BaseModel, Field
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-VERSION = "5.0.0"
+from . import metrics
+
+VERSION = "5.1.0"
 MODEL_CREATED = 1730000000
 DOMAINS = ("math", "vlsi", "embedded", "cs", "aiml")
 MODEL_IDS = ("bdw-career-ai",) + tuple("bdw-" + d for d in DOMAINS)
@@ -91,6 +101,8 @@ class Settings:
     sse_chunk_chars: int = 48
     sse_heartbeat_s: float = 10.0
     ready_url: Optional[str] = None
+    stream_upstream: bool = True   # P5.1: live ask_stream() proxy when able
+    metrics_token: Optional[str] = None  # P5.1: /metrics bearer (optional)
 
     @classmethod
     def from_env(cls, env: Optional[Dict[str, str]] = None) -> "Settings":
@@ -99,6 +111,12 @@ class Settings:
         def num(key: str, default, cast):
             raw = env.get(key)
             return cast(raw) if raw not in (None, "") else default
+
+        def flag(key: str, default: bool):
+            raw = env.get(key)
+            if raw in (None, ""):
+                return default
+            return str(raw).strip().lower() not in ("0", "false", "no", "off")
 
         zone3 = (env.get("ZONE3_BASE_URL") or
                  "http://127.0.0.1:8080").rstrip("/")
@@ -114,6 +132,8 @@ class Settings:
             sse_chunk_chars=num("P5_SSE_CHUNK_CHARS", 48, int),
             sse_heartbeat_s=num("P5_SSE_HEARTBEAT_S", 10.0, float),
             ready_url=ready,
+            stream_upstream=flag("P5_STREAM_UPSTREAM", True),
+            metrics_token=env.get("P5_METRICS_TOKEN") or None,
         )
 
 
@@ -294,6 +314,264 @@ def _default_readiness_probe(url: Optional[str]) -> Callable[[], bool]:
     return probe
 
 
+_STREAM_END = object()  # producer sentinel: gateway stream ended cleanly
+
+
+async def stream_chat_events(gateway, req, question, user_id, web_mode,
+                             history, system_prompt, max_tokens, temperature,
+                             force_domain, settings, cid, created, model,
+                             started) -> AsyncIterator[str]:
+    """P5.1 live SSE body: proxy gateway.ask_stream() as OpenAI chunks.
+
+    The blocking gateway generator is owned by a producer thread which
+    bridges events onto an asyncio.Queue (single owner -> no
+    close-while-executing races). While the upstream produces nothing the
+    loop answers with `: ping` heartbeats. Client disconnect raises
+    GeneratorExit at a yield: the finally sets `stop`, the producer
+    abandons the bridge and closes the gateway generator (which closes the
+    Zone 3 response), and the session is recorded as status 499.
+    """
+    loop = asyncio.get_running_loop()
+    q: asyncio.Queue = asyncio.Queue()
+    stop = threading.Event()
+
+    def put(item) -> None:
+        """Thread-safe hand-off; wakes after the loop closed (disconnect
+        during a producer read) are dropped, never raised."""
+        try:
+            loop.call_soon_threadsafe(q.put_nowait, item)
+        except RuntimeError:
+            pass
+
+    def produce() -> None:
+        gen = None
+        try:
+            gen = gateway.ask_stream(question, user_id, web_mode, history,
+                                     system_prompt=system_prompt,
+                                     max_tokens=max_tokens,
+                                     temperature=temperature,
+                                     force_domain=force_domain)
+            for event in gen:
+                if stop.is_set():
+                    break
+                put(event)
+            else:
+                put(_STREAM_END)
+        except Exception as exc:  # noqa: BLE001
+            # ask_stream reports failures as events; a raise here is a
+            # contract break - translate it so the client still gets an
+            # in-band error instead of a stalled stream.
+            name = type(exc).__name__
+            print("P5_UPSTREAM_ERROR type=%s" % name, flush=True)
+            timed_out = isinstance(exc, TimeoutError) or "Timeout" in name
+            put({"type": "error",
+                 "status": 504 if timed_out else 502,
+                 "code": "upstream_timeout" if timed_out
+                 else "upstream_error",
+                 "message": "upstream inference timed out" if timed_out
+                 else "upstream inference failed"})
+        finally:
+            if gen is not None:
+                try:
+                    gen.close()
+                except Exception:  # noqa: BLE001
+                    pass
+
+    threading.Thread(target=produce, daemon=True,
+                     name="p5-stream-producer").start()
+
+    route = "chat"
+    status_label, domain_label = "500", "none"
+    ttft_s: Optional[float] = None
+    usage_final: Optional[dict] = None
+    drops: List = []
+    answer_final = ""
+    meta_final: dict = {}
+    role_sent = False
+    metrics.inc_inflight(route)
+    try:
+        while True:
+            try:
+                item = await asyncio.wait_for(
+                    q.get(), timeout=settings.sse_heartbeat_s)
+            except asyncio.TimeoutError:
+                yield ": ping\n\n"
+                continue
+            if item is _STREAM_END:
+                status_label = "200"
+                break
+            kind = item.get("type")
+            if kind == "delta":
+                text = item.get("text") or ""
+                if not text:
+                    continue
+                if ttft_s is None:
+                    ttft_s = time.perf_counter() - started
+                if not role_sent:
+                    role_sent = True
+                    yield _sse(_chunk(cid, created, model,
+                                      {"role": "assistant",
+                                       "content": ""}))
+                yield _sse(_chunk(cid, created, model,
+                                  {"content": text}))
+            elif kind == "error":
+                raw_status = str(item.get("status") or 502)
+                status_label = raw_status if raw_status.isdigit() \
+                    else "502"
+                yield _sse(_error_body(
+                    item.get("message") or "upstream inference failed",
+                    _ERR_TYPES.get(int(status_label), "api_error"),
+                    code=item.get("code") or "upstream_error"))
+                metrics.observe_upstream_error(status_label)
+                break
+            elif kind == "final":
+                answer_final = item.get("answer") or ""
+                meta_final = item.get("meta") or {}
+                usage_final = item.get("usage")
+                status_label = "200"
+                break
+        if status_label != "200":
+            # in-band failure already emitted; no finish chunk
+            yield "data: [DONE]\n\n"
+            return
+        # terminal success: role (if not yet), finish chunk, [DONE]
+        latency_ms = int((time.perf_counter() - started) * 1000)
+        bdw = _meta_to_bdw(meta_final, latency_ms)
+        domain_label = bdw.get("domain")
+        drops = bdw.get("citations_dropped") or []
+        if usage_final is None:
+            usage_final = _usage(req, answer_final)
+        if not meta_final:
+            print("P5_STREAM_END_WITHOUT_FINAL id=%s" % cid[-12:],
+                  flush=True)
+        if not role_sent:
+            role_sent = True
+            yield _sse(_chunk(cid, created, model,
+                              {"role": "assistant", "content": ""}))
+        yield _sse(_chunk(cid, created, model, {}, "stop",
+                          {"usage": usage_final, "bdw": bdw}))
+        yield "data: [DONE]\n\n"
+        print("P5_REQUEST id=%s status=200 ms=%d ttft_ms=%d domain=%s "
+              "adapter=%s user=%s stream=1 live=1" % (
+                  cid[-12:], latency_ms, int((ttft_s or 0.0) * 1000),
+                  bdw.get("domain"), bdw.get("adapter"),
+                  _user_hash(user_id)), flush=True)
+    except GeneratorExit:
+        status_label = "499"
+        raise
+    finally:
+        stop.set()
+        if ttft_s is not None:
+            metrics.observe_ttft(domain_label, ttft_s)
+        if usage_final is not None:
+            metrics.observe_usage(domain_label, usage_final)
+        metrics.observe_citations(domain_label, drops)
+        metrics.dec_inflight(route)
+        metrics.observe_request(route, "1", status_label, domain_label,
+                                time.perf_counter() - started)
+
+
+async def _post_gen_events(gateway, req, question, user_id, web_mode,
+                           history, system_prompt, max_tokens, temperature,
+                           force_domain, settings, cid, created, model,
+                           started) -> AsyncIterator[str]:
+    """P5.0 post-generation SSE body (ADR-4 fallback): run the full ask()
+    on a worker task, heartbeat while router/RAG/LLM work runs, then emit
+    the answer as chunks. Byte-for-byte the P5.0 behavior; P5.1 only adds
+    outcome instrumentation around it."""
+    route = "chat"
+    status_label, domain_label = "500", "none"
+    ttft_s: Optional[float] = None
+    usage_final: Optional[dict] = None
+    drops: List = []
+    metrics.inc_inflight(route)
+    try:
+        task = asyncio.create_task(asyncio.to_thread(
+            gateway.ask, question, user_id, web_mode, history,
+            system_prompt=system_prompt, max_tokens=max_tokens,
+            temperature=temperature, force_domain=force_domain))
+        payload = status = None
+        failure = None
+        try:
+            while not task.done():
+                try:
+                    payload, status, _ = await asyncio.wait_for(
+                        asyncio.shield(task),
+                        timeout=settings.sse_heartbeat_s)
+                    break
+                except asyncio.TimeoutError:
+                    yield ": ping\n\n"
+                    continue
+            if payload is None:
+                payload, status, _ = await task
+        except Exception as e:  # noqa: BLE001
+            failure = e
+        if failure is not None:
+            name = type(failure).__name__
+            print("P5_UPSTREAM_ERROR type=%s" % name, flush=True)
+            timed_out = (isinstance(failure, TimeoutError)
+                         or "Timeout" in name)
+            status_label = "504" if timed_out else "502"
+            metrics.observe_upstream_error(status_label)
+            yield _sse(_error_body(
+                "upstream inference timed out" if timed_out
+                else "upstream inference failed",
+                "upstream_timeout" if timed_out else "upstream_error",
+                code="upstream_timeout" if timed_out
+                else "upstream_error"))
+            yield "data: [DONE]\n\n"
+            return
+        latency_ms = int((time.perf_counter() - started) * 1000)
+        if status == 429:
+            status_label = "429"
+            metrics.observe_upstream_error(429)
+            yield _sse(_error_body("rate limit reached; retry tomorrow",
+                                   "rate_limit_error",
+                                   code="rate_limit_exceeded"))
+            yield "data: [DONE]\n\n"
+            return
+        if status != 200 or not isinstance(payload, dict):
+            status_label = "502"
+            metrics.observe_upstream_error(502)
+            yield _sse(_error_body("upstream returned an invalid response",
+                                   "upstream_error",
+                                   code="upstream_error"))
+            yield "data: [DONE]\n\n"
+            return
+        answer = payload.get("answer") or ""
+        bdw = _meta_to_bdw(payload.get("meta") or {}, latency_ms)
+        status_label = "200"
+        domain_label = bdw.get("domain")
+        drops = bdw.get("citations_dropped") or []
+        usage_final = _usage(req, answer)
+        ttft_s = time.perf_counter() - started
+        yield _sse(_chunk(cid, created, model,
+                          {"role": "assistant", "content": ""}))
+        for i in range(0, len(answer), settings.sse_chunk_chars):
+            yield _sse(_chunk(cid, created, model,
+                              {"content": answer[i:i +
+                                                 settings.sse_chunk_chars]}))
+        yield _sse(_chunk(cid, created, model, {}, "stop",
+                          {"usage": usage_final, "bdw": bdw}))
+        yield "data: [DONE]\n\n"
+        print("P5_REQUEST id=%s status=200 ms=%d domain=%s adapter=%s "
+              "user=%s stream=1" % (
+                  cid[-12:], latency_ms, bdw.get("domain"),
+                  bdw.get("adapter"), _user_hash(user_id)), flush=True)
+    except GeneratorExit:
+        status_label = "499"
+        raise
+    finally:
+        if ttft_s is not None:
+            metrics.observe_ttft(domain_label, ttft_s)
+        if usage_final is not None:
+            metrics.observe_usage(domain_label, usage_final)
+        metrics.observe_citations(domain_label, drops)
+        metrics.dec_inflight(route)
+        metrics.observe_request(route, "1", status_label, domain_label,
+                                time.perf_counter() - started)
+
+
 def create_app(gateway=None, settings: Optional[Settings] = None,
                readiness_probe: Optional[Callable[[], bool]] = None) -> FastAPI:
     """Build the shim. Tests inject a deterministic gateway; deployment
@@ -375,6 +653,23 @@ def create_app(gateway=None, settings: Optional[Settings] = None,
                           "created": MODEL_CREATED, "owned_by": "bdw"}
                          for m in MODEL_IDS]}
 
+    @app.get("/metrics")
+    async def prometheus_metrics(
+            authorization: Optional[str] = Header(default=None)):
+        """Prometheus scrape endpoint (P5.1). Open when P5_METRICS_TOKEN
+        is unset; otherwise requires that exact bearer token (constant-
+        time compare), independent of P5_API_KEY."""
+        expected = settings.metrics_token
+        if expected:
+            key = _bearer_key(authorization)
+            if not key or not hmac.compare_digest(key, expected):
+                raise HTTPException(
+                    401, _error_body("invalid or missing metrics token",
+                                     "authentication_error", None,
+                                     "invalid_metrics_token"))
+        body, ctype = metrics.render()
+        return Response(content=body, media_type=ctype)
+
     @app.post("/v1/classify")
     async def classify(req: ClassifyRequest,
                        authorization: Optional[str] = Header(default=None)):
@@ -437,91 +732,57 @@ def create_app(gateway=None, settings: Optional[Settings] = None,
         user_id = _user_id(req, x_bdw_user_id)
         cid = "chatcmpl-" + uuid.uuid4().hex
         created = int(time.time())
-
-        if not req.stream:
-            out = await _ask(req, question, history, system_prompt,
-                             max_tokens, model, user_id, started)
-            payload = out["payload"]
-            answer = payload.get("answer") or ""
-            bdw = _meta_to_bdw(payload.get("meta") or {}, out["latency_ms"])
-            print("P5_REQUEST id=%s status=200 ms=%d domain=%s adapter=%s "
-                  "user=%s stream=0" % (
-                      cid[-12:], out["latency_ms"], bdw.get("domain"),
-                      bdw.get("adapter"), _user_hash(user_id)), flush=True)
-            return _completion(cid, created, model, answer, out["usage"], bdw)
-
-        # Streaming: generate in a worker thread, emit heartbeats while the
-        # blocking router/RAG/LLM work runs, then stream the answer in
-        # OpenAI chat.completion.chunk events (ADR-4: post-generation).
         web_mode = _web_mode(req)
         force = _force_domain(model)
+        stream_args = (req, question, user_id, web_mode, history,
+                       system_prompt, max_tokens, req.temperature, force,
+                       settings, cid, created, model, started)
 
-        async def events():
-            task = asyncio.create_task(asyncio.to_thread(
-                gateway.ask, question, user_id, web_mode, history,
-                system_prompt=system_prompt, max_tokens=max_tokens,
-                temperature=req.temperature, force_domain=force))
-            payload = status = None
-            failure = None
+        if not req.stream:
+            route = "chat"
+            status_label, domain_label = "500", "none"
+            metrics.inc_inflight(route)
             try:
-                while not task.done():
-                    try:
-                        payload, status, _ = await asyncio.wait_for(
-                            asyncio.shield(task),
-                            timeout=settings.sse_heartbeat_s)
-                        break
-                    except asyncio.TimeoutError:
-                        yield ": ping\n\n"
-                        continue
-                if payload is None:
-                    payload, status, _ = await task
-            except Exception as e:  # noqa: BLE001
-                failure = e
-            if failure is not None:
-                name = type(failure).__name__
-                print("P5_UPSTREAM_ERROR type=%s" % name, flush=True)
-                timed_out = (isinstance(failure, TimeoutError)
-                             or "Timeout" in name)
-                yield _sse(_error_body(
-                    "upstream inference timed out" if timed_out
-                    else "upstream inference failed",
-                    "upstream_timeout" if timed_out else "upstream_error",
-                    code="upstream_timeout" if timed_out
-                    else "upstream_error"))
-                yield "data: [DONE]\n\n"
-                return
-            latency_ms = int((time.perf_counter() - started) * 1000)
-            if status == 429:
-                yield _sse(_error_body("rate limit reached; retry tomorrow",
-                                       "rate_limit_error",
-                                       code="rate_limit_exceeded"))
-                yield "data: [DONE]\n\n"
-                return
-            if status != 200 or not isinstance(payload, dict):
-                yield _sse(_error_body("upstream returned an invalid response",
-                                       "upstream_error",
-                                       code="upstream_error"))
-                yield "data: [DONE]\n\n"
-                return
-            answer = payload.get("answer") or ""
-            bdw = _meta_to_bdw(payload.get("meta") or {}, latency_ms)
-            usage = _usage(req, answer)
-            yield _sse(_chunk(cid, created, model,
-                              {"role": "assistant", "content": ""}))
-            for i in range(0, len(answer), settings.sse_chunk_chars):
-                yield _sse(_chunk(cid, created, model,
-                                  {"content": answer[i:i +
-                                                     settings.sse_chunk_chars]}))
-            yield _sse(_chunk(cid, created, model, {}, "stop",
-                              {"usage": usage, "bdw": bdw}))
-            yield "data: [DONE]\n\n"
-            print("P5_REQUEST id=%s status=200 ms=%d domain=%s adapter=%s "
-                  "user=%s stream=1" % (
-                      cid[-12:], latency_ms, bdw.get("domain"),
-                      bdw.get("adapter"), _user_hash(user_id)), flush=True)
+                out = await _ask(req, question, history, system_prompt,
+                                 max_tokens, model, user_id, started)
+                payload = out["payload"]
+                answer = payload.get("answer") or ""
+                bdw = _meta_to_bdw(payload.get("meta") or {},
+                                   out["latency_ms"])
+                usage = out["usage"]
+                print("P5_REQUEST id=%s status=200 ms=%d domain=%s "
+                      "adapter=%s user=%s stream=0" % (
+                          cid[-12:], out["latency_ms"], bdw.get("domain"),
+                          bdw.get("adapter"), _user_hash(user_id)),
+                      flush=True)
+                status_label = "200"
+                domain_label = bdw.get("domain") or "none"
+                metrics.observe_usage(domain_label, usage)
+                metrics.observe_citations(
+                    domain_label, bdw.get("citations_dropped") or [])
+                return _completion(cid, created, model, answer, usage, bdw)
+            except HTTPException as exc:
+                status_label = str(exc.status_code)
+                if exc.status_code in (429, 502, 503, 504):
+                    metrics.observe_upstream_error(exc.status_code)
+                raise
+            finally:
+                metrics.dec_inflight(route)
+                metrics.observe_request(route, "0", status_label,
+                                        domain_label,
+                                        time.perf_counter() - started)
 
+        # Streaming: P5.1 live proxy when the gateway exposes ask_stream()
+        # and P5_STREAM_UPSTREAM is on; otherwise the P5.0 post-generation
+        # path (ADR-4) byte-for-byte. Each generator owns its own inflight
+        # gauge and outcome metrics from first byte to [DONE]/disconnect.
+        if settings.stream_upstream and callable(
+                getattr(gateway, "ask_stream", None)):
+            body = stream_chat_events(gateway, *stream_args)
+        else:
+            body = _post_gen_events(gateway, *stream_args)
         return StreamingResponse(
-            events(), media_type="text/event-stream",
+            body, media_type="text/event-stream",
             headers={"Cache-Control": "no-cache",
                      "X-Accel-Buffering": "no",
                      "Connection": "keep-alive"})

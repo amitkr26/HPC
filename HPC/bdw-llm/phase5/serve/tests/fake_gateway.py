@@ -4,6 +4,9 @@ Mirrors the exact return contract of phase3/gateway/app.py:Gateway.ask:
   ({"answer": str, "meta": dict}, 200, None)
   (None, 429, {"error": str})                       rate limited
   raises TimeoutError / RuntimeError                upstream failures
+
+P5.1: FakeStreamingGateway additionally implements the ask_stream()
+event protocol ({delta|final|error} dicts) for the live SSE proxy tests.
 """
 from __future__ import annotations
 
@@ -89,3 +92,67 @@ class FakeGateway:
         if self.behavior == "error":
             raise RuntimeError("upstream exploded")
         return {"answer": self.answer, "meta": fake_meta()}, 200, None
+
+
+class FakeStreamingGateway(FakeGateway):
+    """P5.1 live-stream stand-in implementing the ask_stream() contract of
+    phase3/gateway/app.py:Gateway.
+
+    Behaviors: ok | rate (single error event) | timeout / error (raised
+    before any delta). fail_after=N raises mid-stream after N deltas.
+    first_delay holds the first delta (heartbeat window), chunk_delay
+    spaces deltas (cancellation window). usage is passed through in the
+    final event (None -> shim falls back to its char estimate).
+    stream_closed flips in the generator's finally - the probe that the
+    consumer's close reached the gateway; ask_stream_used marks which
+    proxy path the shim picked.
+    """
+
+    def __init__(self, answer=ANSWER, behavior="ok", delay=0.0, split=13,
+                 first_delay=0.0, chunk_delay=0.0, fail_after=None,
+                 usage=None):
+        super().__init__(answer=answer, behavior=behavior, delay=delay)
+        self.split = split
+        self.first_delay = first_delay
+        self.chunk_delay = chunk_delay
+        self.fail_after = fail_after
+        self.usage = usage
+        self.ask_stream_used = False
+        self.stream_closed = False
+
+    def ask_stream(self, question, user_id, web_mode=None, history=None,
+                   system_prompt=None, max_tokens=None, temperature=None,
+                   force_domain=None):
+        self.ask_stream_used = True
+        self.calls.append({
+            "question": question, "user_id": user_id, "web_mode": web_mode,
+            "history": history, "system_prompt": system_prompt,
+            "max_tokens": max_tokens, "temperature": temperature,
+            "force_domain": force_domain,
+        })
+        try:
+            if self.behavior == "rate":
+                yield {"type": "error", "status": 429,
+                       "code": "rate_limit_exceeded",
+                       "message": "rate limit reached; retry tomorrow"}
+                return
+            if self.behavior == "timeout":
+                if self.first_delay:
+                    time.sleep(self.first_delay)
+                raise TimeoutError("upstream timeout")
+            if self.behavior == "error":
+                raise RuntimeError("upstream exploded")
+            if self.first_delay:
+                time.sleep(self.first_delay)
+            frags = [self.answer[i:i + self.split]
+                     for i in range(0, len(self.answer), self.split)]
+            for i, frag in enumerate(frags):
+                if self.fail_after is not None and i >= self.fail_after:
+                    raise RuntimeError("mid-stream failure")
+                yield {"type": "delta", "text": frag}
+                if self.chunk_delay:
+                    time.sleep(self.chunk_delay)
+            yield {"type": "final", "answer": self.answer,
+                   "meta": fake_meta(), "usage": self.usage}
+        finally:
+            self.stream_closed = True

@@ -5,6 +5,8 @@
 # keeps the image ~10x smaller than the CUDA build.
 --extra-index-url https://download.pytorch.org/whl/cpu
 
+# P5.1: /metrics exposition + TTFT/token/citation instruments.
+prometheus_client==0.26.0
 fastapi==0.162.0
 uvicorn[standard]==0.54.0
 pydantic==2.14.2
