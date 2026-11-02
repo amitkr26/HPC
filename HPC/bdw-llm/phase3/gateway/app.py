@@ -81,6 +81,9 @@ WEB_PREAMBLE = (
 HISTORY_TURNS = 12
 HISTORY_CHAR_CAP = 1500
 CONV_HEADER = "\n\nConversation so far:"
+# Appended by ask()/ask_stream() when the S5 verifier had to strip marks.
+STALE_NOTE = ("\n\n[Note: one or more citation marks were removed "
+              "by the server-side verifier (S5).]")
 
 # --- P4 Zone 2 defaults (overridable via env in main()) ---------------------
 PH4_DOMAINS = ("math", "vlsi", "embedded", "cs", "aiml")
@@ -179,6 +182,146 @@ def verify_citations(answer, n_available, allowed_ids):
     return clean, ok, stale
 
 
+def _cite_prefix_possible(t):
+    """True when t (compared case-insensitively) could still become a
+    complete CITE_RE match by appending characters - i.e. t is a valid
+    prefix of the marker grammar
+
+        <cite ws+ 'id="' [^"]+ '"' ws* '/'? '>'
+
+    Conservative by construction: every state that is "end of input right
+    here" inside that grammar returns True, and False only once a
+    character contradicts the pattern (appending can never repair that).
+    Used by _CiteGate so a marker split across stream deltas is held back
+    instead of leaking a partial tag to the client.
+    """
+    tl = t.lower()
+    if not tl.startswith("<cite"):
+        return False
+    i, n = 5, len(tl)
+    if i == n:
+        return True                     # '<cite'          -> needs \s+id=
+    ws0 = i
+    while i < n and tl[i] in " \t\n\r\f\v":
+        i += 1
+    if i == n:
+        return True                     # '<cite  '        -> id may follow
+    if i == ws0:
+        return False                    # \s+ required after <cite
+    for ch in "id":
+        if i == n:
+            return True                 # ran out inside 'id'
+        if tl[i] != ch:
+            return False
+        i += 1
+    if i == n:
+        return True                     # after 'id'       -> '='
+    if tl[i] != "=":
+        return False
+    i += 1
+    if i == n:
+        return True                     # after '='        -> '"'
+    if tl[i] != '"':
+        return False
+    i += 1                              # past the opening quote
+    if i == n:
+        return True                     # quote at end -> id chars may follow
+    if tl[i] == '"':
+        return False                    # [^"]+ needs at least one id char
+    while i < n and tl[i] != '"':
+        i += 1                          # id chars: [^"]+
+    if i == n:
+        return True                     # still inside the quotes
+    i += 1                              # closing quote
+    if i == n:
+        return True                     # after '"'        -> \s*/?>
+    while i < n and tl[i] in " \t\n\r\f\v":
+        i += 1
+    if i == n:
+        return True                     # trailing ws      -> '/' or '>'
+    if tl[i] == "/":
+        i += 1
+        if i == n:
+            return True                 # after '/'        -> '>'
+        return tl[i] == ">"             # complete or contradicted
+    return tl[i] == ">"
+
+
+def _opener_hold_length(s):
+    """k > 0 when the last k characters of s are a case-insensitive
+    fragment of the '<cite' opener that future deltas could complete
+    ('<', '<c', '<ci', '<cit'); 0 otherwise. Without this, a delta ending
+    mid-opener would emit the fragment as plain text and the marker would
+    reassemble across deltas without ever passing the gate.
+    """
+    sl = s.lower()
+    for k in (4, 3, 2, 1):
+        if len(s) >= k and sl[-k:] == "<cite"[:k]:
+            return k
+    return 0
+
+
+class _CiteGate:
+    """Streaming citation filter: feeds text through while holding back
+    '<cite' fragments that may still complete into a marker, and dropping
+    completed markers that fail the same allowlist check as
+    verify_citations (so the streamed text equals what the non-stream path
+    would return). A partial marker still held at end-of-stream is flushed
+    verbatim by flush() - verify_citations on the full raw text leaves
+    unmatched fragments literal too, keeping both paths identical.
+    """
+
+    def __init__(self, allowed_ids, n_available):
+        self._allowed = allowed_ids
+        self._n = n_available
+        self._pending = ""
+
+    def _ok(self, fid):
+        # identical membership test to verify_citations' `ok` list
+        return ((fid.isdigit() and int(fid) < self._n
+                 and self._allowed[int(fid)]) or fid in self._allowed)
+
+    def feed(self, text):
+        """Return the text that may be emitted now (possibly "")."""
+        if not text:
+            return ""
+        self._pending += text
+        out = []
+        while self._pending:
+            idx = self._pending.lower().find("<cite")
+            if idx < 0:
+                hold = _opener_hold_length(self._pending)
+                if hold:
+                    out.append(self._pending[:-hold])
+                    self._pending = self._pending[-hold:]
+                else:
+                    out.append(self._pending)
+                    self._pending = ""
+                break
+            out.append(self._pending[:idx])
+            tail = self._pending[idx:]
+            m = CITE_RE.match(tail)
+            if m:
+                if self._ok(m.group(1)):
+                    out.append(m.group(0))
+                # stale markers are dropped here, exactly as
+                # verify_citations strips them on the non-stream path
+                self._pending = tail[m.end():]
+                continue
+            if _cite_prefix_possible(tail):
+                # prefix already emitted above; hold only the tail
+                self._pending = tail
+                break
+            out.append(tail[0])           # literal '<' (e.g. <citement)
+            self._pending = tail[1:]
+        return "".join(out)
+
+    def flush(self):
+        """Emit whatever is still held (end of stream)."""
+        out, self._pending = self._pending, ""
+        return out
+
+
 class RateLimiter:
     def __init__(self, per_day):
         self.per_day = per_day
@@ -205,9 +348,14 @@ class Gateway:
         self.lim = RateLimiter(cfg["RATE_LIMIT_PER_USER_DAY"])
         self.cfg = cfg
 
-    def ask(self, question, user_id, web_mode=None, history=None,
-            system_prompt=None, max_tokens=None, temperature=None,
-            force_domain=None):
+    def _prep(self, question, user_id, web_mode=None, history=None,
+              system_prompt=None, max_tokens=None, temperature=None,
+              force_domain=None):
+        """Shared request preparation for ask() and ask_stream(): rate
+        limit, P4 routing, retrieval, web escalation, prompt assembly,
+        LoRA resolution and control clamping. Returns
+        (prep_dict, 200, None) on success or (None, 429, err) when the
+        per-user daily budget is exhausted."""
         if not self.lim.hit(user_id):
             return None, 429, {"error": "rate limit reached; retry tomorrow"}
         mode = web_mode or self.cfg.get("WEB_RAG_MODE", "auto")
@@ -265,12 +413,22 @@ class Gateway:
         mt = max(1, min(mt, 4096))
         temp = (0.0 if temperature is None
                 else max(0.0, min(float(temperature), 2.0)))
-        answer = self.llm.complete(
-            prompt, max_tokens=mt, lora_id=lora_id, temperature=temp)
-        clean, kept, stale = verify_citations(
-            answer, len(ranked), ids)
-        meta = {"routing": {"mode": mode, "web_used": web_used,
-                            "reason": reason, "history_turns": n_turns},
+        return {"mode": mode, "decision": decision, "ranked": ranked,
+                "ids": ids, "web_used": web_used, "reason": reason,
+                "n_turns": n_turns, "prompt": prompt, "lora_id": lora_id,
+                "mt": mt, "temp": temp}, 200, None
+
+    def _meta(self, prep, kept, stale):
+        """The /ask meta block, shared verbatim by ask() and ask_stream()
+        so streaming and non-streaming finals are indistinguishable."""
+        decision = prep["decision"]
+        ranked = prep["ranked"]
+        ids = prep["ids"]
+        lora_id = prep["lora_id"]
+        return {"routing": {"mode": prep["mode"], "web_used":
+                            prep["web_used"],
+                            "reason": prep["reason"],
+                            "history_turns": prep["n_turns"]},
                 "domain": decision.to_dict(),
                 "retrieval": {"domain_backend": next(
                     (r.get("backend") for r in ranked
@@ -285,10 +443,101 @@ class Gateway:
                             "source": ranked[i].get("parent_type"),
                             "backend": ranked[i].get("backend")}
                            for i, c in enumerate(ids)]}
+
+    def ask(self, question, user_id, web_mode=None, history=None,
+            system_prompt=None, max_tokens=None, temperature=None,
+            force_domain=None):
+        prep, code, err = self._prep(question, user_id, web_mode, history,
+                                     system_prompt, max_tokens, temperature,
+                                     force_domain)
+        if prep is None:
+            return None, code, err
+        answer = self.llm.complete(
+            prep["prompt"], max_tokens=prep["mt"], lora_id=prep["lora_id"],
+            temperature=prep["temp"])
+        clean, kept, stale = verify_citations(
+            answer, len(prep["ranked"]), prep["ids"])
+        meta = self._meta(prep, kept, stale)
         if stale:
-            clean += ("\n\n[Note: one or more citation marks were removed "
-                      "by the server-side verifier (S5).]")
+            clean += STALE_NOTE
         return {"answer": clean, "meta": meta}, 200, None
+
+    def ask_stream(self, question, user_id, web_mode=None, history=None,
+                   system_prompt=None, max_tokens=None, temperature=None,
+                   force_domain=None):
+        """P5.1 live streaming twin of ask(). Yields dict events, exactly:
+
+            {"type": "delta", "text": str}         zero or more, in order
+            {"type": "final", "answer", "meta",    terminal success
+             "usage": dict|None}
+            {"type": "error", "status", "code",    terminal failure
+             "message"}
+
+        The terminal event is always final or error. Text deltas have
+        already passed the streaming citation gate, so concatenating them
+        yields the same text the non-stream path would return (modulo the
+        verifier's whole-string strip); final.answer/meta are computed by
+        the identical verify_citations + _meta code as ask(), so both
+        paths stay in lockstep. Client disconnects (GeneratorExit) close
+        the inner Zone 3 stream through the finally block.
+        """
+        prep, code, err = self._prep(question, user_id, web_mode, history,
+                                     system_prompt, max_tokens, temperature,
+                                     force_domain)
+        if prep is None:
+            yield {"type": "error", "status": code,
+                   "code": "rate_limit_exceeded", "message": err["error"]}
+            return
+        ranked, ids = prep["ranked"], prep["ids"]
+        gate = _CiteGate(ids, len(ranked))
+        raw_parts, usage, failure, stream = [], None, None, None
+        try:
+            stream = self.llm.complete_stream(
+                prep["prompt"], max_tokens=prep["mt"],
+                lora_id=prep["lora_id"], temperature=prep["temp"])
+            for event in stream:
+                kind = event.get("type")
+                if kind == "delta":
+                    text = event.get("text") or ""
+                    if not text:
+                        continue
+                    raw_parts.append(text)
+                    emitted = gate.feed(text)
+                    if emitted:
+                        yield {"type": "delta", "text": emitted}
+                elif kind == "usage":
+                    usage = event.get("usage") or usage
+        except Exception as exc:  # noqa: BLE001
+            failure = exc
+        finally:
+            if stream is not None:
+                try:
+                    stream.close()
+                except Exception:  # noqa: BLE001
+                    pass
+        if failure is not None:
+            name = type(failure).__name__
+            timed_out = (isinstance(failure, TimeoutError)
+                         or "Timeout" in name)
+            yield {"type": "error",
+                   "status": 504 if timed_out else 502,
+                   "code": "upstream_timeout" if timed_out
+                   else "upstream_error",
+                   "message": "upstream inference timed out" if timed_out
+                   else "upstream inference failed"}
+            return
+        tail = gate.flush()
+        if tail:
+            yield {"type": "delta", "text": tail}
+        raw = "".join(raw_parts)
+        clean, kept, stale = verify_citations(raw, len(ranked), ids)
+        meta = self._meta(prep, kept, stale)
+        if stale:
+            # surface the same note the non-stream answer carries
+            yield {"type": "delta", "text": STALE_NOTE}
+            clean += STALE_NOTE
+        yield {"type": "final", "answer": clean, "meta": meta,
+               "usage": usage}
 
 
 class SupabaseRetriever:
@@ -560,9 +809,13 @@ class Zone3LLM:
       carry no lora field; complete() must not add it.
     """
 
-    def __init__(self, base, timeout):
+    def __init__(self, base, timeout, model=None):
         self.base = base.rstrip("/")
         self.timeout = timeout
+        # ZONE3_MODEL: vLLM's OpenAI server rejects requests without a
+        # `model` field; llama-server tolerates its absence, so the field
+        # is only sent when configured (P5.1 vLLM deployments set it).
+        self.model = model or None
         self.lora_ids = None       # {"lora_math": 0, ...} | None (no attach)
         self._lora_failed = False  # probe error cached -> base-only serving
 
@@ -578,6 +831,12 @@ class Zone3LLM:
             try:
                 r = requests.get(self.base + "/lora-adapters",
                                  timeout=min(self.timeout, 10))
+                if r.status_code == 404:
+                    # Server has no adapter endpoint (vLLM, or llama-server
+                    # without LoRA routes): definitive, skip the retry loop.
+                    self._lora_failed = True
+                    self.lora_ids = None
+                    return None
                 r.raise_for_status()
                 ids = {}
                 for item in r.json():
@@ -609,6 +868,8 @@ class Zone3LLM:
                 "max_tokens": int(max_tokens),
                 "temperature": float(temperature),
                 "stream": False}
+        if self.model:
+            body["model"] = self.model
         if lora_id is not None:
             body["lora"] = [{"id": int(lora_id), "scale": 1.0}]
         r = requests.post(self.base + "/v1/chat/completions",
@@ -620,6 +881,69 @@ class Zone3LLM:
         except (KeyError, IndexError, TypeError):
             raise RuntimeError("no chat content in llama answer: %s"
                                % str(data)[:160])
+
+    def complete_stream(self, prompt, max_tokens=1024, lora_id=None,
+                        temperature=0.0):
+        """Streaming twin of complete(). Yields {"type": "delta", "text"}
+        events for each content fragment and, when the server reports one,
+        a trailing {"type": "usage", "usage": {...}}.
+
+        stream_options.include_usage is the OpenAI/vLLM extension that
+        makes the server emit a final usage chunk; llama-server builds
+        that predate it answer HTTP 400 for unknown fields, so one retry
+        without the extension covers both families. The response stream is
+        closed on every exit path - upstream error, mid-stream failure and
+        consumer disconnect (GeneratorExit from the gateway's ask_stream).
+        """
+        body = {"messages": [{"role": "user", "content": prompt}],
+                "max_tokens": int(max_tokens),
+                "temperature": float(temperature),
+                "stream": True,
+                "stream_options": {"include_usage": True}}
+        if self.model:
+            body["model"] = self.model
+        if lora_id is not None:
+            body["lora"] = [{"id": int(lora_id), "scale": 1.0}]
+        r = requests.post(self.base + "/v1/chat/completions",
+                          timeout=self.timeout, json=body, stream=True)
+        if r.status_code == 400:
+            try:
+                r.close()
+            except Exception:  # noqa: BLE001
+                pass
+            body.pop("stream_options", None)
+            r = requests.post(self.base + "/v1/chat/completions",
+                              timeout=self.timeout, json=body, stream=True)
+        usage = None
+        try:
+            r.raise_for_status()
+            for line in r.iter_lines(decode_unicode=True):
+                if isinstance(line, bytes):
+                    line = line.decode("utf-8", "replace")
+                if not line or not line.startswith("data:"):
+                    continue
+                payload = line[len("data:"):].strip()
+                if payload == "[DONE]":
+                    break
+                try:
+                    obj = json.loads(payload)
+                except ValueError:
+                    continue
+                if isinstance(obj.get("usage"), dict) and obj["usage"]:
+                    usage = obj["usage"]
+                for choice in (obj.get("choices") or []):
+                    if not isinstance(choice, dict):
+                        continue
+                    text = (choice.get("delta") or {}).get("content")
+                    if text:
+                        yield {"type": "delta", "text": text}
+        finally:
+            try:
+                r.close()
+            except Exception:  # noqa: BLE001
+                pass
+        if usage:
+            yield {"type": "usage", "usage": usage}
 
 
 def handler_class(g):
@@ -846,7 +1170,8 @@ def build_gateway(env=None):
               % (sb_tables, domain_backend,
                  "p4_domain_math,vlsi,embedded,cs,aiml"), flush=True)
     llm = Zone3LLM(env.get("ZONE3_BASE_URL", "http://127.0.0.1:8080"),
-                   int(env.get("ZONE3_TIMEOUT_S", "15")))
+                   int(env.get("ZONE3_TIMEOUT_S", "15")),
+                   model=env.get("ZONE3_MODEL") or None)
     provider = env.get("WEB_SEARCH_PROVIDER", "tavily")
     web_key = env.get("TAVILY_API_KEY" if provider == "tavily"
                       else "SERPER_API_KEY", "")
