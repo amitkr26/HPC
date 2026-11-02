@@ -104,6 +104,9 @@ case "${1:-}" in
     else
         echo "p4-adapters:  none"
     fi
+    if [ -s "$RUN_DIR/p4_domain_backend.env" ]; then
+        P4_DOMAIN_BACKEND=$(cat "$RUN_DIR/p4_domain_backend.env")
+    fi
     echo "domain-backend: $P4_DOMAIN_BACKEND"
     if [ -n "$P4_ADAPTER_LIST" ] && alive "$PID_LLM"; then
         curl -fsS "http://127.0.0.1:$LLM_PORT/lora-adapters" 2>/dev/null | head -c 400
@@ -179,6 +182,7 @@ if [ -n "$P4_ADAPTER_LIST" ]; then
 else
     printf 'none' > "$RUN_DIR/p4_adapters.env"
 fi
+printf '%s' "$P4_DOMAIN_BACKEND" > "$RUN_DIR/p4_domain_backend.env"
 
 echo "llama-server pid=$(cat "$PID_LLM") log=$LOG_LLM"
 echo "gateway      pid=$(cat "$PID_GW") log=$LOG_GW"
