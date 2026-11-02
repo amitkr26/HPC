@@ -31,6 +31,8 @@ __pycache__/
 # environment and credentials
 .env
 .env.*
+# ...but the deploy template is documentation, not a secret (phase5/deploy)
+!.env.example
 *.pem
 *.key
 

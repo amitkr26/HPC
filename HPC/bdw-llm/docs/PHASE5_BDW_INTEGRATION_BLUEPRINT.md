@@ -343,23 +343,55 @@ limit, 502 upstream failure, 504 upstream timeout, 503 not ready.
 
 ## 8. GPU deployment and sizing
 
-| Item | Recommendation |
-|---|---|
-| GPU | NVIDIA L40S 48 GB or A100 80 GB for multi-LoRA headroom; L4 24 GB for a cost-first pilot |
-| Serving | vLLM with `--enable-lora --max-loras 5`, base 7B (4-bit/AWQ or FP16 depending on GPU) |
-| Adapters | Existing PEFT `lora_<domain>/final` directories (no GGUF conversion required) |
-| CPU router | 2-4 vCPU, 4 GB RAM; BGE-small on CPU is sufficient |
-| Replicas | 2 minimum in production; one GPU failure must not take the assistant down |
-| Scaling | Queue-depth / TTFT based; warm pool to avoid cold-start timeouts |
-| Cost guard | Autoscale to zero in staging; production keeps one warm replica |
-| Fallback | Groq/Gemini via BDW's existing provider chain |
+> **P5.1 (2026-11-02): heavy-model decision locked.** Production inference
+> serves a **70B-class model with multi-GPU tensor parallelism** —
+> `Qwen/Qwen2.5-72B-Instruct` (default, open weights) or
+> `meta-llama/Llama-3.3-70B-Instruct` (gated, needs `HF_TOKEN`). The table
+> below supersedes the earlier 7B single-GPU sizing; all prices are
+> **Oct-2026 list estimates — verify at purchase** (spot/committed pricing
+> drifts weekly). PARAM Rudra keeps training/eval/artifacts (ADR-1); only
+> production inference moves to this cloud stack.
 
-Indicative SLOs (lock after P5.1 benchmark):
+Model footprint (fixed): **BF16 ≈ 145 GB weights** (70B × 2 bytes), plus KV
+cache — GQA **≈ 320 KB/token** (80 layers × 8 KV heads × head_dim 128 × 2
+× 2 B), so a 16 k context ≈ 5 GB/seq on top of weights.
 
-* TTFT <= 1.5 s (streaming), p95 total <= 10 s for a 300-token answer.
-* >= 25 output tokens/s per stream on the selected GPU/quantization.
-* Error rate < 1% excluding client errors; availability 99.5% monthly.
-* Router p95 <= 20 ms warm; RAG p95 <= 150 ms (Supabase).
+| Tier | GPUs (`TP_SIZE`) | Context (`MAX_MODEL_LEN`) | Interconnect | Monthly @ ~730 h (list) | When |
+|---|---|---|---|---|---|
+| Budget | 2× H100 PCIe / A100-80 | 8192 (KV tight: ~2 GB/seq @ 16 k) | PCIe acceptable | ≈ $4.2 k (2×H100-PCIe @ $2.89/h) · ≈ $2.6 k (2×A100-80 @ $1.79/h) | first production deploy |
+| **Recommended** | 4× H100 | 32768 | **prefer NVL/SXM** (PCIe lacks NVLink) | ≈ $8.4 k (PCIe) · ≈ $11.7 k (SXM @ $3.99/h) | steady state |
+| Concurrency | 8× H100 SXM | 32768 | NVLink domain | ≈ $23.3 k | high traffic, not yet justified |
+| Not viable | DeepSeek-V3 (671 B) | — | would exceed single node | — | revisit only with multi-node |
+
+Budget tier reference prices (Oct-2026): H100 PCIe $2.89/h · H100 NVL
+$3.19/h · H100 SXM $3.99/h · A100-80 $1.79/h · B200 $5.98–7.99/h.
+
+**LoRA caveat (P5.1 open item):** the five existing adapters are 7B-shaped
+(r=32, Qwen2) and **cannot attach to a 70B base**. The 70B ships
+base-only — domain RAG and the router are unchanged; `--enable-lorastays off until the adapters are QLoRA-retrained for the 70B architecture
+(PARAM Rudra) or replaced. The compose file carries the commented flag.
+
+Replicas / resilience (unchanged principles):
+
+* 2 minimum in production; one GPU failure must not take the assistant down.
+* Fallback: Groq/Gemini via BDW's existing provider chain on 5xx/timeout.
+* Warm pool / `gpu_memory_utilization=0.92` to avoid cold-start misses;
+  first model load (weights download + graph capture) is minutes — the
+  bootstrap waits on `/readyz`, and tunnel cutover waits on `P5_LIVE_OK`.
+
+Indicative SLOs — now draft values in [`phase5/deploy/slo.json`](../phase5/deploy/slo.json)
+(lock after a real `P5_LIVE_OK` benchmark on the deployed 70B):
+
+* Availability 99.5% monthly; error budget burn-rate alerts (§ deploy).
+* TTFT p95 ≤ 4 s draft (70B prefill — the old 7B target of 1.5 s does not
+  carry over; re-baseline from `bdw_shim_ttft_seconds` the first week).
+* Stream completion p95 ≤ 30 s draft; rate-limit share < 1%.
+* Router p95 ≤ 20 ms warm; RAG p95 ≤ 150 ms (Supabase) — unchanged.
+
+Deploy artifacts: [`phase5/deploy/`](../phase5/deploy/) —
+`docker-compose.yml` (vLLM TP + shim + cloudflared), `bootstrap-host.sh`
+(`P5_DEPLOY_SMOKE_OK`), `CLOUDFLARE_TUNNEL.md`, `slo.json`,
+`prometheus.example.yml`, `alerts.example.yml`.
 
 ---
 
@@ -403,13 +435,27 @@ phase5/serve/tests/contracts/bdw_provider_contract.mjs
 | `P5_PORT` | `8090` | shim listen port |
 | `P5_API_KEY` | none | required bearer key when auth mode is `required` |
 | `P5_AUTH_MODE` | `required` | `required`, `optional`, `disabled` |
+| `P5_MODEL` | `bdw-career-ai` | model ID reported by `/v1/models` |
 | `P5_MAX_QUESTION_CHARS` | `4000` | user-message cap |
 | `P5_MAX_TOKENS_DEFAULT` | `1024` | fallback if request omits `max_tokens` |
 | `P5_SSE_CHUNK_CHARS` | `48` | post-generation SSE chunk size |
 | `P5_SSE_HEARTBEAT_S` | `10` | SSE keepalive interval |
+| `P5_READY_URL` | `<ZONE3_BASE_URL>/health` | upstream readiness probe target (`/readyz`) |
 | `ZONE3_BASE_URL` | `http://127.0.0.1:8080` | llama-server / vLLM upstream |
+| `ZONE3_TIMEOUT_S` | `15` | upstream timeout — use **300** for 70B prefill (compose default) |
+| `ZONE3_MODEL` | unset | **P5.1**: sent as `model` in vLLM `/chat/completions` (vLLM rejects requests without it); omitted for llama-server |
 | `PH4_BGE_DIR` | repo default | BGE-small model directory |
 | `P5_RATE_LIMIT_PER_USER_DAY` | inherits `RATE_LIMIT_PER_USER_DAY` | shim quota |
+| `P5_STREAM_UPSTREAM` | `true` | **P5.1**: live `Gateway.ask_stream()` SSE proxy; `false`/gateway-without-stream falls back to post-generation chunking (P5.0 behavior) |
+| `P5_METRICS_TOKEN` | unset | **P5.1**: optional bearer for `GET /metrics` (empty = open on the private network; edge blocks `/metrics` via tunnel ingress). Independent of `P5_API_KEY` |
+
+**P5.1 instrumentation** (`phase5/serve/metrics.py`, Prometheus text on
+`GET /metrics`): `bdw_shim_requests_total{route,stream,status,domain}`,
+`bdw_shim_request_duration_seconds{route,stream}`, `bdw_shim_ttft_seconds{domain}`,
+`bdw_shim_tokens_total{direction,domain}`, `bdw_shim_upstream_errors_total{type}`
+(timeout|rate_limit|upstream|not_ready|other), `bdw_shim_citation_drops_total{domain}`,
+`bdw_shim_requests_in_flight{route}`. Validation 400s are not counted;
+`domain` is bounded to `math|vlsi|embedded|cs|aiml|general|none`.
 
 ### 9.4 Acceptance criteria
 
@@ -513,14 +559,37 @@ phase5/serve/tests/contracts/bdw_provider_contract.mjs
 
 ---
 
-## 15. Open items before P5.1
+## 15. P5.1 decisions and open items
 
-* Select GPU hosting and budget owner.
+**Decisions locked (2026-11-02, P5.1):**
+
+1. **Heavy model** — 70B-class with multi-GPU tensor parallelism:
+   `Qwen/Qwen2.5-72B-Instruct` (default) or `Llama-3.3-70B-Instruct`;
+   budget = 2×H100, recommended = 4×H100, concurrency = 8×H100 SXM
+   (§8, prices "verify at purchase").
+2. **Hosting shortlist** — RunPod / AWS / Lambda Labs; buy against the §8
+   tier table after the live benchmark.
+3. **Endpoint** — `ai.berojgardegreewala.com`, DNS on Cloudflare.
+4. **Ingress** — Cloudflare Tunnel approved: zero inbound origin ports;
+   runbook `phase5/deploy/CLOUDFLARE_TUNNEL.md`, `/metrics` edge-blocked.
+
+**Remaining open items:**
+
+* **LoRA retraining (blocking `--enable-lora`)** — the five adapters are
+  7B-shaped and cannot attach to the 70B base; ship base-only until QLoRA
+  retraining on PARAM Rudra (or drop adapters for the 70B line).
+  Domain RAG/router behavior is unaffected either way.
+* Select the provider (RunPod/AWS/Lambda) + budget owner; pin
+  `VLLM_IMAGE` to a digest at purchase time.
+* Re-baseline SLOs from the first `P5_LIVE_OK` week — TTFT/completion
+  targets in `phase5/deploy/slo.json` are drafts (70B prefill differs
+  from the old 7B numbers).
+* Quantization decision (FP16 vs AWQ/GPTQ) after the vLLM benchmark —
+  may permit larger `MAX_MODEL_LEN` or a cheaper GPU tier.
 * Confirm BDW's production Supabase project and migration window.
 * Decide whether BDW's `/api/ai/chat` passes `metadata.user_id` from the
   authenticated session (recommended) or the shim uses a shared API identity.
 * Confirm data-retention and DPDP review with BDW.
-* Pick the production quantization (AWQ/GPTQ vs FP16) after the vLLM benchmark.
 * Decide whether the shim or BDW owns the technical-intent classifier; the
   recommendation is BDW (cheap lexical/embedding gate) with the shim as the
   authoritative router for accepted technical queries.

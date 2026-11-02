@@ -1,0 +1,36 @@
+# P5.1 example Prometheus scrape config — copy the block into your
+# prometheus.yml (NOT committed as the live config; token lives in
+# prometheus secrets, not here).
+#
+# Default: shim publishes 127.0.0.1:8090 only (see docker-compose.yml),
+# so scrape from the GPU host or anything with an SSH tunnel.
+# In-network Prometheus (same compose network): url http://shim:8090/metrics
+
+scrape_configs:
+  - job_name: bdw-shim
+    metrics_path: /metrics
+    scrape_interval: 15s
+    scrape_timeout: 10s
+    static_configs:
+      - targets: ["127.0.0.1:8090"]
+        labels:
+          env: production
+          service: bdw-inference-shim
+    # Only when P5_METRICS_TOKEN is set on the shim (otherwise omit):
+    # authorization:
+    #   type: Bearer
+    #   credentials: <prometheus secret file / remote-write vault>
+
+  # The GPU host's node metrics (optional but cheap):
+  # - job_name: node
+  #   static_configs: [{ targets: ["127.0.0.1:9100"] }]
+
+# P5.1 instrument reference (all prefixed bdw_shim_):
+#   requests_total{route,stream,status,domain}
+#   request_duration_seconds{route,stream}          (histogram)
+#   ttft_seconds{domain}                           (histogram)
+#   tokens_total{direction,domain}                 (prompt|completion)
+#   upstream_errors_total{type}                    (timeout|rate_limit|upstream|not_ready|other)
+#   citation_drops_total{domain}
+#   requests_in_flight{route}                      (gauge; leak detector)
+# Alert rules: alerts.example.yml (rule_files: - alerts.example.yml)
