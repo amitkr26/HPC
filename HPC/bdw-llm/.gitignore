@@ -42,6 +42,12 @@ phase3/gateway/data/
 phase3/pg_url.txt
 phase3/agent/sandbox/
 
+# phase 4: local domain RAG index payloads and LoRA adapter weights are
+# rebuilt by src/p4_build_rag_index.py / src/p4_lora_sft.py.
+# phase4/rag/index_manifest.json, migrations and code stay tracked.
+phase4/rag/idx_*/
+phase4/router/domain_anchors.npz
+
 # per-stage run logs (the job output under scripts/ is kept on purpose:
 # docs/*.md cite those exact lines as evidence)
 logs/
