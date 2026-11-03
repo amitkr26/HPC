@@ -1,81 +1,84 @@
-# phase5/deploy — P5.1 production stack
+# phase5/deploy — Zero-Cost Production Stack on PARAM Rudra ($0 Budget)
 
-Brings up the **70B-class vLLM server (multi-GPU TP)**, the **BDW
-inference shim**, and the **Cloudflare Tunnel** in one compose project.
-No inbound ports on the origin — public ingress is the Tunnel only.
+Runs the **70B-class vLLM server (multi-GPU Tensor Parallelism)**, the **BDW FastAPI inference shim**, and the **Cloudflare Tunnel** entirely on CDAC's **PARAM Rudra HPC cluster** for **$0 additional infrastructure cost**.
 
 ```
-BDW ai-gateway (BDW_AI_BASE_URL=https://ai.berojgardegreewala.com)
-        │ HTTPS
-        ▼
-Cloudflare edge ──► cloudflared ──► shim:8090 ──► vllm:8000 (TP=2/4/8)
-   (proxied DNS)     (outbound)      (CPU router)    (70B, GPU)
+BDW Web Client / ai-gateway (BDW_AI_BASE_URL=https://ai.berojgardegreewala.com)
+                            │ HTTPS
+                            ▼
+     Cloudflare Global Edge (DDoS protection, SSL termination)
+                            │ Outbound Tunnel Connection (bypasses CDAC firewall)
+                            ▼
+     PARAM Rudra GPU Compute Node (rdgpu01 / rdgpu02)
+       ├── cloudflared (tunnel daemon) ──► localhost:8090
+       ├── FastAPI Shim (:8090) ──► localhost:8000
+       │     (Auth, Domain RAG, Prompt Prefix, Cite Gating, SSE streaming, /metrics)
+       └── vLLM (:8000) ──► 2x NVIDIA A100 80GB PCIe (TP=2, 160 GB total VRAM)
 ```
 
-## Files
+---
+
+## 1. Zero-Cost ($0) Architecture Principles
+
+1. **Zero External Cloud Spend ($0 Budget)**:
+   - No external cloud instances (RunPod, AWS, Lambda Labs, GCP) are used.
+   - Computations run on allocated CDAC Param Rudra nodes with dual **NVIDIA A100 80GB PCIe GPUs (160 GB total VRAM)**.
+2. **Firewall Ingress via Cloudflare Tunnel**:
+   - Param Rudra blocks all inbound internet traffic.
+   - `cloudflared` runs directly on the GPU compute node, opening an **outbound** TLS connection to Cloudflare’s global edge.
+   - The public endpoint `https://ai.berojgardegreewala.com` routes incoming traffic through this tunnel to the local FastAPI shim on port `8090`. No static public IP or port forwarding is required.
+3. **High-Performance Frontier Serving**:
+   - 70B model (`Qwen/Qwen2.5-72B-Instruct` or `Llama-3.3-70B-Instruct`) served via **vLLM with Tensor Parallelism (`TP=2`)** across both 80GB A100s.
+   - FastAPI shim provides full compatibility with `backend/ai-gateway/src/providers/bdw.ts` in BerojgarDegreeWala.
+
+---
+
+## 2. Directory Files
 
 | File | Purpose |
 | --- | --- |
-| `docker-compose.yml` | vLLM (TP, GPU, HF cache volume) + shim (built from `../serve/Dockerfile`) + cloudflared |
-| `.env.example` | full env matrix — copy to `.env` (**chmod 600**, gitignored) |
-| `bootstrap-host.sh` | idempotent host setup: NVIDIA runtime → compose validate → up → smoke → `P5_DEPLOY_SMOKE_OK/FAIL` |
-| `CLOUDFLARE_TUNNEL.md` | DNS + tunnel runbook (`ai.berojgardegreewala.com`), rotation, troubleshooting |
-| `cloudflared/config.yml` | ingress: edge-blocks `/metrics /debug /internal`, everything else → shim |
-| `slo.json` | draft SLOs (availability 99.5%, TTFT p95 ≤4 s — re-baseline with `P5_LIVE_OK`) |
-| `prometheus.example.yml` | scrape block for `bdw_shim_*` instruments |
-| `alerts.example.yml` | example page/ticket rules incl. inflight-leak detector |
+| `run_production.slurm` | **Slurm batch launcher**: starts vLLM (TP=2), FastAPI shim, and Cloudflare Tunnel on Param Rudra |
+| `live_probe.py` | **Live certification probe**: validates health, streaming, citations, `/metrics`, and real `bdw.ts` contract |
+| `.env.example` | Configuration template (copy to `.env`, `chmod 600`) |
+| `CLOUDFLARE_TUNNEL.md` | Runbook for setting up Cloudflare Tunnel token and DNS routing |
+| `cloudflared/config.yml` | Ingress rules: blocks `/metrics`, `/debug`, routes all other paths to shim:8090 |
+| `slo.json` | Production SLO targets (availability 99.5%, TTFT p95 ≤ 4s) |
+| `prometheus.example.yml` | Prometheus scrape configuration for shim `/metrics` |
+| `alerts.example.yml` | Alerting rules for latency, error rate, and inflight connection leaks |
 
-## Quickstart (GPU host, Ubuntu/Debian)
+---
 
+## 3. Launching on PARAM Rudra
+
+### Step 1: Configure `.env`
+On the cluster:
 ```bash
-cd phase5/deploy
-cp .env.example .env && chmod 600 .env
-$EDITOR .env          # P5_API_KEY, TUNNEL_TOKEN, RAG_DIR, BGE_DIR, TP_SIZE…
-bash bootstrap-host.sh
-# ... first run downloads the 70B weights (large) ...
-# → P5_DEPLOY_SMOKE_OK
+cd ~/bdw-llm/phase5/deploy
+cp .env.example .env
+chmod 600 .env
+```
+Fill in the required secrets:
+- `TUNNEL_TOKEN`: Your Cloudflare Zero Trust Tunnel token for `ai.berojgardegreewala.com`.
+- `P5_API_KEY`: The shared bearer key used by `BDW_API_KEY` in the Next.js app.
+- `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`: For domain RAG table access.
+
+### Step 2: Submit the Slurm Batch Job
+```bash
+sbatch phase5/deploy/run_production.slurm
 ```
 
-Manual alternative: `docker compose config -q && docker compose up -d`,
-then follow the smoke steps inside `bootstrap-host.sh`.
-
-### Sizing knobs (blueprint §8 — "verify at purchase")
-
-| Env | Budget tier | Recommended | Concurrency tier |
-| --- | --- | --- | --- |
-| `TP_SIZE` | 2 (H100/A100) | 4 | 8 |
-| `MAX_MODEL_LEN` | 8192 | 32768 | 32768 |
-| GPU interconnect | PCIe acceptable | prefer NVL/SXM | SXM |
-| Monthly @ ~730 h | ≈ $4.2k (2×H100-PCIe) | ≈ $8.4k–11.7k | ≈ $23.3k |
-
-`VLLM_MODEL`: `Qwen/Qwen2.5-72B-Instruct` (default, open weights) or
-`meta-llama/Llama-3.3-70B-Instruct` (gated → set `HF_TOKEN`).
-
-**LoRA**: the five existing adapters are 7B-shaped and **cannot** attach to
-a 70B base. Ship base-only until QLoRA retraining (see blueprint §15 open
-item); do not enable `--enable-lora` before then.
-
-## After deploy
-
-1. Tunnel: `docker compose logs cloudflared | grep -i 'registered tunnel connection'`.
-2. Edge: `curl https://ai.berojgardegreewala.com/healthz` → `{"status":"ok"…}`.
-3. Metrics (private): `curl 127.0.0.1:8090/metrics` (edge returns 404).
-4. Point BDW: `BDW_AI_BASE_URL=https://ai.berojgardegreewala.com`.
-5. Live certification probe `P5_LIVE_OK` before production traffic (§16).
-
-## Teardown
-
+To monitor job startup:
 ```bash
-docker compose down          # stop stack (keep HF cache volume)
-docker compose down -v       # also drop hf-cache volume
+squeue --me
+tail -f run_production-<job_id>.out
 ```
-Plus: disable/delete the tunnel + DNS record (runbook §7).
 
-## Security notes
-
-- `.env` holds the only secrets on the host (shim bearer + tunnel token) —
-  `chmod 600`, never committed, rotate per runbook §7.
-- vLLM has **no** host port mapping; the shim binds `127.0.0.1:8090` only.
-- `/metrics` is edge-blocked; optional `P5_METRICS_TOKEN` bearer for
-  private scrapers (independent of `P5_API_KEY`).
-- Pin `VLLM_IMAGE` to a digest before production (supply-chain).
+### Step 3: Verify Live Public Service
+Once the log prints `RESULT: P5_PRODUCTION_STACK_READY`, run the certification probe:
+```bash
+python phase5/deploy/live_probe.py --url https://ai.berojgardegreewala.com
+```
+When successful, it emits:
+```
+RESULT: P5_LIVE_OK
+```

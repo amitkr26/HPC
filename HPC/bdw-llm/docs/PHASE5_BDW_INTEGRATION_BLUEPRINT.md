@@ -34,11 +34,14 @@ Therefore Phase 5 is not a greenfield integration. It supplies the missing
 production inference surface, runs it on a GPU host, and routes technical
 questions to it while keeping BDW's existing career/opportunity RAG intact.
 
-**PARAM Rudra is not a production host.** It is firewalled, subject to a
-15-minute QOS wall on GPU nodes, and has no public ingress or SLA. It remains
-the training, evaluation and artifact-build environment. Production inference
-moves to a dedicated GPU host running vLLM; a CPU llama.cpp stack remains the
-offline/dev fallback.
+**PARAM Rudra Zero-Cost Production Deployment ($0 Budget Pivot):**
+To guarantee zero recurring compute cost, the production 70B inference stack runs
+directly on CDAC's PARAM Rudra HPC cluster. The GPU partition (`rdgpu01` / `rdgpu02`)
+provides dual **NVIDIA A100 80GB PCIe GPUs (160 GB total VRAM)** with up to 4-day
+walltime. CDAC's strict inbound firewall is naturally bypassed by running an outbound
+**Cloudflare Tunnel (`cloudflared`)** directly on the GPU compute node, exposing the
+FastAPI shim to `https://ai.berojgardegreewala.com` without opening ports or requesting
+public IPs. All external cloud hosting is avoided ($0 spend).
 
 ---
 
@@ -683,4 +686,72 @@ Notes and environment requirements:
 `P5_LIVE_OK` remains the P5.1 exit criterion, but live staging is already
 demonstrated. The Docker image build (acceptance §9.4 #6) was not run on the
 workstation (no Docker); the pinned Dockerfile is ready for the CI/P5.1 build.
+
+
+---
+
+## 17. P5.1 Zero-Cost Production Stack Pivot ($0 Budget Slurm Deployment)
+
+### 17.1 Context & Motivation
+Procuring external cloud GPU instances (RunPod, AWS, Lambda Labs) for 70B+ model
+inference incurs significant ongoing cost ($4.2k to $11.7k+ monthly for multi-GPU
+A100/H100 setups). To eliminate all external infrastructure expense, the deployment
+strategy pivoted to a **$0 Zero-Cost Architecture** utilizing allocated compute
+resources on CDAC's PARAM Rudra cluster.
+
+### 17.2 The Zero-Cost Architecture
+```
+BDW Web Client / ai-gateway (BDW_AI_BASE_URL=https://ai.berojgardegreewala.com)
+                            │ HTTPS
+                            ▼
+     Cloudflare Global Edge (DDoS protection, SSL termination)
+                            │ Outbound Tunnel Connection (bypasses CDAC firewall)
+                            ▼
+     PARAM Rudra GPU Compute Node (rdgpu01 / rdgpu02)
+       ├── cloudflared (tunnel daemon) ──► localhost:8090
+       ├── FastAPI Shim (:8090) ──► localhost:8000
+       │     (Auth, Domain RAG, Prompt Prefix, Cite Gating, SSE streaming, /metrics)
+       └── vLLM (:8000) ──► 2x NVIDIA A100 80GB PCIe (TP=2, 160 GB total VRAM)
+```
+
+1. **Hardware Capacity**:
+   * Nodes: `rdgpu01` and `rdgpu02`.
+   * GPUs: 2x NVIDIA A100 80GB PCIe per node = **160 GB total VRAM**.
+   * Host Memory: 192 GB system RAM.
+   * Model Sizing: A 70B parameter model in FP16/BF16 occupies ~140 GB. Split across
+     `TP=2` via vLLM Tensor Parallelism, each A100 loads ~70 GB weights, leaving 10 GB
+     VRAM per card (20 GB total) dedicated to KV cache at 8k context.
+2. **Firewall & Ingress Bypassing**:
+   * Inbound ports are strictly firewalled by CDAC network security.
+   * Compute nodes have full outbound HTTPS/TLS access to the internet.
+   * A standalone `cloudflared` daemon runs directly on the compute node, establishing
+     outbound reverse tunnels to Cloudflare.
+   * Cloudflare edge routes queries from `https://ai.berojgardegreewala.com` through
+     the tunnel into `http://127.0.0.1:8090` without inbound firewall rules or static IPs.
+
+### 17.3 Orchestration (`phase5/deploy/run_production.slurm`)
+A dedicated Slurm batch script manages the complete lifecycle of all three daemons:
+* **SLURM Directives**: Allocates 1 node, 2x GPUs (`--gres=gpu:2`), 24 CPUs, 160GB RAM,
+  and up to 4-day continuous walltime on partition `gpu`.
+* **vLLM Engine**: Launches `vllm.entrypoints.openai.api_server` with `--tensor-parallel-size 2`,
+  `--max-model-len 8192`, `--gpu-memory-utilization 0.92`, listening on `127.0.0.1:8000`.
+* **FastAPI Shim**: Launches `uvicorn phase5.serve.main:create_app` listening on `127.0.0.1:8090`,
+  connecting upstream to vLLM, enforcing bearer auth, and managing Supabase domain retrieval.
+* **Cloudflare Tunnel**: Runs `cloudflared tunnel run --token $TUNNEL_TOKEN`, routing to `:8090`.
+* **Process Supervision & Trap**: Automatically traps `EXIT`, `SIGINT`, and `SIGTERM` to cleanly
+  tear down `cloudflared`, the shim, and `vLLM` upon job completion.
+
+### 17.4 External Script Deprecation
+External cloud deployment tooling (`bootstrap-host.sh`, `providers/bootstrap-runpod.sh`,
+`providers/runpod_provision.py`) has been removed in favor of `run_production.slurm` and the
+unified certification probe `phase5/deploy/live_probe.py`.
+
+### 17.5 Launch & Verification Command
+```bash
+# Submit to Param Rudra
+sbatch phase5/deploy/run_production.slurm
+
+# Verify once online
+python phase5/deploy/live_probe.py --url https://ai.berojgardegreewala.com
+```
 

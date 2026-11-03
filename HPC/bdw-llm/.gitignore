@@ -33,6 +33,10 @@ __pycache__/
 .env.*
 # ...but the deploy template is documentation, not a secret (phase5/deploy)
 !.env.example
+# phase 5 deploy run state and logs
+phase5/deploy/run/
+phase5/deploy/logs/
+phase5/deploy/cloudflared/cloudflared
 *.pem
 *.key
 
