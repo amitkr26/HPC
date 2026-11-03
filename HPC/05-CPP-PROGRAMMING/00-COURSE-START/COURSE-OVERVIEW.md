@@ -6,7 +6,7 @@ following the same philosophy as the completed C course.
 ## Course status
 
 - **C course: COMPLETE** (Day 1 - Day 8, all assignments verified in `C/`).
-- **C++ course: in progress** - basics, functions, STL, classes/OOP done; parallel/advanced covered in the HPC modules.
+- **C++ course: COMPLETE** - basics, functions, STL, classes/OOP done; parallel/advanced covered in the HPC modules.
 
 ## Where things live
 

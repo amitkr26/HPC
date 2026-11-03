@@ -4,8 +4,7 @@
 - **Faculty:** Anuja Sridhar (PE STG)
 - **Schedule:** 25/09/2026 - 08/10/2026
 - **Holidays:** 26/09 - 27/09/2026 (Weekend), 02/10/2026 (Mahatma Gandhi Birthday), 03/10 - 04/10/2026 (Weekend)
-
-Content to be added as the course progresses.
+- **Status:** done
 
 ## Folder layout
 

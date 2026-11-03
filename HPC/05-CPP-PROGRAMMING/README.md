@@ -4,7 +4,7 @@ The C++ course. It mirrors the same living, structured layout as the C course:
 numbered topic folders, each with `01-CONCEPTS/` (theory -> syntax -> MCQ ->
 debugging), `02-EXAMPLES/` (code), `03-PRACTICE/`, and `04-ASSIGNMENTS/`.
 
-> **Status: course in progress** - basics through classes/STL, exam practice.
+> **Status: course complete** - basics through classes/STL, exam practice.
 
 ## Folder layout
 

@@ -21,12 +21,12 @@
 | [08-CPP-PARALLEL-PROGRAMMING](08-CPP-PARALLEL-PROGRAMMING) | 9 | C++ with Parallel Programming | 40 / 5d | Anuja Sridhar (PE STG) | 18/09 – 24/09 | done |
 | [09-ADVANCED-PROGRAMMING-HPC](09-ADVANCED-PROGRAMMING-HPC) | 10 | Advanced Programming - HPC | 72 / 9d | Anuja Sridhar (PE STG) | 25/09 – 08/10 | done |
 | [10-STATISTICS-AND-DATA-HANDLING](10-STATISTICS-AND-DATA-HANDLING) | 11 | Statistical Analysis & Data Handling using Python | 48 / 6d | Anuja Sridhar (PE STG) + Usha Rani (PE STG) | 09/10 – 16/10 | done |
-| [11-ML-DL-OPENVINO](11-ML-DL-OPENVINO) | 12 | Introduction to ML, DL & OpenVINO | 48 / 6d | Anuja Sridhar (PE STG) + Usha Rani (PE STG) | 21/10 – 28/10 | in progress |
-| [12-APTITUDE-AND-COMMUNICATION](12-APTITUDE-AND-COMMUNICATION) | 13 | Aptitude & Effective Communication | 50 hrs | Richa Chaudhary (ACTS) | 29/10 – 05/11 | upcoming |
+| [11-ML-DL-OPENVINO](11-ML-DL-OPENVINO) | 12 | Introduction to ML, DL & OpenVINO | 48 / 6d | Anuja Sridhar (PE STG) + Usha Rani (PE STG) | 21/10 – 28/10 | done |
+| [12-APTITUDE-AND-COMMUNICATION](12-APTITUDE-AND-COMMUNICATION) | 13 | Aptitude & Effective Communication | 50 hrs | Richa Chaudhary (ACTS) | 29/10 – 05/11 | in progress |
 | [13-PROJECT-MODULE](13-PROJECT-MODULE) | 14 | Project Module | 100 hrs | — | 06/11 – 23/11 | upcoming |
 
-Statuses read as of **28/10/2026** (module 11's last scheduled day; module
-12 starts 29/10). Update the column as modules complete.
+Statuses read as of **03/11/2026** (module 11 complete; module 12 in progress
+through 05/11; project starts 06/11). Update the column as modules complete.
 
 ## Holidays recorded in the source (per module)
 

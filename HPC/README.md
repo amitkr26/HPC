@@ -24,14 +24,14 @@ HPC/
 ├── 05-CPP-PROGRAMMING/             # C++ Programming (40hrs)
 │   ├── COURSE-MATERIAL/            #   day slide PDFs + assignment docx
 │   └── (topic folders, assignments)
-├── 06-PYTHON-PROGRAMMING/          # Python Programming (40hrs) — day-1 basics practice
+├── 06-PYTHON-PROGRAMMING/          # Python Programming (40hrs) — basics, files, modules, assignments, project
 ├── 07-HPC-AND-ITS-ARCHITECTURE/    # Intro to HPC & Its Architecture (48hrs) — OpenMP, lectures, assignments
 │   └── COURSE-MATERIAL/REFERENCE/  #   + HPC Architecture Q&A packs, CUDA & GPU-architecture PDFs
-├── 08-CPP-PARALLEL-PROGRAMMING/    # C++ with Parallel Programming (40hrs) — module done 24/09
+├── 08-CPP-PARALLEL-PROGRAMMING/    # C++ with Parallel Programming (40hrs) — done 24/09; material indexed under 07
 ├── 09-ADVANCED-PROGRAMMING-HPC/    # Advanced Programming – HPC (72hrs) — profiling + GDB debugging
-├── 10-STATISTICS-AND-DATA-HANDLING/# Statistical Analysis & Data Handling using Python (48hrs) — module done 16/10
-├── 11-ML-DL-OPENVINO/              # Intro to ML, DL & OpenVINO (48hrs) — ends 28/10
-├── 12-APTITUDE-AND-COMMUNICATION/  # Aptitude & Effective Communication (50hrs) — starts 29/10
+├── 10-STATISTICS-AND-DATA-HANDLING/# Statistical Analysis & Data Handling using Python (48hrs) — NumPy/pandas practice; done 16/10
+├── 11-ML-DL-OPENVINO/              # Intro to ML, DL & OpenVINO (48hrs) — done 28/10
+├── 12-APTITUDE-AND-COMMUNICATION/  # Aptitude & Effective Communication (50hrs) — in progress, ends 05/11
 ├── 13-PROJECT-MODULE/              # Project Module (100hrs) — hpc-vlsi-placement project; runs 06/11–23/11
 ├── bdw-llm/                        # Standalone project — from-scratch LLM on PARAM Rudra
 │   ├── docs/                       #   stage reports A–J, each md5-verified

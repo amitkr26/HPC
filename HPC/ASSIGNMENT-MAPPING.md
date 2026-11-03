@@ -35,11 +35,15 @@ Maps solution programs to their originating assignment documents across the C, C
 | `COURSE-MATERIAL/Linux-Hands-On Practice Assignment.docx` | `SOLUTIONS/q29…q58` (vi/nano, paging/segmentation) |
 | `COURSE-MATERIAL/Linux_OS_Question_Paper.pdf` | OS memory notes in `COURSE-MATERIAL/q53_q58_paging_segmentation_notes.sh` |
 
-## Python (06-PYTHON-PROGRAMMING/01-PYTHON-BASICS)
+## Python (06-PYTHON-PROGRAMMING)
 
 | Assignment | Location |
 |------------|----------|
-| `Python_Assignment1.ipynb` (Colab) | `04-ASSIGNMENTS/python_assignment1.ipynb` |
+| `Python_Assignment1.ipynb` (Colab) | `01-PYTHON-BASICS/04-ASSIGNMENTS/python_assignment1.ipynb` |
+| Advanced Python Assignment | `COURSE-MATERIAL/ASSIGNMENTS/Advanced Python Assignment.pdf` |
+| Python Hands-On Assignment 2 | `COURSE-MATERIAL/ASSIGNMENTS/Python Hands-On_Assignment2.pdf` + submitted `Amit_Kumar_Python_Hands_On_Assignment_2.docx` |
+| Weather Dashboard Assignment | `COURSE-MATERIAL/ASSIGNMENTS/Amit_Kumar_Weather_Dashboard_Assignment.docx` + implementation in `weather_dashboard_project/` |
+| Python Indexing/Slicing/nditer Quiz | `05-QUIZZES/Python-Indexing-Slicing/` (question PDF + solutions DOCX) |
 
 ## HPC (07-HPC-AND-ITS-ARCHITECTURE)
 
