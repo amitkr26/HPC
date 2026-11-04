@@ -1,0 +1,25 @@
+# P2.0 offline wheel set -- PARAM Rudra (compute nodes: NO internet)
+# Generated: 2026-10-22 on login node from venv_p2 (see docs/PHASE2_7B_BLUEPRINT.md 4.1)
+#
+# Rebuild recipe (login node):
+#   ~/bdw-llm/venv/bin/python -m venv --system-site-packages ~/bdw-llm/venv_p2
+#   printf '/home/tutor/3ioip3lt/bdw-llm/venv/lib/python3.11/site-packages\n' \
+#     > ~/bdw-llm/venv_p2/lib/python3.11/site-packages/bdw_parent.pth
+#   ~/bdw-llm/venv_p2/bin/pip install --no-index --find-links ~/bdw-llm/wheels \
+#     -r ~/bdw-llm/requirements_p2.txt
+#
+# Inherited via bdw_parent.pth from ~/bdw-llm/venv (Phase 1; ../requirements.txt):
+#   torch==2.5.1+cu121 (download.pytorch.org/whl/cu121), triton==3.1.0,
+#   nvidia-*, numpy==2.4.6, pandas, matplotlib, sentencepiece, rich, requests, ...
+#   (NOT re-downloadable from PyPI as +cu121 -- never remove the Phase-1 venv)
+#
+# venv_p2 installs + pinned HF stack (all from PyPI; wheels/ holds --no-deps set):
+accelerate==1.15.0
+bitsandbytes==0.50.2
+peft==0.21.2
+trl==0.29.1
+transformers==4.57.6
+tokenizers==0.22.2
+datasets==3.6.0
+huggingface-hub==0.36.2
+safetensors==0.8.0

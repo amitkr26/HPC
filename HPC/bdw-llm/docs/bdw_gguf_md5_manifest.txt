@@ -1,0 +1,6 @@
+# P2.5 GGUF export — job 33497, 2026-10-26 (blueprint errata 17.2)
+# llama.cpp d854d98bae598388ecea1ed84396587e5edc326d, convert f16 + llama-quantize Q4_K_M
+# Mirrors cluster $HOME/bdw-llm/merged/gguf_md5.txt; verify with:
+#   md5sum -c <this-file>   (run from the merged/ directory)
+f2dfcb4de60e6e036c86bc6c16bca02c  bdw-7b-sft-f16.gguf
+c681fafe042ca8277fc08c526cc6de8b  bdw-7b-sft-Q4_K_M.gguf

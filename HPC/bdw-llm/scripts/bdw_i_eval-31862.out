@@ -1,0 +1,78 @@
+==========================================
+SLURM_CLUSTER_NAME = paramrudra
+SLURM_ARRAY_JOB_ID = 
+SLURM_ARRAY_TASK_ID = 
+SLURM_ARRAY_TASK_COUNT = 
+SLURM_ARRAY_TASK_MAX = 
+SLURM_ARRAY_TASK_MIN = 
+SLURM_JOB_ACCOUNT = tutor
+SLURM_JOB_ID = 31862
+SLURM_JOB_NAME = bdw_i_eval
+SLURM_JOB_NODELIST = rdgpu01
+SLURM_JOB_USER = 3ioip3lt
+SLURM_JOB_UID = 56027
+SLURM_JOB_PARTITION = gpu
+SLURM_TASK_PID = 3220835
+SLURM_SUBMIT_DIR = /home/tutor/3ioip3lt/bdw-llm/scripts
+SLURM_CPUS_ON_NODE = 4
+SLURM_NTASKS = 1
+SLURM_TASK_PID = 3220835
+==========================================
+node      : rdgpu01
+date      : 2026-10-16T15:35:46+05:30
+which py  : /home/tutor/3ioip3lt/bdw-llm/venv/bin/python
+GPU 0: NVIDIA A100 80GB PCIe (UUID: GPU-16845317-cfa6-e9c5-4858-eb7ffd7d6be2)
+
+======================================================================
+BDW evaluation
+======================================================================
+device        : NVIDIA A100 80GB PCIe
+torch         : 2.5.1+cu121
+checkpoint    : /home/tutor/3ioip3lt/bdw-llm/checkpoints/step_0117602.pt
+eval tokens   : 2556206 from fineweb_eval_unseen.jsonl (3400 docs, source md5 2e59ca70d9ad03e753a5963c84c75fde)
+train urls / eval urls are disjoint (verified at fetch time)
+ckpt step     : 117602  tokens_seen=963395584  (25.37 epochs)
+eval rows     : 2496 x 1024
+
+[baseline] scoring random-init model on unseen eval set ...
+[baseline] perplexity=18603.31  nll=9.8311  acc=0.0001  (3.6s)
+
+params        : 27800576
+
+[unseen] scoring 2496 held-out rows ...
+[unseen] perplexity=58.34  nll=4.0663  95% CI=[57.36, 59.34]  acc=0.3085  (2.4s)
+
+[seen] scoring 500 training rows (data the model WAS trained on) ...
+[seen] perplexity=43.85  nll=3.7807  acc=0.3360  (0.5s)
+
+--- generation ---
+
+PROMPT : 'The history of'
+GREEDY : The history of the world, and the history of the world, the history of the world, the history of the world, the history of the world, the history of the world, the history of the world, the history of the world, the history of the world, the history of the world, the history of the world, the history of the world, the history of the world, the history of the
+SAMPLE : The history of the past twenty years, the early British colonial era of Britain were more than half of the American colonies, and more or less than half of that of their ancestors were also employed by a certain population. The people of Wales, who had the most important history of Britain, were also employed by the Nationalists and colonies. Yet they also had their own powers. The early colonial
+
+PROMPT : 'In recent years,'
+GREEDY : In recent years, the company has been working with the company to help them understand the business and the business needs of their customers.
+The company’s extensive experience in the industry has been working with the company to help them understand the business needs of their customers.
+The company’s extensive experience in the industry has been working with the company to help them understand the business needs of their customers.
+The company’
+SAMPLE : In recent years, the company has launched an innovative new 5D series for the RP model. The series is run by the RP and has developed new new models, including a new single-line and an integrated RP model.
+In a short video video, the series can be downloaded into the same RP model and then automatically download the RP model.
+Hand-dine, new and
+
+PROMPT : 'Scientists have'
+GREEDY : Scientists have found that the most common causes of cancer are cancer, and they are not known to cause cancer.
+The researchers found that the most common causes of cancer are cancer, and that the most common causes of cancer are cancer, cancer, and cancer are not known to cause cancer.
+The researchers found that the most common causes of cancer are cancer, and cancer are not known to cause cancer.
+
+SAMPLE : Scientists have launched an educational program that combines the following research into their work:
+- How to make a teacher’s teaching experience
+- What skills and skills needed to do in school
+- How to work at school for three months
+- How to make sure that students are able to have a learning experience
+- How to do more research in school
+- What to do in school
+- How to
+
+saved -> /home/tutor/3ioip3lt/bdw-llm/logs/eval_results.json
+EVAL_OK

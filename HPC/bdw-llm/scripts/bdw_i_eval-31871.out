@@ -1,0 +1,68 @@
+==========================================
+SLURM_CLUSTER_NAME = paramrudra
+SLURM_ARRAY_JOB_ID = 
+SLURM_ARRAY_TASK_ID = 
+SLURM_ARRAY_TASK_COUNT = 
+SLURM_ARRAY_TASK_MAX = 
+SLURM_ARRAY_TASK_MIN = 
+SLURM_JOB_ACCOUNT = tutor
+SLURM_JOB_ID = 31871
+SLURM_JOB_NAME = bdw_i_eval
+SLURM_JOB_NODELIST = rdgpu01
+SLURM_JOB_USER = 3ioip3lt
+SLURM_JOB_UID = 56027
+SLURM_JOB_PARTITION = gpu
+SLURM_TASK_PID = 3222542
+SLURM_SUBMIT_DIR = /home/tutor/3ioip3lt/bdw-llm/scripts
+SLURM_CPUS_ON_NODE = 4
+SLURM_NTASKS = 1
+SLURM_TASK_PID = 3222542
+==========================================
+node      : rdgpu01
+date      : 2026-10-16T16:11:49+05:30
+which py  : /home/tutor/3ioip3lt/bdw-llm/venv/bin/python
+GPU 0: NVIDIA A100 80GB PCIe (UUID: GPU-16845317-cfa6-e9c5-4858-eb7ffd7d6be2)
+
+======================================================================
+BDW evaluation
+======================================================================
+device        : NVIDIA A100 80GB PCIe
+torch         : 2.5.1+cu121
+checkpoint    : /home/tutor/3ioip3lt/bdw-llm/checkpoints/step_0200000.pt
+eval tokens   : 2556206 from fineweb_eval_unseen.jsonl (3400 docs, source md5 2e59ca70d9ad03e753a5963c84c75fde)
+train urls / eval urls are disjoint (verified at fetch time)
+ckpt step     : 200000  tokens_seen=1638400000  (43.14 epochs)
+eval rows     : 2496 x 1024
+
+[baseline] scoring random-init model on unseen eval set ...
+[baseline] perplexity=18603.31  nll=9.8311  acc=0.0001  (3.6s)
+
+params        : 27800576
+
+[unseen] scoring 2496 held-out rows ...
+[unseen] perplexity=52.40  nll=3.9589  95% CI=[51.49, 53.32]  acc=0.3213  (2.4s)
+
+[seen] scoring 500 training rows (data the model WAS trained on) ...
+[seen] perplexity=35.29  nll=3.5636  acc=0.3600  (0.5s)
+
+--- generation ---
+
+PROMPT : 'The history of'
+GREEDY : The history of the country is not a new one. It is a new one. It is a new one. It is a new one. It is a new one. It is a new one. It is a new one. It is a new one. It is a new one. It is a new one. It is a new one. It is a new one. It is a new one.
+SAMPLE : The history of the past twenty-nine years has been a series of great change in the past twenty-nine years, and also the past twenty-nine years have been a very successful and very successful one. They have built a great foundation for a great new collection, of many new collections, and we have been very fortunate to have been able to see several notable and rare collection in the future.
+
+PROMPT : 'In recent years,'
+GREEDY : In recent years, the company has been able to offer a wide range of services to the public.
+The company has been able to offer services to the public in a variety of ways.
+The company has been able to offer services to the public in a variety of ways.
+The company has been able to offer services to the public in a variety of ways.
+The company has been able to offer services to
+SAMPLE : In recent years, the company has been on the water for nearly a decade. When the company began to focus on environmental change, its product and service operations continue to grow, and the company has been doing a tremendous job in that area.
+In early part, the company has worked with the company with some of its other customers and the companies that have worked on the company over a century. The company has worked with
+
+PROMPT : 'Scientists have'
+GREEDY : Scientists have been able to find a way to find a way to find a way to find a way to find a way to find a way to find a way to find a way to find a way to find a way to find a way to find a way to find a way to find a way to find a way to find a way to find a way to find a way to find a way to find
+SAMPLE : Scientists have studied how it can be done in order to establish a new perspective on the field of biology and the field of science. This is a unique tool for the development of science in science and the field of science, which is why scientists should take the time to develop an understanding of science and science. In fact, scientists are often trying to develop an understanding of science as a whole and to give evidence that
+
+saved -> /home/tutor/3ioip3lt/bdw-llm/logs/eval_results.json
+EVAL_OK

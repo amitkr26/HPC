@@ -1,0 +1,7 @@
+Traceback (most recent call last):
+  File "/home/tutor/3ioip3lt/bdw-llm/src/smoke_test.py", line 187, in <module>
+    main()
+  File "/home/tutor/3ioip3lt/bdw-llm/src/smoke_test.py", line 116, in main
+    print("tensors with grads : %d" % (len(model.named_parameters()) - len(missing)))
+                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: object of type 'generator' has no len()

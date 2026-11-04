@@ -1,0 +1,12 @@
+# bdw-llm runs on PARAM Rudra (Linux). Line endings must stay LF everywhere:
+# a CRLF checkout would put "\r" before the shebang and after every #SBATCH
+# directive, and bash would refuse to run the scripts.
+* text=auto eol=lf
+
+# generated data and anything binary is stored byte-for-byte
+*.npy -text
+*.pt -text
+*.bin -text
+*.pkl -text
+*.png -text
+*.jpg -text

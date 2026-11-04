@@ -1,0 +1,134 @@
+==========================================
+SLURM_CLUSTER_NAME = paramrudra
+SLURM_ARRAY_JOB_ID = 
+SLURM_ARRAY_TASK_ID = 
+SLURM_ARRAY_TASK_COUNT = 
+SLURM_ARRAY_TASK_MAX = 
+SLURM_ARRAY_TASK_MIN = 
+SLURM_JOB_ACCOUNT = tutor
+SLURM_JOB_ID = 31836
+SLURM_JOB_NAME = bdw_g_train
+SLURM_JOB_NODELIST = rdgpu01
+SLURM_JOB_USER = 3ioip3lt
+SLURM_JOB_UID = 56027
+SLURM_JOB_PARTITION = gpu
+SLURM_TASK_PID = 3215246
+SLURM_SUBMIT_DIR = /home/tutor/3ioip3lt/bdw-llm/scripts
+SLURM_CPUS_ON_NODE = 4
+SLURM_NTASKS = 1
+SLURM_TASK_PID = 3215246
+==========================================
+node      : rdgpu01
+date      : 2026-10-16T14:50:44+05:30
+which py  : /home/tutor/3ioip3lt/bdw-llm/venv/bin/python
+CUDA_VISIBLE_DEVICES=0
+checkpoint before this run:
+-rw-rw-r-- 1 3ioip3lt 3ioip3lt 333674610 Oct 16 14:25 /home/tutor/3ioip3lt/bdw-llm/checkpoints/step_0029208.pt
+-rw-rw-r-- 1 3ioip3lt 3ioip3lt 333675186 Oct 16 14:42 /home/tutor/3ioip3lt/bdw-llm/checkpoints/step_0029268.pt
+-rw-rw-r-- 1 3ioip3lt 3ioip3lt 333675186 Oct 16 14:47 /home/tutor/3ioip3lt/bdw-llm/checkpoints/step_0034038.pt
+
+GPU 0: NVIDIA A100 80GB PCIe (UUID: GPU-16845317-cfa6-e9c5-4858-eb7ffd7d6be2)
+
+======================================================================
+BDW training
+======================================================================
+device        : NVIDIA A100 80GB PCIe
+torch         : 2.5.1+cu121
+args          : {
+  "batch_size": 8,
+  "seq_len": 1024,
+  "lr": 0.0006,
+  "min_lr": 6e-05,
+  "warmup_steps": 200,
+  "total_steps": 200000,
+  "weight_decay": 0.1,
+  "beta1": 0.9,
+  "beta2": 0.95,
+  "grad_clip": 1.0,
+  "ckpt_interval_s": 300.0,
+  "log_interval": 20,
+  "eval_interval": 500,
+  "keep_ckpt": 3,
+  "seed": 1337,
+  "val_shards": 1,
+  "no_resume": false,
+  "max_steps": 1000
+}
+train shards   : 38  rows=37088  tokens=37978112
+val shards     : 1  rows=227  tokens=232448  (held out)
+
+[resume] loading /home/tutor/3ioip3lt/bdw-llm/checkpoints/step_0034038.pt
+[resume] step=34038 tokens_seen=278839296 last_loss=4.3325
+
+params        : 27800576 (27.80 M)
+
+--- training ---
+step     loss         lr         tok/s      elapsed   epoch%  
+34040    4.0776       5.63e-04   213545     0m00s     734.3
+34060    4.2437       5.63e-04   357262     0m01s     734.7
+34080    4.2153       5.63e-04   365537     0m01s     735.1
+34100    4.3055       5.63e-04   364150     0m02s     735.5
+34120    4.1427       5.63e-04   366918     0m02s     736.0
+34140    4.1312       5.62e-04   365959     0m03s     736.4
+34160    4.3997       5.62e-04   369667     0m03s     736.8
+34180    4.3027       5.62e-04   367661     0m03s     737.3
+34200    4.1232       5.62e-04   371706     0m04s     737.7
+34220    4.2806       5.62e-04   370830     0m04s     738.1
+34240    4.0798       5.62e-04   372616     0m05s     738.6
+34260    4.2986       5.62e-04   376773     0m05s     739.0
+34280    4.0792       5.62e-04   371500     0m06s     739.4
+34300    4.0919       5.62e-04   376538     0m06s     739.9
+34320    4.1969       5.62e-04   375596     0m06s     740.3
+34340    4.1849       5.62e-04   378529     0m07s     740.7
+34360    4.1244       5.62e-04   379109     0m07s     741.2
+34380    4.2665       5.62e-04   375502     0m08s     741.6
+34400    4.0795       5.62e-04   378499     0m08s     742.0
+34420    4.0943       5.62e-04   377368     0m09s     742.5
+34440    4.0810       5.62e-04   379519     0m09s     742.9
+34460    4.1719       5.62e-04   376999     0m10s     743.3
+34480    4.0749       5.62e-04   383047     0m10s     743.7
+34500    4.2342       5.62e-04   382636     0m10s     744.2
+[eval] step 34500  val_loss=3.7134  (train-window 4.1936)
+34520    4.2109       5.62e-04   357393     0m11s     744.6
+34540    4.2843       5.62e-04   381643     0m11s     745.0
+34560    4.2490       5.62e-04   384055     0m12s     745.5
+34580    4.2697       5.62e-04   374497     0m12s     745.9
+34600    4.2498       5.61e-04   374484     0m13s     746.3
+34620    4.1962       5.61e-04   379600     0m13s     746.8
+34640    4.2703       5.61e-04   380007     0m13s     747.2
+34660    4.0598       5.61e-04   382065     0m14s     747.6
+34680    4.3195       5.61e-04   375885     0m14s     748.1
+34700    4.3669       5.61e-04   374114     0m15s     748.5
+34720    4.3138       5.61e-04   377977     0m15s     748.9
+34740    4.2282       5.61e-04   382107     0m16s     749.4
+34760    4.0464       5.61e-04   383092     0m16s     749.8
+34780    4.4800       5.61e-04   263170     0m17s     750.2
+34800    4.2625       5.61e-04   376537     0m17s     750.6
+34820    4.2632       5.61e-04   378963     0m18s     751.1
+34840    4.3103       5.61e-04   381213     0m18s     751.5
+34860    4.1764       5.61e-04   384216     0m18s     751.9
+34880    4.0484       5.61e-04   379784     0m19s     752.4
+34900    4.2666       5.61e-04   382030     0m19s     752.8
+34920    4.0351       5.61e-04   381689     0m20s     753.2
+34940    3.9904       5.61e-04   381911     0m20s     753.7
+34960    4.1213       5.61e-04   381291     0m21s     754.1
+34980    4.3813       5.61e-04   381059     0m21s     754.5
+35000    4.1778       5.61e-04   382544     0m21s     755.0
+[eval] step 35000  val_loss=3.8597  (train-window 4.1861)
+35020    4.0269       5.61e-04   358741     0m22s     755.4
+[max-steps] reached 1000 this run
+[ckpt] rotated out step_0029208.pt
+
+[final] saved step_0035038.pt
+
+=== summary ===
+steps total     : 35038
+tokens seen     : 287031296 (7.56 epochs)
+steps this run  : 1000
+wall this run   : 23.6s
+loss first      : 4.1349
+loss last       : 3.8947
+loss tail mean  : 4.1802
+loss decreased  : True
+stop reason     : total-steps
+TRAIN_DONE
