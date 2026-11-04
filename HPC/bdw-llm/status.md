@@ -1,6 +1,6 @@
 # BDW-LLM Project Status
 
-**Last updated:** 2026-11-04 12:55 IST
+**Last updated:** 2026-11-04 19:45 IST
 **Audit host:** `paramrudra.cdacdelhi.in:4422` (`3ioip3lt`)
 **Cluster project:** `/home/tutor/3ioip3lt/bdw-llm`
 **Local project:** `C:\Users\STUDENT\Desktop\Amit\HPC\bdw-llm`
@@ -8,10 +8,10 @@
 
 ## 1. Executive Summary
 
-**Overall status: AMBER - core R&D works; P5 is paused and not live; Phase 6 seed tool-use dataset is generated.**
+**Overall status: AMBER - core R&D works; P5 is paused and not live; Phase 6 seed tool-use dataset and baseline evaluation (54.2% valid format) complete.**
 
 - Phase 1, Phase 2, and Phase 4 are complete.
-- Phase 6 seed tool-use capability is complete: deterministic generator plus 120 train / 24 eval rows.
+- Phase 6 tool-use capability is in progress: deterministic generator (120 train / 24 eval rows) and baseline evaluation on `v2.0-bdw7b-sft` completed (54.2% valid format rate; 91.7% intent rate).
 - Phase 3 core (Supabase, RAG, gateway, demo UI) is live. P3.4/P3.5 release-gate and production UI integration are not evidenced as complete.
 - P5.0 shim is complete. P5.1 zero-cost production is scaffolded, hardened, and test-green but not launched.
 - The P4 7B stack is live and serving correctly.
@@ -34,7 +34,7 @@ Approximate completion: **model/R&D ~100%, integration ~85-90%, production ~5-10
 | Phase 5.3 - BDW integration | TODO | Provider/model `bdw-career-ai`, metadata `user_id`, technical-intent split, citations, feature flag, canary not done. |
 | Phase 5.4 - release gates | TODO | Eval gates, load/security tests, dashboards, rollback runbook, SLO certification not done. |
 | Phase 5.5 - feedback flywheel | TODO | Feedback capture and LoRA refresh loop not started. |
-| Phase 6 - tool use/function calling | SEED DONE | Deterministic generator; 120 train / 24 eval rows; Qwen2.5-rendered; 403-467 tokens; no training run yet. |
+| Phase 6 - tool use/function calling | BASELINE MEASURED | Deterministic generator (120 train / 24 eval rows); v2.0-bdw7b-sft baseline evaluated: 54.2% strict format rate (13/24), 91.7% tag intent rate (22/24), 37.5% missing closing tag (9/24), 8.3% plain text (2/24). |
 | Cluster source control | DONE / CANONICAL PUSHED | Cluster HEAD `68479a6`; canonical GitHub `main` at `60319aa`; cluster push still requires GitHub credentials. |
 
 ## 3. Current Live State
@@ -94,7 +94,15 @@ Phase 4 artifacts: five adapters (~309M each), five `export/p4_lora_*.gguf` file
 - Rendering: Qwen2.5 `# Tools` plus `<tool_call>`; JSON object arguments; token range 403-467, mean 421.86.
 - Validation: 144 unique IDs/questions, no cross-split duplicates, full rows contain tool result plus final answer; deterministic rerun hashes match.
 - Outputs: `tool_calls_train.jsonl`, `tool_calls_eval.jsonl`, `dataset_summary.json` (Git-ignored).
-- Status: seed data only; no tool-use fine-tuning run has started.
+- Baseline Evaluator: `phase6_advanced/tools/evaluate_tools_baseline.py` and `phase6_advanced/tools/evaluate_tools_baseline.slurm`.
+- Baseline Results (`v2.0-bdw7b-sft`, Slurm Job `185937`, 14.7s runtime):
+  - Valid Tool Call Format Rate: **54.2% (13/24)**
+  - Clean Tool Call Format: 54.2% (13/24)
+  - JSON Body in `<tool_call>` Tag: 91.7% (22/24)
+  - Missing Closing Tag (`</tool_call>`): 37.5% (9/24)
+  - Plain Text (Bypassed Tool): 8.3% (2/24)
+  - Exact Semantic Match: 50.0% (12/24)
+- Status: baseline established; model understands tool intent (91.7%) but requires fine-tuning to reliably close tags and avoid arithmetic shortcutting.
 
 ## 5. P5 Deployment Inventory
 
@@ -167,7 +175,7 @@ Phase 4 artifacts: five adapters (~309M each), five `export/p4_lora_*.gguf` file
 - [x] Create and validate the Phase 6 tool-call dataset generator.
 - [x] Generate 120/24 seed dataset; verify schema and deterministic hashes.
 - [x] Push Phase 6 script/README to GitHub under `HPC/bdw-llm/phase6_advanced/tools`.
-- [ ] Add a small held-out tool-use eval and run the 7B model against it.
+- [x] Add a small held-out tool-use eval and run the 7B model against it (baseline: 54.2% format rate).
 - [ ] Decide whether to fine-tune on the Phase 6 seed data.
 - [ ] Add `P5_API_KEY` and `TUNNEL_TOKEN` to cluster `.env`.
 - [ ] Configure Cloudflare DNS/tunnel for `ai.berojgardegreewala.com`.
@@ -200,6 +208,15 @@ Phase 4 artifacts: five adapters (~309M each), five `export/p4_lora_*.gguf` file
 - Re-ran P5 tests: `97 passed, 2 skipped`.
 - Pushed local repo changes to GitHub `main` as `5f19c28`.
 - Updated this status report for the current P5-ready state.
+
+### 2026-11-04 - Phase 6 baseline evaluation
+
+- Developed `phase6_advanced/tools/evaluate_tools_baseline.py` and `evaluate_tools_baseline.slurm`.
+- Evaluated `v2.0-bdw7b-sft` on 24 held-out evaluation prompts from `data/tool_calls_eval.jsonl` using PARAM Rudra single A100 GPU (Job `185937`, runtime 14.7s).
+- Valid Tool Call Format Rate: **54.2%** (13/24).
+- Tag intent rate (`<tool_call>` with valid JSON body): **91.7%** (22/24).
+- Key failure modes: 9 missing closing tags (37.5%) and 2 plain-text arithmetic shortcuts (8.3%).
+- Saved baseline results to `phase6_advanced/tools/eval/tool_baseline_v2_0_bdw7b_sft.json`.
 
 ### 2026-11-04 - Phase 6 seed
 

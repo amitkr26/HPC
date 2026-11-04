@@ -9,9 +9,12 @@ required after the tokenizer is cached.
 | File | Purpose |
 |---|---|
 | `generate_tool_dataset.py` | Deterministic generator (stdlib + cached HF tokenizer). |
+| `evaluate_tools_baseline.py` | Evaluates models on `data/tool_calls_eval.jsonl` (format & semantic metrics). |
+| `evaluate_tools_baseline.slurm` | Slurm GPU batch job harness on PARAM Rudra. |
 | `data/tool_calls_train.jsonl` | 120 training rows. |
 | `data/tool_calls_eval.jsonl` | 24 held-out evaluation rows. |
 | `data/dataset_summary.json` | Counts, token stats, and SHA-256 hashes. |
+| `eval/tool_baseline_v2_0_bdw7b_sft.json` | Baseline evaluation results for `v2.0-bdw7b-sft`. |
 
 > `data/*.jsonl` and `dataset_summary.json` are generated artifacts and are
 > Git-ignored. Run the generator to recreate them; the script and README are
@@ -88,3 +91,32 @@ tokens: min=403 mean=421.86 max=467
 This is a small seed dataset for capability bring-up, not a production-scale
 tool-use corpus. Expand templates, tools, and adversarial cases before making
 quality claims.
+
+## Baseline Evaluation (`v2.0-bdw7b-sft`)
+
+Run baseline evaluation against the 24 held-out evaluation questions using the
+Phase 2 model (`merged/bdw-7b-sft`):
+
+```bash
+# Interactive / compute node
+venv_p2/bin/python phase6_advanced/tools/evaluate_tools_baseline.py
+
+# Slurm batch job (PARAM Rudra gpu partition)
+sbatch phase6_advanced/tools/evaluate_tools_baseline.slurm
+```
+
+### Verified Baseline Results (Slurm Job `185937`, A100 80GB, 14.7s)
+
+| Metric | Score | Percentage | Notes |
+|---|---|---|---|
+| **Valid Tool Call Format Rate** | **13 / 24** | **54.2%** | Primary metric: complete `<tool_call>` tag with valid JSON object. |
+| **Clean Format (no extra text)** | 13 / 24 | 54.2% | Exact match to valid format. |
+| **JSON Body in `<tool_call>` tag** | 22 / 24 | 91.7% | Initiated `<tool_call>` with valid JSON payload. |
+| **Missing Closing Tag (`</tool_call>`)** | 9 / 24 | 37.5% | Emitted valid JSON inside `<tool_call>` but stopped at EOS without `</tool_call>`. |
+| **Plain Text (Bypassed Tool)** | 2 / 24 | 8.3% | Answered basic addition directly in plain text instead of invoking `calculator`. |
+| **Exact Semantic Match** | 12 / 24 | 50.0% | Correct tool name and exact matching arguments. |
+
+### Failure Analysis
+
+1. **Tag Termination (37.5% / 9 rows)**: The model demonstrates clear intent and outputs syntactically valid JSON arguments inside `<tool_call>`, but halts at end-of-sequence before emitting the closing `</tool_call>` delimiter. This indicates that fine-tuning on Phase 6 trajectory pairs will easily bridge this syntax gap.
+2. **Plain-Text Direct Arithmetic (8.3% / 2 rows)**: For trivial addition questions (e.g., `What is 7553 + 868?`), the model bypasses the tool call and directly generates `"The sum of 7553 and 868 is 8421."` Fine-tuning will reinforce tool enforcement when tools are defined in the prompt.
