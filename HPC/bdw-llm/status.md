@@ -47,7 +47,7 @@ Approximate completion: **model/R&D ~100%, integration ~85-90%, production ~5-10
 | P5 production job | Not submitted; no `bdw_70b_prod` in `squeue` or `sacct`. |
 | P5 public endpoint | `ai.berojgardegreewala.com` does not resolve from the workstation. |
 | Disk | Home filesystem 25T, 99% used, 482G available. Project `~/bdw-llm` is about 83G; HF cache is 136G. |
-| Git | Cluster `cd61711`, clean, `origin` configured. Local code push `5f19c28`; this status update is committed next. |
+| Git | Cluster clean, `origin` configured. Local code push `5f19c28`; status update committed on `main`. |
 | P5 venv | `venv_p5`: 6.9G, isolated, Python 3.11.4, `include-system-site-packages=false`. Old venv backed up as `venv_p5.pre-isolation-20261104-095234` (ignored). |
 
 ## 4. Verified Metrics
