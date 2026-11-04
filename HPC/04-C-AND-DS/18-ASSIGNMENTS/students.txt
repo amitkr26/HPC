@@ -1,5 +1,0 @@
-1 Amit 99.00
-2 Aryan 98.00
-3 Akshansh 90.00
-4 Golu 96.00
-5 Shani 99.00

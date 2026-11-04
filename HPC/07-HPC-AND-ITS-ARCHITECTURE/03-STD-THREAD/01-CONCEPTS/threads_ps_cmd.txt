@@ -1,1 +1,0 @@
-ps -t pts/0 -m -o pid,tid,nlwp,cmd
