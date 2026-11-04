@@ -3,6 +3,10 @@
 # transformers 4.55.4) because the embedded Zone 2 retriever embeds domain
 # queries with the staged BGE-small model on CPU. The PyTorch CPU index
 # keeps the image ~10x smaller than the CUDA build.
+#
+# NOTE: do NOT use this file for the combined vLLM cluster runtime.
+# vLLM 0.6.6 hard-pins numpy<2.0.0; use phase5/deploy/requirements-cluster.txt
+# for venv_p5 (numpy 1.26.4 + sentence-transformers 4.1.0).
 --extra-index-url https://download.pytorch.org/whl/cpu
 
 # P5.1: /metrics exposition + TTFT/token/citation instruments.

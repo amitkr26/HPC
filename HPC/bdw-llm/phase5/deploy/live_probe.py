@@ -9,15 +9,15 @@ marker on stdout:
     P5_LIVE_OK
     P5_LIVE_FAIL <step>: <reason>
 
-Runs anywhere (pod, workstation against localhost, or the public edge):
-stdlib only. Reads P5_API_KEY / P5_METRICS_TOKEN from phase5/deploy/.env
-or the environment; secrets are never printed.
+Runs anywhere (Param Rudra compute node, workstation against localhost,
+or the public edge): stdlib only. Reads P5_API_KEY / P5_METRICS_TOKEN
+from phase5/deploy/.env or the environment; secrets are never printed.
 
 usage:
   live_probe.py [--url URL] [--provider auto|on|off] [--json OUT.json]
                 [--ready-timeout 120] [--gen-timeout 180]
 
-  --url   default http://127.0.0.1:8090 (on-pod); edge:
+  --url   default http://127.0.0.1:8090 (on the compute node); edge:
           https://ai.berojgardegreewala.com
 """
 from __future__ import annotations
@@ -25,7 +25,6 @@ from __future__ import annotations
 import argparse
 import json
 import os
-import re
 import shutil
 import subprocess
 import sys
@@ -76,27 +75,39 @@ def squash(text: str) -> str:
     return " ".join((text or "").split())
 
 
+def _lower(headers) -> dict:
+    """Header dict with lowercase keys (h11 stores them lowercase, so a
+    plain-dict lookup must match that or Content-Type checks miss)."""
+    return {k.lower(): v for k, v in headers.items()}
+
+
 def http(url: str, *, key: str | None = None, body: dict | None = None,
          timeout: float = 60, stream: bool = False):
-    """GET/POST helper. Returns (status, headers, body-bytes-or-None).
-    For stream=True the caller must read/finish resp itself - here we
-    return the live response object instead."""
+    """GET/POST helper. Returns (status, headers, payload).
+
+    For stream=True payload is the live response object (caller reads and
+    closes it); otherwise payload is the body bytes. Connection failures
+    come back as status -1 with the reason as payload, so every step fails
+    via the P5_LIVE_FAIL marker instead of a traceback."""
     data = json.dumps(body).encode() if body is not None else None
-    headers = {"Accept": "*/*"}
+    headers = {"accept": "*/*"}
     if body is not None:
-        headers["Content-Type"] = "application/json"
+        headers["content-type"] = "application/json"
     if key:
-        headers["Authorization"] = f"Bearer {key}"
+        headers["authorization"] = f"Bearer {key}"
     req = urllib.request.Request(url, data=data, headers=headers,
                                  method="POST" if data else "GET")
     try:
         resp = urllib.request.urlopen(req, timeout=timeout)
     except urllib.error.HTTPError as exc:
-        return exc.code, dict(exc.headers), exc.read()
+        return exc.code, _lower(exc.headers), exc.read()
+    except (urllib.error.URLError, OSError, TimeoutError) as exc:
+        reason = getattr(exc, "reason", exc)
+        return -1, {}, str(reason).encode()
     if stream:
-        return resp.status, dict(resp.headers), resp
+        return resp.status, _lower(resp.headers), resp
     with resp:
-        return resp.status, dict(resp.headers), resp.read()
+        return resp.status, _lower(resp.headers), resp.read()
 
 
 # ----------------------------------------------------------------- steps ---
@@ -165,28 +176,40 @@ def step_completion(base: str, key: str, gen_timeout: float) -> dict:
 
 
 def step_stream(base: str, key: str, gen_timeout: float) -> dict:
+    """Certify the shim's SSE surface: OpenAI chat.completion.chunk events
+    (the gateway-internal delta/final protocol is translated to this at
+    main.py stream_chat_events): lazy role chunk -> content chunks ->
+    finish chunk carrying usage + bdw meta -> [DONE], heartbeats as
+    ': ping' comments, failures as an in-band {\"error\": ...} chunk."""
     say("POST /v1/chat/completions (stream=true)")
     t0 = time.time()
     st, headers, resp = http(
-        f"{base}/v1/chat/completions", key=key, timeout=gen_timeout, stream=True,
+        f"{base}/v1/chat/completions", key=key, timeout=gen_timeout,
+        stream=True,
         body={"model": "bdw-career-ai", "max_tokens": 64, "stream": True,
+              "stream_options": {"include_usage": True},
               "messages": [{"role": "user",
                             "content": "Count from 1 to 8, comma separated."}]})
     if st != 200:
         body = resp if isinstance(resp, bytes) else (
             resp.read() if hasattr(resp, "read") else b"")
         fail("stream", f"status={st} body={body[:300]!r}")
-    ctype = headers.get("Content-Type", "")
+    ctype = headers.get("content-type", "")
     if "text/event-stream" not in ctype:
-        say(f"warning: Content-Type={ctype!r} (expected text/event-stream)")
+        say(f"warning: content-type={ctype!r} (expected text/event-stream)")
 
     ttft = None
-    deltas: list[str] = []
-    final = None
+    parts: list[str] = []
+    usage = None
+    finish = None
+    bdw = None
     got_done = False
     try:
         while True:
-            line = resp.readline()
+            try:
+                line = resp.readline()
+            except (OSError, TimeoutError) as exc:
+                fail("stream", f"read error: {exc}")
             if not line:
                 break
             line = line.decode(errors="replace").strip()
@@ -202,43 +225,49 @@ def step_stream(base: str, key: str, gen_timeout: float) -> dict:
                 event = json.loads(payload)
             except json.JSONDecodeError:
                 fail("stream", f"bad SSE JSON {payload[:160]!r}")
-            etype = event.get("type")
-            if etype == "delta":
-                text = event.get("text") or ""
+            if event.get("error") is not None:
+                err = event["error"]
+                msg = (err.get("message") if isinstance(err, dict)
+                       else str(err))
+                fail("stream", f"in-band error: {msg}")
+            choices = event.get("choices") or []
+            if choices:
+                choice = choices[0]
+                text = (choice.get("delta") or {}).get("content") or ""
                 if text:
                     if ttft is None:
                         ttft = time.time() - t0
-                    deltas.append(text)
-            elif etype == "final":
-                final = event
-            elif etype == "error":
-                fail("stream", f"in-band error {event.get('status')} "
-                               f"{event.get('code')}: {event.get('message')}")
+                    parts.append(text)
+                if choice.get("finish_reason"):
+                    finish = choice["finish_reason"]
+            if event.get("usage"):
+                usage = event["usage"]
+            if event.get("bdw"):
+                bdw = event["bdw"]
     finally:
         resp.close()
     total = time.time() - t0
 
     if not got_done:
         fail("stream", "connection ended without [DONE]")
-    if not deltas:
+    if not parts:
         fail("stream", "no content deltas received")
-    if final is None:
-        fail("stream", "no final event (answer/meta) before [DONE]")
-
-    answer = final.get("answer") or ""
-    if squash("".join(deltas)) != squash(answer):
-        fail("stream", "concat(deltas) != final.answer "
-                       f"({squash(''.join(deltas))[:80]!r} vs "
-                       f"{squash(answer)[:80]!r})")
-
-    usage = final.get("usage")
+    if finish != "stop":
+        fail("stream", f"finish_reason={finish!r} (expected 'stop')")
     if not usage:
-        say("warning: final event has no usage (expected upstream usage "
-            "from vLLM stream_options)")
-    completion_tokens = (usage or {}).get("completion_tokens") or 0
+        # the shim always attaches usage on the finish chunk (upstream
+        # vLLM numbers, or the char-estimate fallback) - absence is a
+        # P5.1 contract break.
+        fail("stream", "finish chunk carries no usage")
+
+    answer = "".join(parts)
+    completion_tokens = usage.get("completion_tokens") or 0
     tps = round(completion_tokens / total, 2) if completion_tokens else None
     say(f"ttft {ttft:.2f}s · total {total:.2f}s · "
-        f"tokens {completion_tokens} · tps {tps}")
+        f"tokens {completion_tokens} · tps {tps} · finish=stop · usage ok")
+    if bdw:
+        say(f"bdw meta: domain={bdw.get('domain')} "
+            f"adapter={bdw.get('adapter')}")
     return {"ttft_s": round(ttft, 3), "total_s": round(total, 3),
             "usage": usage, "tps": tps,
             "answer_preview": squash(answer)[:80]}
@@ -291,10 +320,12 @@ def step_provider(base: str, key: str, mode: str) -> str:
         return "skipped"
 
     say(f"node harness vs real bdw.ts ({ts_path.name})")
+    # bdw.ts appends /models and /chat/completions -> its base must carry /v1
+    harness_base = base if base.endswith("/v1") else f"{base}/v1"
     env = dict(os.environ)
     env.setdefault("P5_CONTRACT_TIMEOUT_MS", "120000")  # 70B non-stream
     proc = subprocess.run(
-        [node, str(HARNESS), str(ts_path), base, key],
+        [node, str(HARNESS), str(ts_path), harness_base, key],
         capture_output=True, text=True, timeout=180, env=env, check=False)
     if proc.returncode != 0:
         fail("provider", f"node exit {proc.returncode}: "
@@ -317,33 +348,39 @@ def step_provider(base: str, key: str, mode: str) -> str:
 
 
 def slo_report(stream_result: dict) -> dict:
-    """Compare single-sample observations against slo.json draft targets."""
+    """Compare single-sample observations against slo.json draft targets.
+
+    Single samples stand in for the p95 objectives only as a first
+    sanity check; the targets stay draft until re-baselined from a real
+    P5_LIVE_OK week (slo.json note)."""
     if not SLO_FILE.is_file():
         return {}
     slo = json.loads(SLO_FILE.read_text(encoding="utf-8"))
-    observed, verdicts = {}, {}
+    observed: dict = {}
     ttft = stream_result.get("ttft_s")
     total = stream_result.get("total_s")
     if ttft is not None:
-        observed["ttft_s"] = ttft
+        observed["ttft_p95_seconds"] = ttft
     if total is not None:
-        observed["stream_completion_s"] = total
+        observed["stream_completion_p95_seconds"] = total
+    verdicts = {}
     for obj in slo.get("objectives", []):
         name = obj.get("name")
         target = obj.get("target_seconds")
         if target is None or name not in observed:
             continue
-        over = observed[name] > target
+        value = observed[name]
+        over = value > target
         verdicts[name] = {
-            "observed": observed[name], "target": target,
+            "observed": value, "target": target,
             "draft": bool(obj.get("draft")),
             "status": "OVER-DRAFT-TARGET" if over else "within",
         }
         tag = "warning (draft)" if obj.get("draft") else "breach"
         if over:
-            say(f"SLO {tag}: {name} {observed[name]:.2f}s > {target}s")
+            say(f"SLO {tag}: {name} {value:.2f}s > {target}s")
         else:
-            say(f"SLO ok: {name} {observed[name]:.2f}s <= {target}s")
+            say(f"SLO ok: {name} {value:.2f}s <= {target}s")
     return verdicts
 
 
@@ -354,7 +391,7 @@ def main() -> None:
         description=__doc__,
         formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--url", default="http://127.0.0.1:8090",
-                    help="shim base URL (default: on-pod localhost)")
+                    help="shim base URL (default: on-node localhost)")
     ap.add_argument("--provider", choices=("auto", "on", "off"),
                     default="auto",
                     help="run the real bdw.ts node harness (auto=skip if "
@@ -366,6 +403,8 @@ def main() -> None:
     args = ap.parse_args()
 
     base = args.url.rstrip("/")
+    if base.endswith("/v1"):          # accept .../v1 too; steps add it back
+        base = base[:-3].rstrip("/")
     key = ENV.get("P5_API_KEY")
     if not key:
         fail("config", "P5_API_KEY missing from .env or environment")

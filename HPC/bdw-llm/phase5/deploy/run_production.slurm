@@ -16,6 +16,12 @@
 #   Compute Nodes: rdgpu01 / rdgpu02 (2x A100 80GB, 192GB RAM)
 #   Partition:     gpu (up to 4-day walltime, QOS=normal)
 #
+# Prerequisites:
+#   bash phase5/deploy/prestage_cloudflared.sh   # once on the login node
+#   cp phase5/deploy/.env.example phase5/deploy/.env
+#   chmod 600 phase5/deploy/.env
+#   # fill P5_API_KEY and TUNNEL_TOKEN in .env
+#
 # Launch command:
 #   sbatch phase5/deploy/run_production.slurm
 # =============================================================================
@@ -46,29 +52,54 @@ LOG_DIR="$DEPLOY_DIR/logs"
 mkdir -p "$RUN_DIR" "$LOG_DIR"
 
 # ---------------------------------------------------------------------------
-# 1. Environment & Secrets
+# 1. Environment, Secrets and Preflight
 # ---------------------------------------------------------------------------
 ENV_FILE="$DEPLOY_DIR/.env"
+
 if [ ! -f "$ENV_FILE" ]; then
-    ENV_FILE="$BDW_HOME/.env"
+    echo "ERROR: $ENV_FILE is missing." >&2
+    echo "Create it with:" >&2
+    echo "  cp $DEPLOY_DIR/.env.example $ENV_FILE && chmod 600 $ENV_FILE" >&2
+    exit 1
 fi
 
-if [ -f "$ENV_FILE" ]; then
-    echo "Loading configuration from $ENV_FILE"
-    set -a
-    # shellcheck disable=SC1090
-    source "$ENV_FILE"
-    set +a
-else
-    echo "WARNING: No .env found at $DEPLOY_DIR/.env. Using environment defaults."
+echo "Loading configuration from $ENV_FILE"
+set -a
+# shellcheck disable=SC1090
+source "$ENV_FILE"
+set +a
+
+if [ -z "${P5_API_KEY:-}" ]; then
+    echo "ERROR: P5_API_KEY is not set in $ENV_FILE." >&2
+    echo "P5_AUTH_MODE=required cannot start without a bearer key." >&2
+    exit 1
 fi
 
 if [ -z "${TUNNEL_TOKEN:-}" ]; then
-    echo "ERROR: TUNNEL_TOKEN is not set!" >&2
-    echo "Generate a Cloudflare Tunnel token in Cloudflare Dashboard -> Zero Trust -> Networks -> Tunnels" >&2
-    echo "and export TUNNEL_TOKEN=<token> or put it in phase5/deploy/.env" >&2
+    echo "ERROR: TUNNEL_TOKEN is not set in $ENV_FILE." >&2
+    echo "Generate a Cloudflare Tunnel token in Cloudflare Dashboard ->" >&2
+    echo "Zero Trust -> Networks -> Tunnels, then add it to .env." >&2
     exit 1
 fi
+
+if [ "${P5_AUTH_MODE:-required}" != "required" ]; then
+    echo "WARNING: P5_AUTH_MODE=${P5_AUTH_MODE:-unset}; production expects 'required'." >&2
+fi
+
+if [ "${P4_DOMAIN_BACKEND:-supabase}" = "supabase" ]; then
+    if [ -z "${SUPABASE_URL:-}" ] || [ -z "${SUPABASE_SERVICE_ROLE_KEY:-}" ]; then
+        echo "ERROR: P4_DOMAIN_BACKEND=supabase requires SUPABASE_URL and" >&2
+        echo "SUPABASE_SERVICE_ROLE_KEY in $ENV_FILE." >&2
+        exit 1
+    fi
+fi
+
+# The 72B weights are already in the shared HF cache. Keep every worker
+# offline so a compute node cannot stall on a network/DNS lookup.
+export HF_HUB_OFFLINE=1
+export TRANSFORMERS_OFFLINE=1
+export HF_DATASETS_OFFLINE=1
+export TOKENIZERS_PARALLELISM=false
 
 # ---------------------------------------------------------------------------
 # 2. CUDA & Python Environment
@@ -97,21 +128,26 @@ fi
 export PYTHONPATH="$BDW_HOME:${PYTHONPATH:-}"
 
 # ---------------------------------------------------------------------------
-# 3. Cloudflared Binary Setup
+# 3. Cloudflared Binary Setup (pre-staged on the login node)
 # ---------------------------------------------------------------------------
+export PATH="$HOME/.local/bin:$PATH"
 CLOUDFLARED_BIN="$HOME/.local/bin/cloudflared"
-if ! command -v cloudflared &>/dev/null; then
-    if [ ! -x "$CLOUDFLARED_BIN" ]; then
-        echo "cloudflared binary not found; fetching static linux-amd64 binary..."
-        mkdir -p "$HOME/.local/bin"
-        curl -fsSL "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64" \
-            -o "$CLOUDFLARED_BIN"
-        chmod +x "$CLOUDFLARED_BIN"
-    fi
-    CLOUDFLARED_CMD="$CLOUDFLARED_BIN"
-else
-    CLOUDFLARED_CMD="cloudflared"
+PREBUILT_CLOUDFLARED="$DEPLOY_DIR/cloudflared/cloudflared"
+
+if [ ! -x "$CLOUDFLARED_BIN" ] && [ -x "$PREBUILT_CLOUDFLARED" ]; then
+    echo "Staging cloudflared from $PREBUILT_CLOUDFLARED"
+    mkdir -p "$HOME/.local/bin"
+    cp -p "$PREBUILT_CLOUDFLARED" "$CLOUDFLARED_BIN"
 fi
+
+if ! command -v cloudflared &>/dev/null && [ ! -x "$CLOUDFLARED_BIN" ]; then
+    echo "ERROR: cloudflared is not staged at $CLOUDFLARED_BIN." >&2
+    echo "Run this once on the login node:" >&2
+    echo "  bash $DEPLOY_DIR/prestage_cloudflared.sh" >&2
+    exit 1
+fi
+
+CLOUDFLARED_CMD="$(command -v cloudflared || printf '%s' "$CLOUDFLARED_BIN")"
 echo "Using cloudflared: $($CLOUDFLARED_CMD --version 2>&1 | head -n1)"
 
 # ---------------------------------------------------------------------------
@@ -164,8 +200,11 @@ VLLM_ARGS=(
     --disable-log-requests
 )
 
-# Attach LoRA adapters if present
-if [ -d "$BDW_HOME/lora_math/final" ] && [ -d "$BDW_HOME/lora_vlsi/final" ]; then
+# Attach LoRA adapters only when explicitly requested. The Phase-4 adapters
+# are 7B-shaped and MUST NOT attach to the 70B base (shape mismatch crashes
+# vLLM at load) - set ATTACH_LORA=1 only after a QLoRA retrain produces
+# 72B-compatible adapters (locked decision, blueprint sec 15).
+if [ "${ATTACH_LORA:-0}" = "1" ] && [ -d "$BDW_HOME/lora_math/final" ] && [ -d "$BDW_HOME/lora_vlsi/final" ]; then
     echo "Attaching Phase 4 domain LoRA adapters to vLLM..."
     VLLM_ARGS+=(
         --enable-lora
@@ -269,7 +308,11 @@ echo "Cloudflare Tunnel is connected! Ingress routing active."
 # 8. Run Local Smoke Certification
 # ---------------------------------------------------------------------------
 echo "Running local certification probe..."
-python "$DEPLOY_DIR/live_probe.py" --url "http://127.0.0.1:$SHIM_PORT" --provider off || true
+if ! python "$DEPLOY_DIR/live_probe.py" --url "http://127.0.0.1:$SHIM_PORT" --provider off; then
+    echo "ERROR: local P5 live probe failed; refusing to mark the stack ready." >&2
+    echo "Inspect $LOG_DIR/shim.log and $LOG_DIR/vllm.log." >&2
+    exit 1
+fi
 
 echo "============================================================================="
 echo "RESULT: P5_PRODUCTION_STACK_READY"

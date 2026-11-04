@@ -1,65 +1,74 @@
 # =============================================================================
-# BDW — From-Scratch LLM on PARAM Rudra
-# Committed: docs/ (stage reports), scripts/ (one SLURM script per stage + the
-# job output they cite), src/ (model, training, data, evaluation code).
-# Everything below is generated, downloaded, or far too large for git.
+# BDW - From-Scratch LLM on PARAM Rudra
+# Committed: source, docs, deployment scripts, and job evidence cited by docs.
+# Everything below is generated, downloaded, secret, or too large for git.
 # =============================================================================
 
-# --- required exclusions ----------------------------------------------------
-# pinned virtualenv (~5.7 GB of site-packages; rebuild from requirements)
+# --- virtualenvs -----------------------------------------------------------
 venv/
+venv*/
 .venv/
+.venv-*/
 
-# corpora: raw pilot + unseen eval, and every tokenised int32 array
+# --- corpora, token arrays, checkpoints, models ----------------------------
 data/
 tokens/
-
-# checkpoints: 333 MB each, written every 5 minutes and rotated
 checkpoints/
+checkpoints_*/
+merged/
+export/
+lora_*/
+teacher_model/
+teacher_model_*/
+sft_runs/
+llama_cpp/
+wheels/
+_srcdl/
 
-# never commit raw tensors / matrices, wherever they happen to live
+# --- model / tensor artifacts ---------------------------------------------
 *.npy
 *.npz
+*.gguf
+*.safetensors
+*.bin
+*.pt
+*.pth
+*.ckpt
 
-# --- generated, machine-local ----------------------------------------------
+# --- generated Python state ------------------------------------------------
 __pycache__/
 *.py[cod]
 *.egg-info/
 .pytest_cache/
 .ipynb_checkpoints/
 
-# environment and credentials
+# --- secrets and environment ----------------------------------------------
 .env
 .env.*
-# ...but the deploy template is documentation, not a secret (phase5/deploy)
 !.env.example
-# phase 5 deploy run state and logs
-phase5/deploy/run/
-phase5/deploy/logs/
-phase5/deploy/cloudflared/cloudflared
+secrets/
 *.pem
 *.key
 
-# phase 3: embedding model files, seeded corpus + quarantine snapshots,
-# gateway run state, agent sandbox scratch space
-# (code, migrations and manifests stay tracked)
+# --- runtime state and logs ------------------------------------------------
+run/
+logs/
+phase5/deploy/run/
+phase5/deploy/logs/
+phase5/deploy/cloudflared/cloudflared
+*.log
+
+# --- Phase 3 generated data ------------------------------------------------
 phase3/models/
 phase3/gateway/data/
 phase3/pg_url.txt
 phase3/agent/sandbox/
 
-# phase 4: local domain RAG index payloads and LoRA adapter weights are
-# rebuilt by src/p4_build_rag_index.py / src/p4_lora_sft.py.
-# phase4/rag/index_manifest.json, migrations and code stay tracked.
+# --- Phase 4 generated artifacts ------------------------------------------
 phase4/rag/idx_*/
 phase4/router/domain_anchors.npz
 
-# per-stage run logs (the job output under scripts/ is kept on purpose:
-# docs/*.md cite those exact lines as evidence)
-logs/
-*.log
-
-# upload / build scratch used by the stage drivers
+# --- scratch / upload / editor state --------------------------------------
 *.b64
 *.tmp
 *.temp
@@ -69,7 +78,7 @@ logs/
 .DS_Store
 Thumbs.db
 
-# --- job output is evidence, so it stays tracked ----------------------------
+# --- job output is evidence, so scripts/ output stays tracked -------------
 *.out
 *.err
 !scripts/*.out

@@ -1,0 +1,32 @@
+# Isolated Param Rudra P5 runtime (venv_p5).
+#
+# vLLM 0.6.6.post1 hard-pins numpy<2.0.0, so NumPy 2.x cannot coexist with
+# vLLM in the same environment. Keep NumPy 1.26.4 and use the newest
+# sentence-transformers branch that still supports transformers 4.x and
+# huggingface-hub 0.x. This is intentionally separate from
+# phase5/serve/requirements.txt (the CPU-only Docker image).
+--extra-index-url https://download.pytorch.org/whl/cu121
+
+vllm==0.6.6.post1
+torch==2.5.1+cu121
+torchvision==0.20.1+cu121
+
+numpy==1.26.4
+pyarrow==20.0.0
+datasets==3.6.0
+pandas==2.2.3
+scipy==1.17.1
+sentence-transformers==4.1.0
+transformers==4.55.4
+huggingface-hub==0.36.2
+tokenizers==0.21.4
+
+fastapi==0.162.0
+uvicorn[standard]==0.54.0
+pydantic==2.14.2
+requests==2.34.2
+prometheus_client==0.26.0
+prometheus-fastapi-instrumentator==8.1.0
+
+pytest==9.2.0
+httpx==0.28.1

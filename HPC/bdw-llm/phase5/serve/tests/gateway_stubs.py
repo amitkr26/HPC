@@ -13,6 +13,7 @@ mention, so the golden output pins the verifier's strip/note behavior.
 """
 from __future__ import annotations
 
+from phase4.router.domain_classifier import DomainClassifier
 from phase5.serve.runtime import load_gateway_module
 
 CFG = {
@@ -132,7 +133,8 @@ def build_stub_gateway(lora_map=None, llm=None):
         return lmap.get(adapter)
 
     gate = mod.Gateway(StubRetriever(), llm or StubLLM(), dict(CFG),
-                       web=None, lora_resolver=lora_resolver)
+                       web=None, classifier=DomainClassifier(mode="keyword"),
+                       lora_resolver=lora_resolver)
     return mod, gate
 
 
