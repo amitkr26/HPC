@@ -1,21 +1,22 @@
 # BDW-LLM Project Status
 
-**Last updated:** 2026-11-04 10:20 IST
+**Last updated:** 2026-11-04 12:55 IST
 **Audit host:** `paramrudra.cdacdelhi.in:4422` (`3ioip3lt`)
 **Cluster project:** `/home/tutor/3ioip3lt/bdw-llm`
 **Local project:** `C:\Users\STUDENT\Desktop\Amit\HPC\bdw-llm`
-**Maintenance rule:** Update this file after every work session. Keep the local and Param Rudra copies identical. Never record secrets, tokens, or keys here.
+**Maintenance rule:** Update this file after every work session on Param Rudra. The cluster copy and canonical GitHub copy are authoritative; do not create new persistent project files on the local device. Never record secrets, tokens, or keys here.
 
 ## 1. Executive Summary
 
-**Overall status: AMBER - core R&D works; P5 is code-ready but not live; launch awaits user-supplied secrets and DNS.**
+**Overall status: AMBER - core R&D works; P5 is paused and not live; Phase 6 seed tool-use dataset is generated.**
 
 - Phase 1, Phase 2, and Phase 4 are complete.
+- Phase 6 seed tool-use capability is complete: deterministic generator plus 120 train / 24 eval rows.
 - Phase 3 core (Supabase, RAG, gateway, demo UI) is live. P3.4/P3.5 release-gate and production UI integration are not evidenced as complete.
 - P5.0 shim is complete. P5.1 zero-cost production is scaffolded, hardened, and test-green but not launched.
 - The P4 7B stack is live and serving correctly.
 - The P5 70B public endpoint is not live; DNS does not resolve and no production job exists.
-- Source-control risk is resolved for the canonical GitHub repo: cluster source is committed (`cd61711`), `origin` is configured, and local `main` was pushed as `5f19c28`.
+- Canonical GitHub is at `60319aa`; cluster source is committed at `68479a6`; the legacy local checkout remains at `b25b71d`.
 
 Approximate completion: **model/R&D ~100%, integration ~85-90%, production ~5-10%, overall ~85%** by planned scope.
 
@@ -33,7 +34,8 @@ Approximate completion: **model/R&D ~100%, integration ~85-90%, production ~5-10
 | Phase 5.3 - BDW integration | TODO | Provider/model `bdw-career-ai`, metadata `user_id`, technical-intent split, citations, feature flag, canary not done. |
 | Phase 5.4 - release gates | TODO | Eval gates, load/security tests, dashboards, rollback runbook, SLO certification not done. |
 | Phase 5.5 - feedback flywheel | TODO | Feedback capture and LoRA refresh loop not started. |
-| Cluster source control | DONE / CANONICAL PUSHED | Cluster commits `e03849a` and `cd61711`; `origin` configured. Canonical GitHub `main` pushed from local as `5f19c28`; cluster push still requires GitHub credentials. |
+| Phase 6 - tool use/function calling | SEED DONE | Deterministic generator; 120 train / 24 eval rows; Qwen2.5-rendered; 403-467 tokens; no training run yet. |
+| Cluster source control | DONE / CANONICAL PUSHED | Cluster HEAD `68479a6`; canonical GitHub `main` at `60319aa`; cluster push still requires GitHub credentials. |
 
 ## 3. Current Live State
 
@@ -47,8 +49,9 @@ Approximate completion: **model/R&D ~100%, integration ~85-90%, production ~5-10
 | P5 production job | Not submitted; no `bdw_70b_prod` in `squeue` or `sacct`. |
 | P5 public endpoint | `ai.berojgardegreewala.com` does not resolve from the workstation. |
 | Disk | Home filesystem 25T, 99% used, 482G available. Project `~/bdw-llm` is about 83G; HF cache is 136G. |
-| Git | Cluster clean, `origin` configured. Local code push `5f19c28`; status update committed on `main`. |
+| Git | Cluster clean at `68479a6`; canonical GitHub `main` at `60319aa`; local legacy checkout at `b25b71d`, intentionally not updated under cluster-only policy. |
 | P5 venv | `venv_p5`: 6.9G, isolated, Python 3.11.4, `include-system-site-packages=false`. Old venv backed up as `venv_p5.pre-isolation-20261104-095234` (ignored). |
+| Phase 6 dataset | `phase6_advanced/tools/data/`: 120 train / 24 eval; 406,742 B / 79,171 B; train SHA-256 `47f7bd8a2f801067cee717da000c9de69bb671a7c5dda720aa1a2c46f2265c3a`; eval SHA-256 `9a525bde07da6f5daa2843b813810c147b7c605e64b36e557c799c0cb57f905f`; Git-ignored. |
 
 ## 4. Verified Metrics
 
@@ -83,6 +86,15 @@ Approximate completion: **model/R&D ~100%, integration ~85-90%, production ~5-10
 Overall record: 10 wins / 13 ties / 2 losses. The CS adapter regresses against base; bypass or retrain it. The 25-prompt evaluation is directional, not production-grade evidence.
 
 Phase 4 artifacts: five adapters (~309M each), five `export/p4_lora_*.gguf` files, five domain RAG indexes, Supabase domain tables, and a model-backed router.
+
+### Phase 6
+
+- Generator: `phase6_advanced/tools/generate_tool_dataset.py` (403 lines, CPU-only, stdlib plus cached tokenizer).
+- Dataset: 120 train / 24 eval rows; 115 calculator, 29 unit-converter; 104 call-only, 40 full trajectories.
+- Rendering: Qwen2.5 `# Tools` plus `<tool_call>`; JSON object arguments; token range 403-467, mean 421.86.
+- Validation: 144 unique IDs/questions, no cross-split duplicates, full rows contain tool result plus final answer; deterministic rerun hashes match.
+- Outputs: `tool_calls_train.jsonl`, `tool_calls_eval.jsonl`, `dataset_summary.json` (Git-ignored).
+- Status: seed data only; no tool-use fine-tuning run has started.
 
 ## 5. P5 Deployment Inventory
 
@@ -136,15 +148,15 @@ Phase 4 artifacts: five adapters (~309M each), five `export/p4_lora_*.gguf` file
 
 9. Fix or bypass the CS adapter regression.
 10. Expand P4 evaluation beyond 25 prompts.
-11. Consolidate documentation: root `README.md` is outdated; local and cluster Phase 5 docs diverge; cluster section 17 zero-cost plan is now in GitHub via `5f19c28`.
-12. Keep the local and cluster `status.md` copies synchronized.
+11. Consolidate documentation: root `README.md` is outdated; local and cluster Phase 5 docs diverge; cluster section 17 zero-cost plan is now in GitHub via `60319aa`.
+12. Keep the cluster and canonical GitHub `status.md` copies synchronized under the cluster-only policy.
 13. Add CI Docker build only if the Docker path is retained; zero-cost Slurm uses the venv path.
 14. Monitor disk: 482G free; `venv_p5` is 6.9G and model artifacts are large.
 
 ## 7. Next Actions
 
 - [x] Commit/push cluster source and docs; add a remote.
-- [x] Push canonical updates to GitHub `HPC` (`5f19c28`).
+- [x] Push canonical updates to GitHub `HPC` (current `main` `60319aa`).
 - [x] Copy cluster-only deployment files into local repo.
 - [x] Sync local P5.1 `phase3/gateway/app.py` to the cluster.
 - [x] Repair `venv_p5` NumPy/pyarrow/sentence-transformers conflicts.
@@ -152,6 +164,11 @@ Phase 4 artifacts: five adapters (~309M each), five `export/p4_lora_*.gguf` file
 - [x] Pre-stage `cloudflared` and set `HF_HUB_OFFLINE=1`.
 - [x] Make `run_production.slurm` fail on missing config or live-probe failure.
 - [x] Re-run P5 tests: `97 passed, 2 skipped`.
+- [x] Create and validate the Phase 6 tool-call dataset generator.
+- [x] Generate 120/24 seed dataset; verify schema and deterministic hashes.
+- [x] Push Phase 6 script/README to GitHub under `HPC/bdw-llm/phase6_advanced/tools`.
+- [ ] Add a small held-out tool-use eval and run the 7B model against it.
+- [ ] Decide whether to fine-tune on the Phase 6 seed data.
 - [ ] Add `P5_API_KEY` and `TUNNEL_TOKEN` to cluster `.env`.
 - [ ] Configure Cloudflare DNS/tunnel for `ai.berojgardegreewala.com`.
 - [ ] Submit the actual Slurm job and wait for the allocation.
@@ -184,19 +201,28 @@ Phase 4 artifacts: five adapters (~309M each), five `export/p4_lora_*.gguf` file
 - Pushed local repo changes to GitHub `main` as `5f19c28`.
 - Updated this status report for the current P5-ready state.
 
+### 2026-11-04 - Phase 6 seed
+
+- Created `phase6_advanced/tools/generate_tool_dataset.py` with calculator/unit_converter tools and Qwen2.5 rendering.
+- Generated 120 train / 24 eval JSONL rows; train SHA-256 `47f7bd8a2f801067cee717da000c9de69bb671a7c5dda720aa1a2c46f2265c3a`, eval SHA-256 `9a525bde07da6f5daa2843b813810c147b7c605e64b36e557c799c0cb57f905f`.
+- Verified 144 unique IDs/questions, no cross-split duplicates, schema and full-trajectory shape.
+- Re-ran generation to a temp directory; train/eval hashes matched exactly.
+- Added `phase6_advanced/tools/README.md`; published script and README to canonical GitHub at `60319aa` (tree diff from `b25b71d` is only the two additions).
+- Dataset files remain cluster-only and Git-ignored; no local project files were created.
+
 ## 9. Update and Sync Procedure
 
 After every work session:
 
-1. Update this file with the new state and append a Change Log entry.
-2. Upload the updated file to `/home/tutor/3ioip3lt/bdw-llm/status.md`.
-3. Verify both copies have the same SHA-256 hash.
+1. Update this file on Param Rudra with the new state and append a Change Log entry.
+2. Keep the canonical GitHub copy current at `HPC/bdw-llm/status.md`.
+3. Verify the cluster file and canonical remote blob have the same SHA-256.
 4. Do not put secrets in this file.
 5. Keep the phase table, blockers, next actions, and change log current.
 
-Local file: `C:\Users\STUDENT\Desktop\Amit\HPC\bdw-llm\status.md`
-
 Cluster file: `/home/tutor/3ioip3lt/bdw-llm/status.md`
+
+Legacy local checkout (read-only under current policy): `C:\Users\STUDENT\Desktop\Amit\HPC\bdw-llm\status.md`
 
 ## 10. References
 
@@ -209,6 +235,8 @@ Cluster file: `/home/tutor/3ioip3lt/bdw-llm/status.md`
 - `phase3/gateway/app.py` - P5.1 gateway with `ask_stream()`.
 - `phase5/serve/tests/test_gateway_parity.py` - gateway golden-parity test; passing.
 - `phase5/serve/tests/gateway_stubs.py` - deterministic keyword-mode test gateway.
+- `phase6_advanced/tools/generate_tool_dataset.py` - Phase 6 function-calling dataset generator.
+- `phase6_advanced/tools/README.md` - Phase 6 schema, regeneration command, and dataset summary.
 - `phase3/models/bge-small-en-v1.5` - ST 4.1-compatible BGE model used by the router.
 - `logs/p4_eval_latest_v2.json` - P4 evaluation source.
 - `logs/eval_results.json` - Phase 1 evaluation source.
