@@ -1,6 +1,6 @@
 # BDW-LLM Project Status
 
-**Last updated:** 2026-11-04 19:45 IST
+**Last updated:** 2026-11-05 09:55 IST
 **Audit host:** `paramrudra.cdacdelhi.in:4422` (`3ioip3lt`)
 **Cluster project:** `/home/tutor/3ioip3lt/bdw-llm`
 **Local project:** `C:\Users\STUDENT\Desktop\Amit\HPC\bdw-llm`
@@ -16,7 +16,7 @@
 - P5.0 shim is complete. P5.1 zero-cost production is scaffolded, hardened, and test-green but not launched.
 - The P4 7B stack is live and serving correctly.
 - The P5 70B public endpoint is not live; DNS does not resolve and no production job exists.
-- Canonical GitHub is at `60319aa`; cluster source is committed at `68479a6`; the legacy local checkout remains at `b25b71d`.
+- Canonical GitHub is at `9f7f7d9`; cluster baseline code is committed at `7604706`; the legacy local checkout remains at `b25b71d`.
 
 Approximate completion: **model/R&D ~100%, integration ~85-90%, production ~5-10%, overall ~85%** by planned scope.
 
@@ -35,7 +35,7 @@ Approximate completion: **model/R&D ~100%, integration ~85-90%, production ~5-10
 | Phase 5.4 - release gates | TODO | Eval gates, load/security tests, dashboards, rollback runbook, SLO certification not done. |
 | Phase 5.5 - feedback flywheel | TODO | Feedback capture and LoRA refresh loop not started. |
 | Phase 6 - tool use/function calling | BASELINE MEASURED | Deterministic generator (120 train / 24 eval rows); v2.0-bdw7b-sft baseline evaluated: 54.2% strict format rate (13/24), 91.7% tag intent rate (22/24), 37.5% missing closing tag (9/24), 8.3% plain text (2/24). |
-| Cluster source control | DONE / CANONICAL PUSHED | Cluster HEAD `68479a6`; canonical GitHub `main` at `60319aa`; cluster push still requires GitHub credentials. |
+| Cluster source control | DONE / CANONICAL PUSHED | Cluster baseline code `7604706`; canonical GitHub `main` at `9f7f7d9`; cluster push still requires GitHub credentials. |
 
 ## 3. Current Live State
 
@@ -49,7 +49,7 @@ Approximate completion: **model/R&D ~100%, integration ~85-90%, production ~5-10
 | P5 production job | Not submitted; no `bdw_70b_prod` in `squeue` or `sacct`. |
 | P5 public endpoint | `ai.berojgardegreewala.com` does not resolve from the workstation. |
 | Disk | Home filesystem 25T, 99% used, 482G available. Project `~/bdw-llm` is about 83G; HF cache is 136G. |
-| Git | Cluster clean at `68479a6`; canonical GitHub `main` at `60319aa`; local legacy checkout at `b25b71d`, intentionally not updated under cluster-only policy. |
+| Git | Cluster clean at `7604706`; canonical GitHub `main` at `9f7f7d9`; local legacy checkout at `b25b71d`, intentionally not updated under cluster-only policy. |
 | P5 venv | `venv_p5`: 6.9G, isolated, Python 3.11.4, `include-system-site-packages=false`. Old venv backed up as `venv_p5.pre-isolation-20261104-095234` (ignored). |
 | Phase 6 dataset | `phase6_advanced/tools/data/`: 120 train / 24 eval; 406,742 B / 79,171 B; train SHA-256 `47f7bd8a2f801067cee717da000c9de69bb671a7c5dda720aa1a2c46f2265c3a`; eval SHA-256 `9a525bde07da6f5daa2843b813810c147b7c605e64b36e557c799c0cb57f905f`; Git-ignored. |
 
@@ -94,8 +94,8 @@ Phase 4 artifacts: five adapters (~309M each), five `export/p4_lora_*.gguf` file
 - Rendering: Qwen2.5 `# Tools` plus `<tool_call>`; JSON object arguments; token range 403-467, mean 421.86.
 - Validation: 144 unique IDs/questions, no cross-split duplicates, full rows contain tool result plus final answer; deterministic rerun hashes match.
 - Outputs: `tool_calls_train.jsonl`, `tool_calls_eval.jsonl`, `dataset_summary.json` (Git-ignored).
-- Baseline Evaluator: `phase6_advanced/tools/evaluate_tools_baseline.py` and `phase6_advanced/tools/evaluate_tools_baseline.slurm`.
-- Baseline Results (`v2.0-bdw7b-sft`, Slurm Job `185937`, 14.7s runtime):
+- Baseline Evaluator: `phase6_advanced/tools/evaluate_tools_baseline.py` and `phase6_advanced/tools/evaluate_tools_baseline.slurm`; published at `9f7f7d9`.
+- Baseline Results (`v2.0-bdw7b-sft`, Slurm Job `185940`, 14.7s generation / 52s job):
   - Valid Tool Call Format Rate: **54.2% (13/24)**
   - Clean Tool Call Format: 54.2% (13/24)
   - JSON Body in `<tool_call>` Tag: 91.7% (22/24)
@@ -156,7 +156,7 @@ Phase 4 artifacts: five adapters (~309M each), five `export/p4_lora_*.gguf` file
 
 9. Fix or bypass the CS adapter regression.
 10. Expand P4 evaluation beyond 25 prompts.
-11. Consolidate documentation: root `README.md` is outdated; local and cluster Phase 5 docs diverge; cluster section 17 zero-cost plan is now in GitHub via `60319aa`.
+11. Consolidate documentation: root `README.md` is outdated; local and cluster Phase 5 docs diverge; cluster section 17 zero-cost plan is now in GitHub via `9f7f7d9`.
 12. Keep the cluster and canonical GitHub `status.md` copies synchronized under the cluster-only policy.
 13. Add CI Docker build only if the Docker path is retained; zero-cost Slurm uses the venv path.
 14. Monitor disk: 482G free; `venv_p5` is 6.9G and model artifacts are large.
@@ -164,7 +164,7 @@ Phase 4 artifacts: five adapters (~309M each), five `export/p4_lora_*.gguf` file
 ## 7. Next Actions
 
 - [x] Commit/push cluster source and docs; add a remote.
-- [x] Push canonical updates to GitHub `HPC` (current `main` `60319aa`).
+- [x] Push canonical updates to GitHub `HPC` (current `main` `9f7f7d9`).
 - [x] Copy cluster-only deployment files into local repo.
 - [x] Sync local P5.1 `phase3/gateway/app.py` to the cluster.
 - [x] Repair `venv_p5` NumPy/pyarrow/sentence-transformers conflicts.
@@ -209,14 +209,15 @@ Phase 4 artifacts: five adapters (~309M each), five `export/p4_lora_*.gguf` file
 - Pushed local repo changes to GitHub `main` as `5f19c28`.
 - Updated this status report for the current P5-ready state.
 
-### 2026-11-04 - Phase 6 baseline evaluation
+### 2026-11-05 - Phase 6 baseline evaluation
 
 - Developed `phase6_advanced/tools/evaluate_tools_baseline.py` and `evaluate_tools_baseline.slurm`.
-- Evaluated `v2.0-bdw7b-sft` on 24 held-out evaluation prompts from `data/tool_calls_eval.jsonl` using PARAM Rudra single A100 GPU (Job `185937`, runtime 14.7s).
+- Evaluated `v2.0-bdw7b-sft` on 24 held-out evaluation prompts from `data/tool_calls_eval.jsonl` using PARAM Rudra single A100 80GB GPU (Job `185940`, 14.7s generation / 52s job; local weights only).
 - Valid Tool Call Format Rate: **54.2%** (13/24).
 - Tag intent rate (`<tool_call>` with valid JSON body): **91.7%** (22/24).
 - Key failure modes: 9 missing closing tags (37.5%) and 2 plain-text arithmetic shortcuts (8.3%).
 - Saved baseline results to `phase6_advanced/tools/eval/tool_baseline_v2_0_bdw7b_sft.json`.
+- Published evaluator, Slurm launcher, result, and README update to canonical GitHub at `9f7f7d9`.
 
 ### 2026-11-04 - Phase 6 seed
 
@@ -253,7 +254,10 @@ Legacy local checkout (read-only under current policy): `C:\Users\STUDENT\Deskto
 - `phase5/serve/tests/test_gateway_parity.py` - gateway golden-parity test; passing.
 - `phase5/serve/tests/gateway_stubs.py` - deterministic keyword-mode test gateway.
 - `phase6_advanced/tools/generate_tool_dataset.py` - Phase 6 function-calling dataset generator.
-- `phase6_advanced/tools/README.md` - Phase 6 schema, regeneration command, and dataset summary.
+- `phase6_advanced/tools/README.md` - Phase 6 schema, regeneration command, baseline result, and dataset summary.
+- `phase6_advanced/tools/evaluate_tools_baseline.py` - v2.0-bdw7b-sft tool-call baseline evaluator.
+- `phase6_advanced/tools/evaluate_tools_baseline.slurm` - 15-minute A100 baseline job.
+- `phase6_advanced/tools/eval/tool_baseline_v2_0_bdw7b_sft.json` - raw 24-prompt baseline outputs and metrics.
 - `phase3/models/bge-small-en-v1.5` - ST 4.1-compatible BGE model used by the router.
 - `logs/p4_eval_latest_v2.json` - P4 evaluation source.
 - `logs/eval_results.json` - Phase 1 evaluation source.
