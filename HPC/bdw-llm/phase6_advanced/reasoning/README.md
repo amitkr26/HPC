@@ -10,9 +10,12 @@ tokenizer is cached.
 | File | Purpose |
 |---|---|
 | `generate_reasoning_dataset.py` | Deterministic generator (stdlib + cached HF tokenizer). |
+| `evaluate_reasoning_baseline.py` | Baseline evaluator for `v2.0-bdw7b-sft` with no adapter. |
+| `evaluate_reasoning_baseline.slurm` | 15-minute A100 launcher for the baseline evaluator. |
 | `data/reasoning_train.jsonl` | 120 training rows. |
 | `data/reasoning_eval.jsonl` | 24 held-out evaluation rows. |
 | `data/dataset_summary.json` | Counts, token stats, and SHA-256 hashes. |
+| `eval/reasoning_baseline_v2_0_bdw7b_sft.json` | Committed baseline metrics and raw generations. |
 
 > `data/*.jsonl` and `dataset_summary.json` are generated artifacts and are
 > Git-ignored. Run the generator to recreate them; the script and README are
@@ -96,6 +99,49 @@ A machine produces 26 parts per minute. It runs for 2 hours, but 59 minutes are 
 </think>
 
 1586 parts
+```
+
+## Baseline evaluation
+
+`evaluate_reasoning_baseline.py` measures the Phase 2 base model
+(`v2.0-bdw7b-sft`, no adapter) before reasoning SFT. The committed run used
+Slurm job `185954` on one A100 80GB (`rdgpu01`), greedy decoding, seed `1337`,
+and `max_new_tokens=384`; generation took 33.8s and the job completed in 1m09s.
+
+| Metric | Result |
+|---|---:|
+| Strict `<think>` format | 0/24 (0.0%) |
+| Plain text, no `<think>` tags | 24/24 (100.0%) |
+| Semantic answer accuracy | 15/24 (62.5%) |
+| Math accuracy | 8/8 (100.0%) |
+| Logic accuracy | 7/8 (87.5%) |
+| Coding accuracy | 0/8 (0.0%) |
+
+- The base model already attempts step-by-step reasoning in plain prose: all 24
+  outputs omit `<think>` tags, while math and logic responses contain explicit
+  multi-step calculations and deductions.
+- The one logic miss, `reason_eval_logic_0012`, reversed the required order.
+- Coding responses described an algorithm but did not emit a Python
+  implementation, so all eight coding rows failed semantic execution.
+- Accuracy is unconditional. Accuracy conditioned on valid format is undefined
+  because no row used a valid `<think>` block.
+
+Scoring is intentionally simple and deterministic:
+
+- Format requires exactly one `<think>`/`</think>` pair, starting at the first
+  non-whitespace character, with non-empty reasoning and a non-empty final
+  answer after the closing tag.
+- Math compares the last number in the final answer with the expected number;
+  logic compares the five-name order; coding extracts the requested Python
+  function and executes it against the row's sample input.
+- The raw result is
+  `eval/reasoning_baseline_v2_0_bdw7b_sft.json` (43,867 B; SHA-256
+  `a99c2b22806d3b2743525c4ecec258b855aaaed43486f03d1667c862d1340784`).
+
+Run it from `~/bdw-llm`:
+
+```bash
+sbatch phase6_advanced/reasoning/evaluate_reasoning_baseline.slurm
 ```
 
 ## Verified generation
