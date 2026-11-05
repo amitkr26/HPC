@@ -109,6 +109,52 @@ sbatch phase6_advanced/tools/evaluate_tools_baseline.slurm
 
 Raw outputs: `eval/tool_baseline_v2_0_bdw7b_sft.json`.
 
+## LoRA fine-tuning
+
+The tool-format repair is a LoRA SFT run on the shipped `v2.0-bdw7b-sft`
+weights; the base model is never modified.
+
+- `train_tool_calling.py` - masked assistant-only LoRA SFT on
+  `data/tool_calls_train.jsonl`.
+- `train_tools.slurm` - 15-minute, one-A100 Slurm launcher.
+- Base model: `merged/bdw-7b-sft`.
+- Adapter output: `lora_tools/p6_tool_calling/final`.
+- Trainer state: `sft_runs/p6_tools`.
+
+Default recipe: LoRA `r=16`, `alpha=32`, dropout `0.05`, on the seven Qwen2
+projection modules (`40,370,176` trainable parameters, `0.5273%`); 3 epochs,
+`1e-4` cosine, 3% warmup, batch 4, sequence length 768, bf16, and
+`paged_adamw_8bit`. Loss is applied only to assistant tokens; system, user,
+and tool-response tokens are masked. The 24-row eval split is held out and
+used only for eval loss. Expected schedule: 90 optimizer steps.
+
+```bash
+cd ~/bdw-llm
+sbatch phase6_advanced/tools/train_tools.slurm
+```
+
+Monitor:
+
+```bash
+squeue -u "$USER"
+tail -f bdw_p6_train-<jobid>.out
+```
+
+Outputs include `lora_tools/p6_tool_calling/final/adapter_model.safetensors`,
+`training_metadata.json`, and epoch checkpoints under `sft_runs/p6_tools`.
+The adapter can be loaded over the base with PEFT:
+
+```python
+from peft import PeftModel
+from transformers import AutoModelForCausalLM
+
+base = AutoModelForCausalLM.from_pretrained("merged/bdw-7b-sft")
+model = PeftModel.from_pretrained(base, "lora_tools/p6_tool_calling/final")
+```
+
+A one-step A100 smoke test (`job 185944`) completed successfully; full
+training has not yet been launched.
+
 ## Verified generation
 
 ```
