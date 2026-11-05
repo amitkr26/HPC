@@ -1,0 +1,959 @@
+{
+  "suite": "phase6-tools-eval-v1",
+  "model_label": "v2.0-bdw7b-sft+p6-tool-lora",
+  "base_model_dir": "/home/tutor/3ioip3lt/bdw-llm/merged/bdw-7b-sft",
+  "adapter_dir": "/home/tutor/3ioip3lt/bdw-llm/lora_tools/p6_tool_calling/final",
+  "adapter_sha256": "9ce5c70035f1824ac83d7ae83cdb6cc73302a2ddc214819353742dc53200d7ec",
+  "adapter_training": {
+    "result": "P6_TRAIN_OK",
+    "global_step": 90,
+    "train_loss": 0.0001,
+    "eval_loss": 4.3595351598924026e-05,
+    "elapsed_s": 100.172,
+    "train_rows": 120,
+    "dataset_sha256": "47f7bd8a2f801067cee717da000c9de69bb671a7c5dda720aa1a2c46f2265c3a"
+  },
+  "eval_file": "/home/tutor/3ioip3lt/bdw-llm/phase6_advanced/tools/data/tool_calls_eval.jsonl",
+  "eval_sha256": "9a525bde07da6f5daa2843b813810c147b7c605e64b36e557c799c0cb57f905f",
+  "n": 24,
+  "decoding": {
+    "do_sample": false,
+    "seed": 1337,
+    "max_new_tokens": 192
+  },
+  "metrics": {
+    "valid_tool_call_format": {
+      "hit": 24,
+      "n": 24,
+      "rate": 1.0,
+      "percent": 100.0
+    },
+    "clean_tool_call_format": {
+      "hit": 24,
+      "n": 24,
+      "rate": 1.0,
+      "percent": 100.0
+    },
+    "json_parse_valid": {
+      "hit": 24,
+      "n": 24,
+      "rate": 1.0,
+      "percent": 100.0
+    },
+    "json_body_in_tool_call_tag": {
+      "hit": 24,
+      "n": 24,
+      "rate": 1.0,
+      "percent": 100.0
+    },
+    "missing_closing_tag": {
+      "hit": 0,
+      "n": 24,
+      "rate": 0.0,
+      "percent": 0.0
+    },
+    "tool_name_valid": {
+      "hit": 24,
+      "n": 24,
+      "rate": 1.0,
+      "percent": 100.0
+    },
+    "arguments_schema_valid": {
+      "hit": 24,
+      "n": 24,
+      "rate": 1.0,
+      "percent": 100.0
+    },
+    "exact_semantic_match": {
+      "hit": 24,
+      "n": 24,
+      "rate": 1.0,
+      "percent": 100.0
+    },
+    "plain_text": {
+      "hit": 0,
+      "n": 24,
+      "rate": 0.0,
+      "percent": 0.0
+    },
+    "malformed_or_non_json": {
+      "hit": 0,
+      "n": 24,
+      "rate": 0.0,
+      "percent": 0.0
+    },
+    "multiple_tool_calls": {
+      "hit": 0,
+      "n": 24,
+      "rate": 0.0,
+      "percent": 0.0
+    },
+    "extra_text_outside_tags": {
+      "hit": 0,
+      "n": 24,
+      "rate": 0.0,
+      "percent": 0.0
+    }
+  },
+  "environment": {
+    "torch": "2.5.1+cu121",
+    "transformers": "4.55.4",
+    "cuda": "12.1",
+    "gpu": "NVIDIA A100 80GB PCIe"
+  },
+  "baseline": {
+    "path": "/home/tutor/3ioip3lt/bdw-llm/phase6_advanced/tools/eval/tool_baseline_v2_0_bdw7b_sft.json",
+    "sha256": "ac460a6f04b1d0414c79e8f097045f21aecc4ffec06c1e81516008a981b61666",
+    "valid_tool_call_format": {
+      "hit": 13,
+      "n": 24,
+      "rate": 0.5417,
+      "percent": 54.2
+    }
+  },
+  "comparison": {
+    "valid_tool_call_delta_hits": 11,
+    "valid_tool_call_delta_points": 45.8,
+    "previous_percent": 54.2,
+    "current_percent": 100.0
+  },
+  "elapsed_s": 31.5,
+  "prompts": [
+    {
+      "id": "tool_eval_0001",
+      "user": "What is 271.4 pounds in kilograms?",
+      "expected_tool": "unit_converter",
+      "expected_arguments": {
+        "value": 271.4,
+        "from_unit": "lb",
+        "to_unit": "kg"
+      },
+      "raw_output": "<tool_call>\n{\"name\": \"unit_converter\", \"arguments\": {\"value\": 271.4, \"from_unit\": \"lb\", \"to_unit\": \"kg\"}}\n</tool_call>",
+      "tool_call_blocks": [
+        "{\"name\": \"unit_converter\", \"arguments\": {\"value\": 271.4, \"from_unit\": \"lb\", \"to_unit\": \"kg\"}}"
+      ],
+      "parsed_calls": [
+        {
+          "name": "unit_converter",
+          "arguments": {
+            "value": 271.4,
+            "from_unit": "lb",
+            "to_unit": "kg"
+          }
+        }
+      ],
+      "parse_errors": [],
+      "valid_tool_call_format": true,
+      "clean_tool_call_format": true,
+      "json_parse_valid": true,
+      "json_body_in_tool_call_tag": true,
+      "missing_closing_tag": false,
+      "tool_name_valid": true,
+      "arguments_schema_valid": true,
+      "exact_semantic_match": true,
+      "plain_text": false,
+      "malformed_or_non_json": false,
+      "multiple_tool_calls": false,
+      "extra_text_outside_tags": false,
+      "output_tokens": 38
+    },
+    {
+      "id": "tool_eval_0002",
+      "user": "What is (7753 + 459) times 68?",
+      "expected_tool": "calculator",
+      "expected_arguments": {
+        "expression": "(7753 + 459) * 68"
+      },
+      "raw_output": "<tool_call>\n{\"name\": \"calculator\", \"arguments\": {\"expression\": \"(7753 + 459) * 68\"}}\n</tool_call>",
+      "tool_call_blocks": [
+        "{\"name\": \"calculator\", \"arguments\": {\"expression\": \"(7753 + 459) * 68\"}}"
+      ],
+      "parsed_calls": [
+        {
+          "name": "calculator",
+          "arguments": {
+            "expression": "(7753 + 459) * 68"
+          }
+        }
+      ],
+      "parse_errors": [],
+      "valid_tool_call_format": true,
+      "clean_tool_call_format": true,
+      "json_parse_valid": true,
+      "json_body_in_tool_call_tag": true,
+      "missing_closing_tag": false,
+      "tool_name_valid": true,
+      "arguments_schema_valid": true,
+      "exact_semantic_match": true,
+      "plain_text": false,
+      "malformed_or_non_json": false,
+      "multiple_tool_calls": false,
+      "extra_text_outside_tags": false,
+      "output_tokens": 32
+    },
+    {
+      "id": "tool_eval_0003",
+      "user": "Calculate 9314 minus 894.",
+      "expected_tool": "calculator",
+      "expected_arguments": {
+        "expression": "9314 - 894"
+      },
+      "raw_output": "<tool_call>\n{\"name\": \"calculator\", \"arguments\": {\"expression\": \"9314 - 894\"}}\n</tool_call>",
+      "tool_call_blocks": [
+        "{\"name\": \"calculator\", \"arguments\": {\"expression\": \"9314 - 894\"}}"
+      ],
+      "parsed_calls": [
+        {
+          "name": "calculator",
+          "arguments": {
+            "expression": "9314 - 894"
+          }
+        }
+      ],
+      "parse_errors": [],
+      "valid_tool_call_format": true,
+      "clean_tool_call_format": true,
+      "json_parse_valid": true,
+      "json_body_in_tool_call_tag": true,
+      "missing_closing_tag": false,
+      "tool_name_valid": true,
+      "arguments_schema_valid": true,
+      "exact_semantic_match": true,
+      "plain_text": false,
+      "malformed_or_non_json": false,
+      "multiple_tool_calls": false,
+      "extra_text_outside_tags": false,
+      "output_tokens": 27
+    },
+    {
+      "id": "tool_eval_0004",
+      "user": "Compute 4460 divided by 87.",
+      "expected_tool": "calculator",
+      "expected_arguments": {
+        "expression": "4460 / 87"
+      },
+      "raw_output": "<tool_call>\n{\"name\": \"calculator\", \"arguments\": {\"expression\": \"4460 / 87\"}}\n</tool_call>",
+      "tool_call_blocks": [
+        "{\"name\": \"calculator\", \"arguments\": {\"expression\": \"4460 / 87\"}}"
+      ],
+      "parsed_calls": [
+        {
+          "name": "calculator",
+          "arguments": {
+            "expression": "4460 / 87"
+          }
+        }
+      ],
+      "parse_errors": [],
+      "valid_tool_call_format": true,
+      "clean_tool_call_format": true,
+      "json_parse_valid": true,
+      "json_body_in_tool_call_tag": true,
+      "missing_closing_tag": false,
+      "tool_name_valid": true,
+      "arguments_schema_valid": true,
+      "exact_semantic_match": true,
+      "plain_text": false,
+      "malformed_or_non_json": false,
+      "multiple_tool_calls": false,
+      "extra_text_outside_tags": false,
+      "output_tokens": 26
+    },
+    {
+      "id": "tool_eval_0005",
+      "user": "Compute 2029 divided by 61.",
+      "expected_tool": "calculator",
+      "expected_arguments": {
+        "expression": "2029 / 61"
+      },
+      "raw_output": "<tool_call>\n{\"name\": \"calculator\", \"arguments\": {\"expression\": \"2029 / 61\"}}\n</tool_call>",
+      "tool_call_blocks": [
+        "{\"name\": \"calculator\", \"arguments\": {\"expression\": \"2029 / 61\"}}"
+      ],
+      "parsed_calls": [
+        {
+          "name": "calculator",
+          "arguments": {
+            "expression": "2029 / 61"
+          }
+        }
+      ],
+      "parse_errors": [],
+      "valid_tool_call_format": true,
+      "clean_tool_call_format": true,
+      "json_parse_valid": true,
+      "json_body_in_tool_call_tag": true,
+      "missing_closing_tag": false,
+      "tool_name_valid": true,
+      "arguments_schema_valid": true,
+      "exact_semantic_match": true,
+      "plain_text": false,
+      "malformed_or_non_json": false,
+      "multiple_tool_calls": false,
+      "extra_text_outside_tags": false,
+      "output_tokens": 26
+    },
+    {
+      "id": "tool_eval_0006",
+      "user": "Convert 280.3 miles to kilometers.",
+      "expected_tool": "unit_converter",
+      "expected_arguments": {
+        "value": 280.3,
+        "from_unit": "mi",
+        "to_unit": "km"
+      },
+      "raw_output": "<tool_call>\n{\"name\": \"unit_converter\", \"arguments\": {\"value\": 280.3, \"from_unit\": \"mi\", \"to_unit\": \"km\"}}\n</tool_call>",
+      "tool_call_blocks": [
+        "{\"name\": \"unit_converter\", \"arguments\": {\"value\": 280.3, \"from_unit\": \"mi\", \"to_unit\": \"km\"}}"
+      ],
+      "parsed_calls": [
+        {
+          "name": "unit_converter",
+          "arguments": {
+            "value": 280.3,
+            "from_unit": "mi",
+            "to_unit": "km"
+          }
+        }
+      ],
+      "parse_errors": [],
+      "valid_tool_call_format": true,
+      "clean_tool_call_format": true,
+      "json_parse_valid": true,
+      "json_body_in_tool_call_tag": true,
+      "missing_closing_tag": false,
+      "tool_name_valid": true,
+      "arguments_schema_valid": true,
+      "exact_semantic_match": true,
+      "plain_text": false,
+      "malformed_or_non_json": false,
+      "multiple_tool_calls": false,
+      "extra_text_outside_tags": false,
+      "output_tokens": 38
+    },
+    {
+      "id": "tool_eval_0007",
+      "user": "Calculate (7466 - 798) / 68.",
+      "expected_tool": "calculator",
+      "expected_arguments": {
+        "expression": "(7466 - 798) / 68"
+      },
+      "raw_output": "<tool_call>\n{\"name\": \"calculator\", \"arguments\": {\"expression\": \"(7466 - 798) / 68\"}}\n</tool_call>",
+      "tool_call_blocks": [
+        "{\"name\": \"calculator\", \"arguments\": {\"expression\": \"(7466 - 798) / 68\"}}"
+      ],
+      "parsed_calls": [
+        {
+          "name": "calculator",
+          "arguments": {
+            "expression": "(7466 - 798) / 68"
+          }
+        }
+      ],
+      "parse_errors": [],
+      "valid_tool_call_format": true,
+      "clean_tool_call_format": true,
+      "json_parse_valid": true,
+      "json_body_in_tool_call_tag": true,
+      "missing_closing_tag": false,
+      "tool_name_valid": true,
+      "arguments_schema_valid": true,
+      "exact_semantic_match": true,
+      "plain_text": false,
+      "malformed_or_non_json": false,
+      "multiple_tool_calls": false,
+      "extra_text_outside_tags": false,
+      "output_tokens": 32
+    },
+    {
+      "id": "tool_eval_0008",
+      "user": "What is 51% of 2204?",
+      "expected_tool": "calculator",
+      "expected_arguments": {
+        "expression": "2204 * 51 / 100"
+      },
+      "raw_output": "<tool_call>\n{\"name\": \"calculator\", \"arguments\": {\"expression\": \"2204 * 51 / 100\"}}\n</tool_call>",
+      "tool_call_blocks": [
+        "{\"name\": \"calculator\", \"arguments\": {\"expression\": \"2204 * 51 / 100\"}}"
+      ],
+      "parsed_calls": [
+        {
+          "name": "calculator",
+          "arguments": {
+            "expression": "2204 * 51 / 100"
+          }
+        }
+      ],
+      "parse_errors": [],
+      "valid_tool_call_format": true,
+      "clean_tool_call_format": true,
+      "json_parse_valid": true,
+      "json_body_in_tool_call_tag": true,
+      "missing_closing_tag": false,
+      "tool_name_valid": true,
+      "arguments_schema_valid": true,
+      "exact_semantic_match": true,
+      "plain_text": false,
+      "malformed_or_non_json": false,
+      "multiple_tool_calls": false,
+      "extra_text_outside_tags": false,
+      "output_tokens": 31
+    },
+    {
+      "id": "tool_eval_0009",
+      "user": "Evaluate 7355 * 187 - 33.",
+      "expected_tool": "calculator",
+      "expected_arguments": {
+        "expression": "7355 * 187 - 33"
+      },
+      "raw_output": "<tool_call>\n{\"name\": \"calculator\", \"arguments\": {\"expression\": \"7355 * 187 - 33\"}}\n</tool_call>",
+      "tool_call_blocks": [
+        "{\"name\": \"calculator\", \"arguments\": {\"expression\": \"7355 * 187 - 33\"}}"
+      ],
+      "parsed_calls": [
+        {
+          "name": "calculator",
+          "arguments": {
+            "expression": "7355 * 187 - 33"
+          }
+        }
+      ],
+      "parse_errors": [],
+      "valid_tool_call_format": true,
+      "clean_tool_call_format": true,
+      "json_parse_valid": true,
+      "json_body_in_tool_call_tag": true,
+      "missing_closing_tag": false,
+      "tool_name_valid": true,
+      "arguments_schema_valid": true,
+      "exact_semantic_match": true,
+      "plain_text": false,
+      "malformed_or_non_json": false,
+      "multiple_tool_calls": false,
+      "extra_text_outside_tags": false,
+      "output_tokens": 31
+    },
+    {
+      "id": "tool_eval_0010",
+      "user": "Evaluate 3408 * 43 - 67.",
+      "expected_tool": "calculator",
+      "expected_arguments": {
+        "expression": "3408 * 43 - 67"
+      },
+      "raw_output": "<tool_call>\n{\"name\": \"calculator\", \"arguments\": {\"expression\": \"3408 * 43 - 67\"}}\n</tool_call>",
+      "tool_call_blocks": [
+        "{\"name\": \"calculator\", \"arguments\": {\"expression\": \"3408 * 43 - 67\"}}"
+      ],
+      "parsed_calls": [
+        {
+          "name": "calculator",
+          "arguments": {
+            "expression": "3408 * 43 - 67"
+          }
+        }
+      ],
+      "parse_errors": [],
+      "valid_tool_call_format": true,
+      "clean_tool_call_format": true,
+      "json_parse_valid": true,
+      "json_body_in_tool_call_tag": true,
+      "missing_closing_tag": false,
+      "tool_name_valid": true,
+      "arguments_schema_valid": true,
+      "exact_semantic_match": true,
+      "plain_text": false,
+      "malformed_or_non_json": false,
+      "multiple_tool_calls": false,
+      "extra_text_outside_tags": false,
+      "output_tokens": 30
+    },
+    {
+      "id": "tool_eval_0011",
+      "user": "Convert 99.5 kilograms to pounds.",
+      "expected_tool": "unit_converter",
+      "expected_arguments": {
+        "value": 99.5,
+        "from_unit": "kg",
+        "to_unit": "lb"
+      },
+      "raw_output": "<tool_call>\n{\"name\": \"unit_converter\", \"arguments\": {\"value\": 99.5, \"from_unit\": \"kg\", \"to_unit\": \"lb\"}}\n</tool_call>",
+      "tool_call_blocks": [
+        "{\"name\": \"unit_converter\", \"arguments\": {\"value\": 99.5, \"from_unit\": \"kg\", \"to_unit\": \"lb\"}}"
+      ],
+      "parsed_calls": [
+        {
+          "name": "unit_converter",
+          "arguments": {
+            "value": 99.5,
+            "from_unit": "kg",
+            "to_unit": "lb"
+          }
+        }
+      ],
+      "parse_errors": [],
+      "valid_tool_call_format": true,
+      "clean_tool_call_format": true,
+      "json_parse_valid": true,
+      "json_body_in_tool_call_tag": true,
+      "missing_closing_tag": false,
+      "tool_name_valid": true,
+      "arguments_schema_valid": true,
+      "exact_semantic_match": true,
+      "plain_text": false,
+      "malformed_or_non_json": false,
+      "multiple_tool_calls": false,
+      "extra_text_outside_tags": false,
+      "output_tokens": 37
+    },
+    {
+      "id": "tool_eval_0012",
+      "user": "What is (5019 + 122) times 67?",
+      "expected_tool": "calculator",
+      "expected_arguments": {
+        "expression": "(5019 + 122) * 67"
+      },
+      "raw_output": "<tool_call>\n{\"name\": \"calculator\", \"arguments\": {\"expression\": \"(5019 + 122) * 67\"}}\n</tool_call>",
+      "tool_call_blocks": [
+        "{\"name\": \"calculator\", \"arguments\": {\"expression\": \"(5019 + 122) * 67\"}}"
+      ],
+      "parsed_calls": [
+        {
+          "name": "calculator",
+          "arguments": {
+            "expression": "(5019 + 122) * 67"
+          }
+        }
+      ],
+      "parse_errors": [],
+      "valid_tool_call_format": true,
+      "clean_tool_call_format": true,
+      "json_parse_valid": true,
+      "json_body_in_tool_call_tag": true,
+      "missing_closing_tag": false,
+      "tool_name_valid": true,
+      "arguments_schema_valid": true,
+      "exact_semantic_match": true,
+      "plain_text": false,
+      "malformed_or_non_json": false,
+      "multiple_tool_calls": false,
+      "extra_text_outside_tags": false,
+      "output_tokens": 32
+    },
+    {
+      "id": "tool_eval_0013",
+      "user": "Calculate (1267 - 761) / 21.",
+      "expected_tool": "calculator",
+      "expected_arguments": {
+        "expression": "(1267 - 761) / 21"
+      },
+      "raw_output": "<tool_call>\n{\"name\": \"calculator\", \"arguments\": {\"expression\": \"(1267 - 761) / 21\"}}\n</tool_call>",
+      "tool_call_blocks": [
+        "{\"name\": \"calculator\", \"arguments\": {\"expression\": \"(1267 - 761) / 21\"}}"
+      ],
+      "parsed_calls": [
+        {
+          "name": "calculator",
+          "arguments": {
+            "expression": "(1267 - 761) / 21"
+          }
+        }
+      ],
+      "parse_errors": [],
+      "valid_tool_call_format": true,
+      "clean_tool_call_format": true,
+      "json_parse_valid": true,
+      "json_body_in_tool_call_tag": true,
+      "missing_closing_tag": false,
+      "tool_name_valid": true,
+      "arguments_schema_valid": true,
+      "exact_semantic_match": true,
+      "plain_text": false,
+      "malformed_or_non_json": false,
+      "multiple_tool_calls": false,
+      "extra_text_outside_tags": false,
+      "output_tokens": 32
+    },
+    {
+      "id": "tool_eval_0014",
+      "user": "What is 7553 + 868?",
+      "expected_tool": "calculator",
+      "expected_arguments": {
+        "expression": "7553 + 868"
+      },
+      "raw_output": "<tool_call>\n{\"name\": \"calculator\", \"arguments\": {\"expression\": \"7553 + 868\"}}\n</tool_call>",
+      "tool_call_blocks": [
+        "{\"name\": \"calculator\", \"arguments\": {\"expression\": \"7553 + 868\"}}"
+      ],
+      "parsed_calls": [
+        {
+          "name": "calculator",
+          "arguments": {
+            "expression": "7553 + 868"
+          }
+        }
+      ],
+      "parse_errors": [],
+      "valid_tool_call_format": true,
+      "clean_tool_call_format": true,
+      "json_parse_valid": true,
+      "json_body_in_tool_call_tag": true,
+      "missing_closing_tag": false,
+      "tool_name_valid": true,
+      "arguments_schema_valid": true,
+      "exact_semantic_match": true,
+      "plain_text": false,
+      "malformed_or_non_json": false,
+      "multiple_tool_calls": false,
+      "extra_text_outside_tags": false,
+      "output_tokens": 27
+    },
+    {
+      "id": "tool_eval_0015",
+      "user": "What is 76% of 2536?",
+      "expected_tool": "calculator",
+      "expected_arguments": {
+        "expression": "2536 * 76 / 100"
+      },
+      "raw_output": "<tool_call>\n{\"name\": \"calculator\", \"arguments\": {\"expression\": \"2536 * 76 / 100\"}}\n</tool_call>",
+      "tool_call_blocks": [
+        "{\"name\": \"calculator\", \"arguments\": {\"expression\": \"2536 * 76 / 100\"}}"
+      ],
+      "parsed_calls": [
+        {
+          "name": "calculator",
+          "arguments": {
+            "expression": "2536 * 76 / 100"
+          }
+        }
+      ],
+      "parse_errors": [],
+      "valid_tool_call_format": true,
+      "clean_tool_call_format": true,
+      "json_parse_valid": true,
+      "json_body_in_tool_call_tag": true,
+      "missing_closing_tag": false,
+      "tool_name_valid": true,
+      "arguments_schema_valid": true,
+      "exact_semantic_match": true,
+      "plain_text": false,
+      "malformed_or_non_json": false,
+      "multiple_tool_calls": false,
+      "extra_text_outside_tags": false,
+      "output_tokens": 31
+    },
+    {
+      "id": "tool_eval_0016",
+      "user": "What is 165.5 feet in meters?",
+      "expected_tool": "unit_converter",
+      "expected_arguments": {
+        "value": 165.5,
+        "from_unit": "ft",
+        "to_unit": "m"
+      },
+      "raw_output": "<tool_call>\n{\"name\": \"unit_converter\", \"arguments\": {\"value\": 165.5, \"from_unit\": \"ft\", \"to_unit\": \"m\"}}\n</tool_call>",
+      "tool_call_blocks": [
+        "{\"name\": \"unit_converter\", \"arguments\": {\"value\": 165.5, \"from_unit\": \"ft\", \"to_unit\": \"m\"}}"
+      ],
+      "parsed_calls": [
+        {
+          "name": "unit_converter",
+          "arguments": {
+            "value": 165.5,
+            "from_unit": "ft",
+            "to_unit": "m"
+          }
+        }
+      ],
+      "parse_errors": [],
+      "valid_tool_call_format": true,
+      "clean_tool_call_format": true,
+      "json_parse_valid": true,
+      "json_body_in_tool_call_tag": true,
+      "missing_closing_tag": false,
+      "tool_name_valid": true,
+      "arguments_schema_valid": true,
+      "exact_semantic_match": true,
+      "plain_text": false,
+      "malformed_or_non_json": false,
+      "multiple_tool_calls": false,
+      "extra_text_outside_tags": false,
+      "output_tokens": 38
+    },
+    {
+      "id": "tool_eval_0017",
+      "user": "What is (3639 + 915) times 11?",
+      "expected_tool": "calculator",
+      "expected_arguments": {
+        "expression": "(3639 + 915) * 11"
+      },
+      "raw_output": "<tool_call>\n{\"name\": \"calculator\", \"arguments\": {\"expression\": \"(3639 + 915) * 11\"}}\n</tool_call>",
+      "tool_call_blocks": [
+        "{\"name\": \"calculator\", \"arguments\": {\"expression\": \"(3639 + 915) * 11\"}}"
+      ],
+      "parsed_calls": [
+        {
+          "name": "calculator",
+          "arguments": {
+            "expression": "(3639 + 915) * 11"
+          }
+        }
+      ],
+      "parse_errors": [],
+      "valid_tool_call_format": true,
+      "clean_tool_call_format": true,
+      "json_parse_valid": true,
+      "json_body_in_tool_call_tag": true,
+      "missing_closing_tag": false,
+      "tool_name_valid": true,
+      "arguments_schema_valid": true,
+      "exact_semantic_match": true,
+      "plain_text": false,
+      "malformed_or_non_json": false,
+      "multiple_tool_calls": false,
+      "extra_text_outside_tags": false,
+      "output_tokens": 32
+    },
+    {
+      "id": "tool_eval_0018",
+      "user": "Evaluate 4891 * 581 - 61.",
+      "expected_tool": "calculator",
+      "expected_arguments": {
+        "expression": "4891 * 581 - 61"
+      },
+      "raw_output": "<tool_call>\n{\"name\": \"calculator\", \"arguments\": {\"expression\": \"4891 * 581 - 61\"}}\n</tool_call>",
+      "tool_call_blocks": [
+        "{\"name\": \"calculator\", \"arguments\": {\"expression\": \"4891 * 581 - 61\"}}"
+      ],
+      "parsed_calls": [
+        {
+          "name": "calculator",
+          "arguments": {
+            "expression": "4891 * 581 - 61"
+          }
+        }
+      ],
+      "parse_errors": [],
+      "valid_tool_call_format": true,
+      "clean_tool_call_format": true,
+      "json_parse_valid": true,
+      "json_body_in_tool_call_tag": true,
+      "missing_closing_tag": false,
+      "tool_name_valid": true,
+      "arguments_schema_valid": true,
+      "exact_semantic_match": true,
+      "plain_text": false,
+      "malformed_or_non_json": false,
+      "multiple_tool_calls": false,
+      "extra_text_outside_tags": false,
+      "output_tokens": 31
+    },
+    {
+      "id": "tool_eval_0019",
+      "user": "Calculate 6152 minus 690.",
+      "expected_tool": "calculator",
+      "expected_arguments": {
+        "expression": "6152 - 690"
+      },
+      "raw_output": "<tool_call>\n{\"name\": \"calculator\", \"arguments\": {\"expression\": \"6152 - 690\"}}\n</tool_call>",
+      "tool_call_blocks": [
+        "{\"name\": \"calculator\", \"arguments\": {\"expression\": \"6152 - 690\"}}"
+      ],
+      "parsed_calls": [
+        {
+          "name": "calculator",
+          "arguments": {
+            "expression": "6152 - 690"
+          }
+        }
+      ],
+      "parse_errors": [],
+      "valid_tool_call_format": true,
+      "clean_tool_call_format": true,
+      "json_parse_valid": true,
+      "json_body_in_tool_call_tag": true,
+      "missing_closing_tag": false,
+      "tool_name_valid": true,
+      "arguments_schema_valid": true,
+      "exact_semantic_match": true,
+      "plain_text": false,
+      "malformed_or_non_json": false,
+      "multiple_tool_calls": false,
+      "extra_text_outside_tags": false,
+      "output_tokens": 27
+    },
+    {
+      "id": "tool_eval_0020",
+      "user": "What is 2471 + 719?",
+      "expected_tool": "calculator",
+      "expected_arguments": {
+        "expression": "2471 + 719"
+      },
+      "raw_output": "<tool_call>\n{\"name\": \"calculator\", \"arguments\": {\"expression\": \"2471 + 719\"}}\n</tool_call>",
+      "tool_call_blocks": [
+        "{\"name\": \"calculator\", \"arguments\": {\"expression\": \"2471 + 719\"}}"
+      ],
+      "parsed_calls": [
+        {
+          "name": "calculator",
+          "arguments": {
+            "expression": "2471 + 719"
+          }
+        }
+      ],
+      "parse_errors": [],
+      "valid_tool_call_format": true,
+      "clean_tool_call_format": true,
+      "json_parse_valid": true,
+      "json_body_in_tool_call_tag": true,
+      "missing_closing_tag": false,
+      "tool_name_valid": true,
+      "arguments_schema_valid": true,
+      "exact_semantic_match": true,
+      "plain_text": false,
+      "malformed_or_non_json": false,
+      "multiple_tool_calls": false,
+      "extra_text_outside_tags": false,
+      "output_tokens": 27
+    },
+    {
+      "id": "tool_eval_0021",
+      "user": "How many kilograms are in 919.9 pounds?",
+      "expected_tool": "unit_converter",
+      "expected_arguments": {
+        "value": 919.9,
+        "from_unit": "lb",
+        "to_unit": "kg"
+      },
+      "raw_output": "<tool_call>\n{\"name\": \"unit_converter\", \"arguments\": {\"value\": 919.9, \"from_unit\": \"lb\", \"to_unit\": \"kg\"}}\n</tool_call>",
+      "tool_call_blocks": [
+        "{\"name\": \"unit_converter\", \"arguments\": {\"value\": 919.9, \"from_unit\": \"lb\", \"to_unit\": \"kg\"}}"
+      ],
+      "parsed_calls": [
+        {
+          "name": "unit_converter",
+          "arguments": {
+            "value": 919.9,
+            "from_unit": "lb",
+            "to_unit": "kg"
+          }
+        }
+      ],
+      "parse_errors": [],
+      "valid_tool_call_format": true,
+      "clean_tool_call_format": true,
+      "json_parse_valid": true,
+      "json_body_in_tool_call_tag": true,
+      "missing_closing_tag": false,
+      "tool_name_valid": true,
+      "arguments_schema_valid": true,
+      "exact_semantic_match": true,
+      "plain_text": false,
+      "malformed_or_non_json": false,
+      "multiple_tool_calls": false,
+      "extra_text_outside_tags": false,
+      "output_tokens": 38
+    },
+    {
+      "id": "tool_eval_0022",
+      "user": "Compute 6123 divided by 57.",
+      "expected_tool": "calculator",
+      "expected_arguments": {
+        "expression": "6123 / 57"
+      },
+      "raw_output": "<tool_call>\n{\"name\": \"calculator\", \"arguments\": {\"expression\": \"6123 / 57\"}}\n</tool_call>",
+      "tool_call_blocks": [
+        "{\"name\": \"calculator\", \"arguments\": {\"expression\": \"6123 / 57\"}}"
+      ],
+      "parsed_calls": [
+        {
+          "name": "calculator",
+          "arguments": {
+            "expression": "6123 / 57"
+          }
+        }
+      ],
+      "parse_errors": [],
+      "valid_tool_call_format": true,
+      "clean_tool_call_format": true,
+      "json_parse_valid": true,
+      "json_body_in_tool_call_tag": true,
+      "missing_closing_tag": false,
+      "tool_name_valid": true,
+      "arguments_schema_valid": true,
+      "exact_semantic_match": true,
+      "plain_text": false,
+      "malformed_or_non_json": false,
+      "multiple_tool_calls": false,
+      "extra_text_outside_tags": false,
+      "output_tokens": 26
+    },
+    {
+      "id": "tool_eval_0023",
+      "user": "Calculate (6846 - 628) / 50.",
+      "expected_tool": "calculator",
+      "expected_arguments": {
+        "expression": "(6846 - 628) / 50"
+      },
+      "raw_output": "<tool_call>\n{\"name\": \"calculator\", \"arguments\": {\"expression\": \"(6846 - 628) / 50\"}}\n</tool_call>",
+      "tool_call_blocks": [
+        "{\"name\": \"calculator\", \"arguments\": {\"expression\": \"(6846 - 628) / 50\"}}"
+      ],
+      "parsed_calls": [
+        {
+          "name": "calculator",
+          "arguments": {
+            "expression": "(6846 - 628) / 50"
+          }
+        }
+      ],
+      "parse_errors": [],
+      "valid_tool_call_format": true,
+      "clean_tool_call_format": true,
+      "json_parse_valid": true,
+      "json_body_in_tool_call_tag": true,
+      "missing_closing_tag": false,
+      "tool_name_valid": true,
+      "arguments_schema_valid": true,
+      "exact_semantic_match": true,
+      "plain_text": false,
+      "malformed_or_non_json": false,
+      "multiple_tool_calls": false,
+      "extra_text_outside_tags": false,
+      "output_tokens": 32
+    },
+    {
+      "id": "tool_eval_0024",
+      "user": "What is (3820 + 597) times 14?",
+      "expected_tool": "calculator",
+      "expected_arguments": {
+        "expression": "(3820 + 597) * 14"
+      },
+      "raw_output": "<tool_call>\n{\"name\": \"calculator\", \"arguments\": {\"expression\": \"(3820 + 597) * 14\"}}\n</tool_call>",
+      "tool_call_blocks": [
+        "{\"name\": \"calculator\", \"arguments\": {\"expression\": \"(3820 + 597) * 14\"}}"
+      ],
+      "parsed_calls": [
+        {
+          "name": "calculator",
+          "arguments": {
+            "expression": "(3820 + 597) * 14"
+          }
+        }
+      ],
+      "parse_errors": [],
+      "valid_tool_call_format": true,
+      "clean_tool_call_format": true,
+      "json_parse_valid": true,
+      "json_body_in_tool_call_tag": true,
+      "missing_closing_tag": false,
+      "tool_name_valid": true,
+      "arguments_schema_valid": true,
+      "exact_semantic_match": true,
+      "plain_text": false,
+      "malformed_or_non_json": false,
+      "multiple_tool_calls": false,
+      "extra_text_outside_tags": false,
+      "output_tokens": 32
+    }
+  ]
+}

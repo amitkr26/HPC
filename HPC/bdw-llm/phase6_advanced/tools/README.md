@@ -12,6 +12,11 @@ required after the tokenizer is cached.
 | `data/tool_calls_train.jsonl` | 120 training rows. |
 | `data/tool_calls_eval.jsonl` | 24 held-out evaluation rows. |
 | `data/dataset_summary.json` | Counts, token stats, and SHA-256 hashes. |
+| `train_tool_calling.py` | Masked assistant-only LoRA SFT on the Phase 2 model. |
+| `train_tools.slurm` | 15-minute, one-A100 training launcher. |
+| `evaluate_tools_trained.py` | Post-SFT evaluator using the same 24 held-out prompts and metrics. |
+| `evaluate_tools_trained.slurm` | 15-minute, one-A100 post-SFT evaluation launcher. |
+| `eval/tool_trained_v2_0_bdw7b_sft_lora_p6.json` | Raw post-SFT outputs and metrics. |
 
 > `data/*.jsonl` and `dataset_summary.json` are generated artifacts and are
 > Git-ignored. Run the generator to recreate them; the script and README are
@@ -152,8 +157,42 @@ base = AutoModelForCausalLM.from_pretrained("merged/bdw-7b-sft")
 model = PeftModel.from_pretrained(base, "lora_tools/p6_tool_calling/final")
 ```
 
-A one-step A100 smoke test (`job 185944`) completed successfully; full
-training has not yet been launched.
+Full training (`job 185946`) completed in 1m55s: 90 optimizer steps,
+final logged train loss `0.0001` (mean `0.0107`), held-out eval loss
+`0.0000436`. The final adapter is
+`lora_tools/p6_tool_calling/final`; `adapter_model.safetensors` SHA-256 is
+`9ce5c70035f1824ac83d7ae83cdb6cc73302a2ddc214819353742dc53200d7ec`.
+
+## Post-SFT result: v2.0-bdw7b-sft + P6 LoRA
+
+Evaluation job `185947` on `rdgpu01` (A100 80GB) loaded the base model plus
+`lora_tools/p6_tool_calling/final` and ran the same 24 held-out questions,
+prompt rendering, greedy decoding, seed 1337, and 192-token limit as the
+baseline.
+
+| Metric | Baseline | + P6 LoRA | Delta |
+|---|---:|---:|---:|
+| Valid Tool Call Format Rate | 13/24 (54.2%) | **24/24 (100.0%)** | **+11 / +45.8 pp** |
+| Missing closing `</tool_call>` | 9/24 (37.5%) | 0/24 (0.0%) | -9 |
+| Plain text / no tags | 2/24 (8.3%) | 0/24 (0.0%) | -2 |
+| Exact semantic match | 12/24 (50.0%) | 24/24 (100.0%) | +12 / +50.0 pp |
+
+All 24 outputs contained exactly one complete tool-call block, a valid tool
+name and argument schema, no extra text outside the tags, and no multiple
+calls. The missing-closing-tag failure mode is eliminated on this suite.
+
+Caveat: the 24 prompts use unseen numeric values but the same two tools and
+templates as training. The 100% result is evidence for this seed suite, not
+production-scale generalization.
+
+Reproduce:
+
+```bash
+cd ~/bdw-llm
+sbatch phase6_advanced/tools/evaluate_tools_trained.slurm
+```
+
+Raw outputs: `eval/tool_trained_v2_0_bdw7b_sft_lora_p6.json`.
 
 ## Verified generation
 
