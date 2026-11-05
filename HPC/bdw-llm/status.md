@@ -1,6 +1,6 @@
 # BDW-LLM Project Status
 
-**Last updated:** 2026-11-05 09:55 IST
+**Last updated:** 2026-11-05 10:12 IST
 **Audit host:** `paramrudra.cdacdelhi.in:4422` (`3ioip3lt`)
 **Cluster project:** `/home/tutor/3ioip3lt/bdw-llm`
 **Local project:** `C:\Users\STUDENT\Desktop\Amit\HPC\bdw-llm`
@@ -8,15 +8,15 @@
 
 ## 1. Executive Summary
 
-**Overall status: AMBER - core R&D works; P5 is paused and not live; Phase 6 seed tool-use dataset and baseline evaluation (54.2% valid format) complete.**
+**Overall status: AMBER - core R&D works; P5 is paused and not live; Phase 6 dataset, baseline (54.2% valid format), and LoRA SFT pipeline are complete; full fine-tuning is ready to launch.**
 
 - Phase 1, Phase 2, and Phase 4 are complete.
-- Phase 6 tool-use capability is in progress: deterministic generator (120 train / 24 eval rows) and baseline evaluation on `v2.0-bdw7b-sft` completed (54.2% valid format rate; 91.7% intent rate).
+- Phase 6 tool-use capability is in progress: deterministic generator (120 train / 24 eval rows) and baseline evaluation on `v2.0-bdw7b-sft` completed (54.2% valid format rate; 91.7% intent rate); the masked assistant-only LoRA SFT pipeline and 15-minute A100 launcher are committed and smoke-tested, but full training has not been launched.
 - Phase 3 core (Supabase, RAG, gateway, demo UI) is live. P3.4/P3.5 release-gate and production UI integration are not evidenced as complete.
 - P5.0 shim is complete. P5.1 zero-cost production is scaffolded, hardened, and test-green but not launched.
 - The P4 7B stack is live and serving correctly.
 - The P5 70B public endpoint is not live; DNS does not resolve and no production job exists.
-- Canonical GitHub is at `9f7f7d9`; cluster baseline code is committed at `7604706`; the legacy local checkout remains at `b25b71d`.
+- Canonical GitHub is at `d081f26`; cluster training pipeline is committed at `7164baf`; the legacy local checkout remains at `b25b71d`.
 
 Approximate completion: **model/R&D ~100%, integration ~85-90%, production ~5-10%, overall ~85%** by planned scope.
 
@@ -34,8 +34,8 @@ Approximate completion: **model/R&D ~100%, integration ~85-90%, production ~5-10
 | Phase 5.3 - BDW integration | TODO | Provider/model `bdw-career-ai`, metadata `user_id`, technical-intent split, citations, feature flag, canary not done. |
 | Phase 5.4 - release gates | TODO | Eval gates, load/security tests, dashboards, rollback runbook, SLO certification not done. |
 | Phase 5.5 - feedback flywheel | TODO | Feedback capture and LoRA refresh loop not started. |
-| Phase 6 - tool use/function calling | BASELINE MEASURED | Deterministic generator (120 train / 24 eval rows); v2.0-bdw7b-sft baseline evaluated: 54.2% strict format rate (13/24), 91.7% tag intent rate (22/24), 37.5% missing closing tag (9/24), 8.3% plain text (2/24). |
-| Cluster source control | DONE / CANONICAL PUSHED | Cluster baseline code `7604706`; canonical GitHub `main` at `9f7f7d9`; cluster push still requires GitHub credentials. |
+| Phase 6 - tool use/function calling | BASELINE MEASURED / TRAINING READY | Deterministic generator (120 train / 24 eval rows); v2.0-bdw7b-sft baseline: 54.2% strict format (13/24), 91.7% tag intent (22/24), 37.5% missing closing tag (9/24), 8.3% plain text (2/24); `train_tool_calling.py` + `train_tools.slurm` committed; full LoRA training pending. |
+| Cluster source control | DONE / CANONICAL PUSHED | Cluster training pipeline `7164baf`; canonical GitHub `main` at `d081f26`; cluster push still requires GitHub credentials. |
 
 ## 3. Current Live State
 
@@ -49,7 +49,7 @@ Approximate completion: **model/R&D ~100%, integration ~85-90%, production ~5-10
 | P5 production job | Not submitted; no `bdw_70b_prod` in `squeue` or `sacct`. |
 | P5 public endpoint | `ai.berojgardegreewala.com` does not resolve from the workstation. |
 | Disk | Home filesystem 25T, 99% used, 482G available. Project `~/bdw-llm` is about 83G; HF cache is 136G. |
-| Git | Cluster clean at `7604706`; canonical GitHub `main` at `9f7f7d9`; local legacy checkout at `b25b71d`, intentionally not updated under cluster-only policy. |
+| Git | Cluster training pipeline at `7164baf`; canonical GitHub `main` at `d081f26`; local legacy checkout at `b25b71d`, intentionally not updated under cluster-only policy. |
 | P5 venv | `venv_p5`: 6.9G, isolated, Python 3.11.4, `include-system-site-packages=false`. Old venv backed up as `venv_p5.pre-isolation-20261104-095234` (ignored). |
 | Phase 6 dataset | `phase6_advanced/tools/data/`: 120 train / 24 eval; 406,742 B / 79,171 B; train SHA-256 `47f7bd8a2f801067cee717da000c9de69bb671a7c5dda720aa1a2c46f2265c3a`; eval SHA-256 `9a525bde07da6f5daa2843b813810c147b7c605e64b36e557c799c0cb57f905f`; Git-ignored. |
 
@@ -103,6 +103,18 @@ Phase 4 artifacts: five adapters (~309M each), five `export/p4_lora_*.gguf` file
   - Plain Text (Bypassed Tool): 8.3% (2/24)
   - Exact Semantic Match: 50.0% (12/24)
 - Status: baseline established; model understands tool intent (91.7%) but requires fine-tuning to reliably close tags and avoid arithmetic shortcutting.
+
+### Phase 6 LoRA training pipeline
+
+- Training script: `phase6_advanced/tools/train_tool_calling.py` (SHA-256 `38b42e26937c988ff4d15dcac95a93f3a44024b1fcf4ce66cdfda900c0c56a32`).
+- Launcher: `phase6_advanced/tools/train_tools.slurm` (SHA-256 `2adc52a1f9e57c29f4b27e4e6e099c38761b883daf17a9d7dc5d84645b6c5e1a`), one A100, 4 CPUs, 48G RAM, wall time `00:15:00`, QOS `training`.
+- Base/adapter: `merged/bdw-7b-sft` -> `lora_tools/p6_tool_calling/final`; trainer state in `sft_runs/p6_tools`.
+- LoRA: `r=16`, `alpha=32`, dropout `0.05`, seven Qwen2 projection modules; 40,370,176 trainable parameters (`0.5273%`).
+- Objective: loss on assistant tokens only; system/user/tool-response tokens are masked. The 24-row eval split is held out for eval loss.
+- Schedule: 3 epochs, batch 4, sequence length 768, lr `1e-4` cosine, 3% warmup, bf16, `paged_adamw_8bit`; expected 90 optimizer steps.
+- Smoke test: Job `185944` completed `RESULT: P6_TRAIN_OK` at one step in 44s (29.8s internal), producing adapter and metadata; smoke outputs were removed.
+- Full training not launched. Launch command: `cd ~/bdw-llm && sbatch phase6_advanced/tools/train_tools.slurm`.
+- Post-SFT held-out format evaluation is pending.
 
 ## 5. P5 Deployment Inventory
 
@@ -176,7 +188,9 @@ Phase 4 artifacts: five adapters (~309M each), five `export/p4_lora_*.gguf` file
 - [x] Generate 120/24 seed dataset; verify schema and deterministic hashes.
 - [x] Push Phase 6 script/README to GitHub under `HPC/bdw-llm/phase6_advanced/tools`.
 - [x] Add a small held-out tool-use eval and run the 7B model against it (baseline: 54.2% format rate).
-- [ ] Decide whether to fine-tune on the Phase 6 seed data.
+- [x] Decide to fine-tune on the Phase 6 seed data and add the masked assistant-only LoRA SFT pipeline.
+- [ ] Launch the full Phase 6 training job and inspect `training_metadata.json`.
+- [ ] Evaluate the resulting adapter on the held-out 24-row tool-call set.
 - [ ] Add `P5_API_KEY` and `TUNNEL_TOKEN` to cluster `.env`.
 - [ ] Configure Cloudflare DNS/tunnel for `ai.berojgardegreewala.com`.
 - [ ] Submit the actual Slurm job and wait for the allocation.
@@ -208,6 +222,16 @@ Phase 4 artifacts: five adapters (~309M each), five `export/p4_lora_*.gguf` file
 - Re-ran P5 tests: `97 passed, 2 skipped`.
 - Pushed local repo changes to GitHub `main` as `5f19c28`.
 - Updated this status report for the current P5-ready state.
+
+### 2026-11-05 - Phase 6 LoRA training pipeline
+
+- Added `phase6_advanced/tools/train_tool_calling.py`: masked assistant-only LoRA SFT, local `v2.0-bdw7b-sft`, held-out eval loss, adapter/metadata output, resumable Trainer checkpoints.
+- Added `phase6_advanced/tools/train_tools.slurm`: one A100, 15-minute `training` QOS job.
+- Default recipe: r=16/alpha=32, seven projection modules, 40,370,176 trainable parameters (0.5273%), 3 epochs/90 steps, lr 1e-4 cosine, batch 4, seq 768, bf16, paged AdamW 8-bit.
+- Verified tokenization/labels on all 120 train and 24 eval rows; no sequence exceeds 467 tokens; assistant targets have 27-59 tokens.
+- One-step A100 smoke test Job `185944` completed `P6_TRAIN_OK` in 44s; adapter and metadata serialized successfully. Smoke artifacts removed.
+- Cluster commit `7164baf`; canonical GitHub commit `d081f26`.
+- Full training has not been launched.
 
 ### 2026-11-05 - Phase 6 baseline evaluation
 
@@ -258,6 +282,8 @@ Legacy local checkout (read-only under current policy): `C:\Users\STUDENT\Deskto
 - `phase6_advanced/tools/evaluate_tools_baseline.py` - v2.0-bdw7b-sft tool-call baseline evaluator.
 - `phase6_advanced/tools/evaluate_tools_baseline.slurm` - 15-minute A100 baseline job.
 - `phase6_advanced/tools/eval/tool_baseline_v2_0_bdw7b_sft.json` - raw 24-prompt baseline outputs and metrics.
+- `phase6_advanced/tools/train_tool_calling.py` - masked assistant-only LoRA SFT for tool-format repair.
+- `phase6_advanced/tools/train_tools.slurm` - 15-minute A100 launcher for the tool-format LoRA run.
 - `phase3/models/bge-small-en-v1.5` - ST 4.1-compatible BGE model used by the router.
 - `logs/p4_eval_latest_v2.json` - P4 evaluation source.
 - `logs/eval_results.json` - Phase 1 evaluation source.
