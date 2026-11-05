@@ -1,6 +1,6 @@
 # BDW-LLM Project Status
 
-**Last updated:** 2026-11-05 14:29 IST
+**Last updated:** 2026-11-05 15:02 IST
 **Audit host:** `paramrudra.cdacdelhi.in:4422` (`3ioip3lt`)
 **Cluster project:** `/home/tutor/3ioip3lt/bdw-llm`
 **Local project:** `C:\Users\STUDENT\Desktop\Amit\HPC\bdw-llm`
@@ -8,16 +8,16 @@
 
 ## 1. Executive Summary
 
-**Overall status: AMBER - core R&D works; P5 is paused and not live; Phase 6 tool-use LoRA SFT is complete and the post-SFT adapter scores 100% (24/24) on the held-out seed suite; the reasoning dataset is ready but not yet trained.**
+**Overall status: AMBER - core R&D works; P5 is paused and not live; Phase 6 tool-use LoRA SFT is complete and the post-SFT adapter scores 100% (24/24) on the held-out seed suite; the reasoning baseline is established and no reasoning adapter has been trained yet.**
 
 - Phase 1, Phase 2, and Phase 4 are complete.
 - Phase 6 tool-use capability: deterministic generator (120 train / 24 eval rows), baseline (54.2% valid format), LoRA SFT (job `185946`), and post-SFT evaluation (job `185947`) are complete. The adapter scores 24/24 (100.0%) on the same held-out prompts, with 0 missing closing tags and 0 plain-text answers; this is seed-suite evidence, not production generalization.
-- Phase 6 reasoning dataset: deterministic `<think>`-trace generator and 120 train / 24 held-out eval rows are complete and validated. No reasoning SFT adapter has been trained or evaluated yet.
+- Phase 6 reasoning baseline: deterministic `<think>` dataset (120 train / 24 eval rows) is complete; base `v2.0-bdw7b-sft` scored 0/24 (0.0%) strict `<think>` format and 15/24 (62.5%) semantic accuracy (math 8/8, logic 7/8, coding 0/8). All 24 outputs were plain prose; math/logic show native step-by-step reasoning, while coding described algorithms without code. No reasoning SFT adapter has been trained or evaluated yet.
 - Phase 3 core (Supabase, RAG, gateway, demo UI) is live. P3.4/P3.5 release-gate and production UI integration are not evidenced as complete.
 - P5.0 shim is complete. P5.1 zero-cost production is scaffolded, hardened, and test-green but not launched.
 - The P4 7B stack is live and serving correctly.
 - The P5 70B public endpoint is not live; DNS does not resolve and no production job exists.
-- Canonical GitHub reasoning dataset commit is `86ba553`; cluster reasoning dataset commit is `6cc0e1e`; cluster post-SFT evaluation is committed at `701cccd`; the legacy local checkout remains at `b25b71d`.
+- Canonical GitHub reasoning baseline commit is `18ccd2c`; cluster reasoning baseline commit is `4ca8498`; canonical reasoning dataset commit is `86ba553`; cluster reasoning dataset commit is `6cc0e1e`; cluster post-SFT evaluation is committed at `701cccd`; the legacy local checkout remains at `b25b71d`.
 
 Approximate completion: **model/R&D ~100%, integration ~85-90%, production ~5-10%, overall ~85%** by planned scope.
 
@@ -36,8 +36,8 @@ Approximate completion: **model/R&D ~100%, integration ~85-90%, production ~5-10
 | Phase 5.4 - release gates | TODO | Eval gates, load/security tests, dashboards, rollback runbook, SLO certification not done. |
 | Phase 5.5 - feedback flywheel | TODO | Feedback capture and LoRA refresh loop not started. |
 | Phase 6 - tool use/function calling | POST-SFT EVALUATED | Deterministic generator (120 train / 24 eval rows); baseline 54.2% strict format (13/24); LoRA SFT job `185946`; post-SFT adapter 100.0% strict format (24/24), 0 missing closing tags, 0 plain-text answers, 24/24 exact semantic; seed-suite evidence, not production-scale. |
-| Phase 6 - reasoning traces | DATASET READY | Deterministic generator and 120 train / 24 eval `<think>` rows (40 / 8 per category); math, logic, and coding validated; training not started. |
-| Cluster source control | DONE / CANONICAL PUSHED | Cluster reasoning dataset `6cc0e1e`; canonical GitHub reasoning dataset `86ba553`; cluster post-SFT evaluation `701cccd`; cluster push still requires GitHub credentials. |
+| Phase 6 - reasoning traces | BASELINE EVALUATED | Deterministic generator and 120 train / 24 eval `<think>` rows (40 / 8 per category); baseline 0/24 strict format, 15/24 semantic accuracy (math 8/8, logic 7/8, coding 0/8); no reasoning adapter trained. |
+| Cluster source control | DONE / CANONICAL PUSHED | Cluster reasoning baseline `4ca8498`; canonical GitHub reasoning baseline `18ccd2c`; cluster post-SFT evaluation `701cccd`; cluster push still requires GitHub credentials. |
 
 ## 3. Current Live State
 
@@ -51,7 +51,7 @@ Approximate completion: **model/R&D ~100%, integration ~85-90%, production ~5-10
 | P5 production job | Not submitted; no `bdw_70b_prod` in `squeue` or `sacct`. |
 | P5 public endpoint | `ai.berojgardegreewala.com` does not resolve from the workstation. |
 | Disk | Home filesystem 25T, 99% used, 476G available. Project `~/bdw-llm` is about 83G; HF cache is 136G. |
-| Git | Cluster reasoning dataset at `6cc0e1e`; canonical GitHub reasoning dataset at `86ba553`; cluster post-SFT evaluation at `701cccd`; local legacy checkout at `b25b71d`, intentionally not updated under cluster-only policy. |
+| Git | Cluster reasoning baseline at `4ca8498`; canonical GitHub reasoning baseline at `18ccd2c`; cluster post-SFT evaluation at `701cccd`; local legacy checkout at `b25b71d`, intentionally not updated under cluster-only policy. |
 | P5 venv | `venv_p5`: 6.9G, isolated, Python 3.11.4, `include-system-site-packages=false`. Old venv backed up as `venv_p5.pre-isolation-20261104-095234` (ignored). |
 | Phase 6 tool dataset | `phase6_advanced/tools/data/`: 120 train / 24 eval; 406,742 B / 79,171 B; train SHA-256 `47f7bd8a2f801067cee717da000c9de69bb671a7c5dda720aa1a2c46f2265c3a`; eval SHA-256 `9a525bde07da6f5daa2843b813810c147b7c605e64b36e557c799c0cb57f905f`; Git-ignored. |
 | Phase 6 reasoning dataset | `phase6_advanced/reasoning/data/`: 120 train / 24 eval; 40 / 8 per category (math, logic, coding); train SHA-256 `9b79d4d77ccd463ee2233ab514e1a1826b6509315485bc6393d38dc7f59209ba`; eval SHA-256 `9af52700204698c9db3e9feba32032eb48abb193b198e802c96f0c1f864b5046`; Git-ignored. |
@@ -140,7 +140,19 @@ Phase 4 artifacts: five adapters (~309M each), five `export/p4_lora_*.gguf` file
 - Token range: train `166-335`, mean `206.29`; eval `174-317`, mean `214.54`.
 - Train SHA-256 `9b79d4d77ccd463ee2233ab514e1a1826b6509315485bc6393d38dc7f59209ba`; eval SHA-256 `9af52700204698c9db3e9feba32032eb48abb193b198e802c96f0c1f864b5046`.
 - Validation: 144 unique questions with no cross-split duplicates; math answers independently recomputed; all logic answers satisfy every clue; all coding samples execute with the stated output; think tags and final answers checked; rerun produced identical hashes.
-- Status: dataset only. No reasoning SFT adapter has been trained or evaluated.
+- Status: baseline evaluated. No reasoning SFT adapter has been trained or evaluated.
+
+### Phase 6 reasoning baseline
+
+- Evaluator: `phase6_advanced/reasoning/evaluate_reasoning_baseline.py` (SHA-256 `b8a45f123d054efe3f20dc5fef6b5ee91ababf34d09b1d854b120acad155cb10`); launcher `evaluate_reasoning_baseline.slurm` (SHA-256 `93a9f5fc39534955f6a869e7e3b8bddb06a4a678354db7332493c5e1f21e3b34`).
+- Model: `merged/bdw-7b-sft` (`v2.0-bdw7b-sft`), no adapter; job `185954` on `rdgpu01` A100 80GB; greedy, seed `1337`, `max_new_tokens=384`.
+- Result: `phase6_advanced/reasoning/eval/reasoning_baseline_v2_0_bdw7b_sft.json` (43,867 B; SHA-256 `a99c2b22806d3b2743525c4ecec258b855aaaed43486f03d1667c862d1340784`); 33.8s generation, 1m09s job.
+- Strict `<think>` format: **0/24 (0.0%)**; plain text/no tags: 24/24; complete think block: 0/24.
+- Semantic accuracy: **15/24 (62.5%)**; math 8/8 (100.0%), logic 7/8 (87.5%), coding 0/8 (0.0%).
+- All outputs were prose. Math/logic responses contain explicit multi-step natural-language reasoning; coding responses described an algorithm but never emitted a Python implementation.
+- Sole logic miss `reason_eval_logic_0012` reversed the order; all coding misses had no implementation to execute.
+- Conditional accuracy on valid format is undefined (0 valid rows).
+- Status: baseline established; reasoning LoRA SFT/eval still TODO.
 
 ## 5. P5 Deployment Inventory
 
