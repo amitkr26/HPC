@@ -90,7 +90,7 @@
     "cuda": "12.1",
     "gpu": "NVIDIA A100 80GB PCIe"
   },
-  "elapsed_s": 14.7,
+  "elapsed_s": 14.8,
   "prompts": [
     {
       "id": "tool_eval_0001",
