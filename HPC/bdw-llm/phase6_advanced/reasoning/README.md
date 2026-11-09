@@ -10,12 +10,17 @@ tokenizer is cached.
 | File | Purpose |
 |---|---|
 | `generate_reasoning_dataset.py` | Deterministic generator (stdlib + cached HF tokenizer). |
+| `train_reasoning.py` | LoRA SFT trainer targeting `<think>` format on `v2.0-bdw7b-sft`. |
+| `train_reasoning.slurm` | Hardened Slurm launcher on A100 GPU (`sft_runs/p6_reasoning`). |
 | `evaluate_reasoning_baseline.py` | Baseline evaluator for `v2.0-bdw7b-sft` with no adapter. |
-| `evaluate_reasoning_baseline.slurm` | 15-minute A100 launcher for the baseline evaluator. |
+| `evaluate_reasoning_baseline.slurm` | Slurm launcher for baseline evaluation. |
+| `evaluate_reasoning_trained.py` | Evaluator for trained reasoning LoRA adapter. |
+| `evaluate_reasoning_trained.slurm` | Slurm launcher for trained LoRA evaluation. |
 | `data/reasoning_train.jsonl` | 120 training rows. |
 | `data/reasoning_eval.jsonl` | 24 held-out evaluation rows. |
 | `data/dataset_summary.json` | Counts, token stats, and SHA-256 hashes. |
-| `eval/reasoning_baseline_v2_0_bdw7b_sft.json` | Committed baseline metrics and raw generations. |
+| `eval/reasoning_baseline_v2_0_bdw7b_sft.json` | Baseline metrics and raw generations. |
+| `eval/reasoning_trained_v2_0_bdw7b_sft.json` | Trained LoRA metrics and raw generations. |
 
 > `data/*.jsonl` and `dataset_summary.json` are generated artifacts and are
 > Git-ignored. Run the generator to recreate them; the script and README are
@@ -175,3 +180,37 @@ This is a small, templated seed dataset for capability bring-up, not a
 production-scale reasoning corpus. The held-out prompts use unseen values but
 share templates with training; expand the templates and add adversarial cases
 before making generalization claims.
+
+## Training (`lora_reasoning/p6_reasoning/final`)
+
+Train the reasoning LoRA adapter on PARAM Rudra:
+
+```bash
+sbatch phase6_advanced/reasoning/train_reasoning.slurm
+```
+
+- Base model: `merged/bdw-7b-sft` (Qwen2.5 7B SFT base)
+- Hyperparameters: LoRA $r=16, \alpha=32$, target modules: all linear (`q,k,v,o,gate,up,down`), lr `1e-4`, cosine schedule, warmup ratio 0.03, `paged_adamw_8bit`, `bf16=True`, `max_seq_len=768`
+- Epochs: 3 (90 steps total, batch size 4, grad accum 1)
+- Hardware: 1x NVIDIA A100 80GB (`rdgpu01`, Slurm Job `186012`, runtime 72.0s)
+- Convergence: train loss `1.0778` $\rightarrow$ `0.0006`, eval loss `0.00088`
+
+## Trained Evaluation
+
+Run evaluation with the trained LoRA adapter loaded:
+
+```bash
+sbatch phase6_advanced/reasoning/evaluate_reasoning_trained.slurm
+```
+
+### Verified Performance: Baseline vs. Trained LoRA
+
+| Metric | Baseline (`v2.0-bdw7b-sft`) | Trained LoRA (`p6_reasoning`) | Delta | Notes |
+|---|:---:|:---:|:---:|---|
+| **Valid `<think>` Format** | 0 / 24 (0.0%) | **24 / 24 (100.0%)** | **+100.0%** | Full `<think>...</think>` tags with reasoning & answer |
+| **Missing Closing Tag** | 0 (0.0%) | **0 (0.0%)** | 0 | Zero tag truncation |
+| **Plain Text (No Tags)** | 24 / 24 (100.0%) | **0 / 24 (0.0%)** | -100.0% | Complete syntax enforcement |
+| **Math Accuracy** | 8 / 8 (100.0%) | **8 / 8 (100.0%)** | Parity | Numbered arithmetic steps intact |
+| **Logic Accuracy** | 7 / 8 (87.5%) | **8 / 8 (100.0%)** | **+12.5%** | Corrected order deductions |
+| **Coding Accuracy** | 0 / 8 (0.0%) | **8 / 8 (100.0%)** | **+100.0%** | Generates executable, tested Python functions |
+| **Overall Accuracy** | 15 / 24 (62.5%) | **24 / 24 (100.0%)** | **+37.5%** | All 24 answers match ground truth |

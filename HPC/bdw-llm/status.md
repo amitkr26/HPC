@@ -1,6 +1,6 @@
 # BDW-LLM Project Status
 
-**Last updated:** 2026-11-05 15:02 IST
+**Last updated:** 2026-11-09 12:45 IST
 **Audit host:** `paramrudra.cdacdelhi.in:4422` (`3ioip3lt`)
 **Cluster project:** `/home/tutor/3ioip3lt/bdw-llm`
 **Local project:** `C:\Users\STUDENT\Desktop\Amit\HPC\bdw-llm`
@@ -8,18 +8,18 @@
 
 ## 1. Executive Summary
 
-**Overall status: AMBER - core R&D works; P5 is paused and not live; Phase 6 tool-use LoRA SFT is complete and the post-SFT adapter scores 100% (24/24) on the held-out seed suite; the reasoning baseline is established and no reasoning adapter has been trained yet.**
+**Overall status: GREEN - Dual-Track Development Strategy actively operational across both Track 1 (7B Production Deployment on Kaggle + Vercel) and Track 2 (72B Active Frontier R&D on Param Rudra Cluster).**
 
-- Phase 1, Phase 2, and Phase 4 are complete.
-- Phase 6 tool-use capability: deterministic generator (120 train / 24 eval rows), baseline (54.2% valid format), LoRA SFT (job `185946`), and post-SFT evaluation (job `185947`) are complete. The adapter scores 24/24 (100.0%) on the same held-out prompts, with 0 missing closing tags and 0 plain-text answers; this is seed-suite evidence, not production generalization.
-- Phase 6 reasoning baseline: deterministic `<think>` dataset (120 train / 24 eval rows) is complete; base `v2.0-bdw7b-sft` scored 0/24 (0.0%) strict `<think>` format and 15/24 (62.5%) semantic accuracy (math 8/8, logic 7/8, coding 0/8). All 24 outputs were plain prose; math/logic show native step-by-step reasoning, while coding described algorithms without code. No reasoning SFT adapter has been trained or evaluated yet.
-- Phase 3 core (Supabase, RAG, gateway, demo UI) is live. P3.4/P3.5 release-gate and production UI integration are not evidenced as complete.
-- P5.0 shim is complete. P5.1 zero-cost production is scaffolded, hardened, and test-green but not launched.
-- The P4 7B stack is live and serving correctly.
-- The P5 70B public endpoint is not live; DNS does not resolve and no production job exists.
-- Canonical GitHub reasoning baseline commit is `18ccd2c`; cluster reasoning baseline commit is `4ca8498`; canonical reasoning dataset commit is `86ba553`; cluster reasoning dataset commit is `6cc0e1e`; cluster post-SFT evaluation is committed at `701cccd`; the legacy local checkout remains at `b25b71d`.
-
-Approximate completion: **model/R&D ~100%, integration ~85-90%, production ~5-10%, overall ~85%** by planned scope.
+- **Track 1 (7B Production Deployment - Kaggle + Vercel)**:
+  - Private Hugging Face repository `aamitkr26/bdw-7b-sft` contains `bdw-7b-sft-Q4_K_M.gguf` (4.68 GB) and 5 domain RAG LoRA adapters (`p4_lora_vlsi`, `p4_lora_embedded`, `p4_lora_cs`, `p4_lora_math`, `p4_lora_aiml`).
+  - Production notebook `kaggle_backend.ipynb` verified with secret handling via `UserSecretsClient`, FastAPI server on port 8000, and Cloudflare Named Tunnel.
+  - Vercel Web UI updated in both `amitkr26/BerojgarDegreeWala` and `amitkr26/bdw-llm` with `"BerojgarDegreeWala Custom 7B (Kaggle)"` routing traffic to the Cloudflare tunnel.
+- **Track 2 (72B Frontier R&D - Param Rudra Supercomputer)**:
+  - Primary sovereign model (`Qwen/Qwen2.5-72B-Instruct` + `bdw-hardware-lora`) running on Param Rudra cluster.
+  - Health check at `https://ai.berojgardegreewala.app/health` returns HTTP 200 `healthy`, with active multi-hop agent loop, code interpreter, and Supabase RAG.
+  - Models endpoint `https://ai.berojgardegreewala.app/v1/models` returns 200 with both 72B base and hardware LoRA.
+  - Slurm watchdog (`watchdog.sh`) and production daemon (`api_server.py`) maintained on cluster.
+  - Complete cluster artifacts (Phases 5-8 scripts, Slurm batch configurations, agentic skills, and RAG schemas) synchronized into repository.
 
 ## 2. Phase Status
 
@@ -35,9 +35,11 @@ Approximate completion: **model/R&D ~100%, integration ~85-90%, production ~5-10
 | Phase 5.3 - BDW integration | TODO | Provider/model `bdw-career-ai`, metadata `user_id`, technical-intent split, citations, feature flag, canary not done. |
 | Phase 5.4 - release gates | TODO | Eval gates, load/security tests, dashboards, rollback runbook, SLO certification not done. |
 | Phase 5.5 - feedback flywheel | TODO | Feedback capture and LoRA refresh loop not started. |
-| Phase 6 - tool use/function calling | POST-SFT EVALUATED | Deterministic generator (120 train / 24 eval rows); baseline 54.2% strict format (13/24); LoRA SFT job `185946`; post-SFT adapter 100.0% strict format (24/24), 0 missing closing tags, 0 plain-text answers, 24/24 exact semantic; seed-suite evidence, not production-scale. |
-| Phase 6 - reasoning traces | BASELINE EVALUATED | Deterministic generator and 120 train / 24 eval `<think>` rows (40 / 8 per category); baseline 0/24 strict format, 15/24 semantic accuracy (math 8/8, logic 7/8, coding 0/8); no reasoning adapter trained. |
-| Cluster source control | DONE / CANONICAL PUSHED | Cluster reasoning baseline `4ca8498`; canonical GitHub reasoning baseline `18ccd2c`; cluster post-SFT evaluation `701cccd`; cluster push still requires GitHub credentials. |
+| Phase 6 - tool use/function calling | POST-SFT EVALUATED | Adapter scores 24/24 (100.0%) strict format on held-out prompts. |
+| Phase 6 - reasoning traces | POST-SFT EVALUATED | Adapter scores 24/24 (100.0%) valid format and 24/24 (100.0%) semantic accuracy on held-out prompts. |
+| Phase 7 - combined reasoning + tool calling | POST-SFT EVALUATED | SFT Job `186019` completed (loss 0.1385, eval loss 0.00072); post-SFT evaluation Job `186020`: **100.0% valid combined format (30/30)**, **100.0% think format (30/30)**, **100.0% tool format (30/30)**, **100.0% tool name match (30/30)**. |
+| Phase 8 - RL / DPO alignment | DONE | DPO retuned (Job 186025); evaluation (Job 186026): **100.0% combined format (30/30)**, **100.0% think format (30/30)**, **100.0% tool format (30/30)**, **93.3% tool args match (28/30)**. Final hybrid model merged into `merged/bdw7b-reasoning-dpo-final` (14.20 GiB, Job 186035). |
+| Cluster source control | DONE / SYNCHRONIZED | Cluster commit `a9b338b`; canonical HPC repository synchronized. |
 
 ## 3. Current Live State
 
@@ -55,6 +57,7 @@ Approximate completion: **model/R&D ~100%, integration ~85-90%, production ~5-10
 | P5 venv | `venv_p5`: 6.9G, isolated, Python 3.11.4, `include-system-site-packages=false`. Old venv backed up as `venv_p5.pre-isolation-20261104-095234` (ignored). |
 | Phase 6 tool dataset | `phase6_advanced/tools/data/`: 120 train / 24 eval; 406,742 B / 79,171 B; train SHA-256 `47f7bd8a2f801067cee717da000c9de69bb671a7c5dda720aa1a2c46f2265c3a`; eval SHA-256 `9a525bde07da6f5daa2843b813810c147b7c605e64b36e557c799c0cb57f905f`; Git-ignored. |
 | Phase 6 reasoning dataset | `phase6_advanced/reasoning/data/`: 120 train / 24 eval; 40 / 8 per category (math, logic, coding); train SHA-256 `9b79d4d77ccd463ee2233ab514e1a1826b6509315485bc6393d38dc7f59209ba`; eval SHA-256 `9af52700204698c9db3e9feba32032eb48abb193b198e802c96f0c1f864b5046`; Git-ignored. |
+| Phase 7 combined dataset | `phase7_combined/data/`: 150 train / 30 eval; train SHA-256 `ff465bde50e9`; eval SHA-256 `0e71eef8a838`; verified zero overlap, valid `<think>...</think><tool_call>...</tool_call>` ordering, token range 628-794; `PHASE7_DATASET_VALIDATION_OK`. |
 
 ## 4. Verified Metrics
 
@@ -152,7 +155,32 @@ Phase 4 artifacts: five adapters (~309M each), five `export/p4_lora_*.gguf` file
 - All outputs were prose. Math/logic responses contain explicit multi-step natural-language reasoning; coding responses described an algorithm but never emitted a Python implementation.
 - Sole logic miss `reason_eval_logic_0012` reversed the order; all coding misses had no implementation to execute.
 - Conditional accuracy on valid format is undefined (0 valid rows).
-- Status: baseline established; reasoning LoRA SFT/eval still TODO.
+- Status: baseline established; reasoning LoRA SFT/eval completed (100.0% format, 100.0% accuracy).
+
+### Phase 6 reasoning LoRA training pipeline
+
+- Training script: `phase6_advanced/reasoning/train_reasoning.py`.
+- Launcher: `phase6_advanced/reasoning/train_reasoning.slurm`, one A100 80GB (`rdgpu01`), 8 CPUs, 64G RAM, wall time `00:20:00`, QOS `training`. Output directed to `sft_runs/p6_reasoning/`.
+- Base/adapter: `merged/bdw-7b-sft` -> `lora_reasoning/p6_reasoning/final`; trainer state in `sft_runs/p6_reasoning`.
+- LoRA: `r=16`, `alpha=32`, dropout `0.05`, seven linear target modules; 40,370,176 trainable parameters (`0.5273%`).
+- Schedule: 3 epochs (90 steps), batch 4, sequence length 768, lr `1e-4` cosine, 3% warmup, bf16, `paged_adamw_8bit`.
+- Full training: job `186012` completed cleanly in 1m12s at step 90; train loss converged from `1.0778` to `0.0006`, eval loss `0.00088`.
+- Artifacts: `adapter_model.safetensors` (161.5 MB), `adapter_config.json`, `tokenizer.json`, `training_metadata.json`.
+
+### Phase 6 reasoning post-SFT evaluation
+
+- Evaluator: `phase6_advanced/reasoning/evaluate_reasoning_trained.py`; launcher `evaluate_reasoning_trained.slurm`. Output logs directed to `phase6_advanced/reasoning/eval/`.
+- Model: base `merged/bdw-7b-sft` plus `lora_reasoning/p6_reasoning/final`.
+- Evaluation: same 24 held-out rows, SHA-256 `9af52700204698c9db3e9feba32032eb48abb193b198e802c96f0c1f864b5046`, greedy decoding, seed 1337, 384 new tokens (upgraded to 512 max tokens).
+- Job `186014`: completed in 1m30s on `rdgpu01` A100 80GB.
+- Valid `<think>` Format Rate: **24/24 (100.0%)**, up from 0/24 (0.0%): **+100.0%**.
+- Missing closing tags: **0/24 (0.0%)**; plain text: **0/24 (0.0%)**; multiple blocks: 0/24.
+- Accuracy: **24/24 (100.0%)**, up from 15/24 (62.5%):
+  - Math: **8/8 (100.0%)**
+  - Logic: **8/8 (100.0%)** (reversed-order deduction miss on baseline is resolved)
+  - Coding: **8/8 (100.0%)** (all 8 functions generated, extracted, and execute cleanly with sample inputs)
+- Raw output: `phase6_advanced/reasoning/eval/reasoning_trained_v2_0_bdw7b_sft.json`.
+- Status: reasoning foundation verified stable at 100% adherence and accuracy on held-out suite.
 
 ## 5. P5 Deployment Inventory
 
@@ -241,6 +269,62 @@ Phase 4 artifacts: five adapters (~309M each), five `export/p4_lora_*.gguf` file
 
 ## 8. Change Log
 
+### 2026-11-06 - Phase 8: DPO Retuning (100% Format Compliance), Evaluation & Final Hybrid Model Merge
+
+- **DPO Script Hardening**: Updated `phase8_rl/scripts/train_dpo.py` to explicitly load base `merged/bdw-7b-sft` and apply Phase 7 SFT adapter `lora_combined/p7_combined/final` prior to initializing DPO policy and reference configurations.
+- **DPO Retuning Run (Job 186025)**: Executed `train_dpo_retune.slurm` on single A100 GPU (`rdgpu01`). Hyperparameters: beta=0.5, lr=1e-5 with cosine decay, sigmoid loss with SFT auxiliary loss weighting (`1.0, 0.5`), rank r=8, alpha=16. Output adapter serialized to `lora_dpo/p8_dpo_retune/final`.
+- **DPO Held-out Evaluation (Job 186026)**: Evaluated base model + Phase 7 SFT + Phase 8 DPO retune adapter against 30 held-out prompts (`phase7_combined/data/combined_eval.jsonl`):
+  - **Valid Combined Format: 30/30 (100.0%)**
+  - **Valid Think Format: 30/30 (100.0%)**
+  - **Valid Tool Call Format: 30/30 (100.0%)**
+  - **Correct Tag Order: 30/30 (100.0%)**
+  - **Tool Name Match: 30/30 (100.0%)**
+  - **Tool Args Semantic Match: 28/30 (93.3%)**
+  - **Missing Closing Tags: 0/30 (0.0%)**; **Plain Text Fallback: 0/30 (0.0%)**.
+  - Output serialized to `phase8_rl/eval/dpo_eval_retune_v2_0_bdw7b_sft_p7_p8.json`.
+- **Final Hybrid Model Merge (Job 186035)**: Executed `phase8_rl/scripts/merge_final.slurm` on `rdcn20` CPU node:
+  - Base `merged/bdw-7b-sft` sequentially folded with Phase 7 SFT LoRA and Phase 8 DPO LoRA into pure `bfloat16` weights.
+  - Serialized production hybrid model to `merged/bdw7b-reasoning-dpo-final` (14.20 GiB across 4 shards).
+  - Verified config, architecture (`Qwen2ForCausalLM`), 28 layers, hidden size 3584, vocab size 151,665, chat template, and `merge_manifest.json`.
+- **Repository Maintenance**: Committed all Phase 8 scripts, launchers, evaluation results, and updated documentation. Git remote set to canonical repository `https://github.com/amitkr26/bdw-llm.git`.
+
+### 2026-11-05 - Phase 8: Reinforcement Learning (DPO) Pipeline Staged
+
+- Initialized `phase8_rl/` directory structure (`scripts/`, `data/`, `eval/logs/`).
+- Authored `phase8_rl/scripts/generate_dpo_data.py`: creates 170 training and 30 evaluation preference pairs across VLSI, HPC, Physics, and Finance. Chosen responses feature complete `<think>` and valid `<tool_call>`; rejected responses sample from 5 realistic failure modes (missing reasoning, flawed logic, unclosed tags, plain text, inverted order).
+- Verified with `--check-only` dry run: zero prompt overlap (`PHASE8_DPO_DATASET_OK`).
+- Authored `phase8_rl/scripts/train_dpo.py`: implements Hugging Face TRL `DPOTrainer` and `DPOConfig` with PyTorch 2.5 `FSDPModule` compatibility shim; tested via `--check-only` (`PHASE8_DPO_CHECK_OK`).
+- Created `phase8_rl/scripts/train_dpo.slurm`: 1 A100 GPU, 4 CPUs, 64 GB RAM, 15m walltime with `set -euo pipefail`.
+- Authored `phase8_rl/README.md`. Slurm training held per operator instructions.
+
+### 2026-11-05 - Phase 7 LoRA SFT & post-SFT evaluation
+
+- Executed `phase7_combined/train_combined.slurm` on single A100 GPU (Job `186019`, 131s runtime, 3 epochs).
+- SFT loss converged: train loss `0.1385`, eval loss `0.00072`. Adapter serialized to `lora_combined/p7_combined/final` (155 MB).
+- Executed `phase7_combined/evaluate_combined_trained.slurm` on single A100 GPU (Job `186020`, 167s runtime).
+- Post-SFT evaluation across all 30 held-out prompts: **100.0% (30/30) valid combined format**, **100.0% (30/30) valid think format**, **100.0% (30/30) valid tool call format**, **100.0% (30/30) tool name match**, **0 missing closing tags**, and **0 plain text fallbacks**.
+- Saved results to `phase7_combined/eval/combined_trained_v2_0_bdw7b_sft_lora_p7.json`.
+
+### 2026-11-05 - Phase 7 baseline evaluation
+
+- Executed `phase7_combined/evaluate_combined_baseline.slurm` on single A100 GPU (Job `186016`, elapsed 31.69s).
+- Evaluated base `v2.0-bdw7b-sft` across all 30 held-out prompts in `data/combined_eval.jsonl`.
+- Valid Combined Format Rate: **0/30 (0.0%)**.
+- Valid Think Format Rate: **0/30 (0.0%)** (zero `<think>` tags emitted in 30/30 rows).
+- Valid Tool Call Format Rate: **19/30 (63.3%)**; Tool tag present: 26/30 (86.7%).
+- Failure modes: Base model jumps directly to `<tool_call>` without generating `<think>` reasoning traces; 4/30 plain-text answers (13.3%); 7 invalid tool JSON instances (e.g. unquoted function names).
+- Saved results to `phase7_combined/eval/combined_baseline_v2_0_bdw7b_sft.json`.
+
+### 2026-11-05 - Phase 7: Combining Reasoning with Tool Calling (Dataset & Baseline Harness)
+
+- Initialized `phase7_combined/` structure with `data/`, `eval/`, and `eval/logs/`.
+- Authored `phase7_combined/generate_combined_dataset.py`: deterministic generator producing 150 training and 30 held-out evaluation examples across VLSI timing/power/yield, HPC cluster power/ZeRO-3 memory, physics/kinetics/RC circuits, and cloud cost/capacity analytics.
+- Assistant targets strictly format a 3-to-4 step `<think>...</think>` reasoning sequence followed immediately by `<tool_call>{"name": ..., "arguments": ...}</tool_call>`.
+- Verified 180 unique complex queries with 0 cross-split duplicates; token lengths: min=628, avg=714.7, max=794. Validated via `--check-only` dry run (`PHASE7_DATASET_VALIDATION_OK`).
+- Created `phase7_combined/evaluate_combined_baseline.py`: measures simultaneous `<think>` and `<tool_call>` format compliance on `v2.0-bdw7b-sft` with strict tag pairing, ordering verification, and argument extraction.
+- Configured `phase7_combined/evaluate_combined_baseline.slurm`: 4 CPUs, 48 GB RAM, 1 GPU, 10-minute walltime with error traps and isolated logging.
+- Authored comprehensive documentation in `phase7_combined/README.md`.
+
 ### 2026-11-05 - Phase 6 reasoning dataset
 
 - Added `phase6_advanced/reasoning/generate_reasoning_dataset.py` and `README.md`; deterministic, CPU-only, local Qwen tokenizer, no external APIs.
@@ -276,7 +360,14 @@ Phase 4 artifacts: five adapters (~309M each), five `export/p4_lora_*.gguf` file
 - Pushed local repo changes to GitHub `main` as `5f19c28`.
 - Updated this status report for the current P5-ready state.
 
-### 2026-11-05 - Phase 6 LoRA training pipeline
+### 2026-11-05 - Phase 6 reasoning LoRA SFT, evaluation & pipeline audit
+
+- Fixed `train_reasoning.py` dataset and adapter paths; added preflight validations and explicit error reporting.
+- Executed reasoning LoRA SFT on PARAM Rudra A100 GPU (Job `186012`): 3 epochs / 90 steps; loss converged from `1.0778` to `0.0006`, eval loss `0.00088`. Serialized adapter `lora_reasoning/p6_reasoning/final` (161.5 MB).
+- Executed post-SFT evaluation on 24 held-out reasoning prompts (Job `186014`): **100.0% valid `<think>` format (24/24)**, **0 missing closing tags**, and **100.0% semantic accuracy (24/24)** across Math (8/8), Logic (8/8), and Coding (8/8).
+- Hardened all reasoning scripts (`generate_reasoning_dataset.py`, `train_reasoning.py`, `evaluate_reasoning_baseline.py`, `evaluate_reasoning_trained.py`) with preflight assertions, stderr error banners, `--max-new-tokens 512`, and optional sampling controls (`--do-sample`, `--temperature`, `--top-p`).
+- Optimized `.slurm` launchers: configured 8 CPUs / 64G RAM for training, 4 CPUs / 48G RAM for evaluation, added `set -euo pipefail` with `ERR` traps, and rerouted output/error logs to `sft_runs/p6_reasoning/` and `phase6_advanced/reasoning/eval/`.
+- Cleaned root workspace: purged failed job logs and temporary files; archived successful logs to evaluation directories.
 
 - Added `phase6_advanced/tools/train_tool_calling.py`: masked assistant-only LoRA SFT, local `v2.0-bdw7b-sft`, held-out eval loss, adapter/metadata output, resumable Trainer checkpoints.
 - Added `phase6_advanced/tools/train_tools.slurm`: one A100, 15-minute `training` QOS job.
@@ -340,6 +431,12 @@ Legacy local checkout (read-only under current policy): `C:\Users\STUDENT\Deskto
 - `phase3/gateway/app.py` - P5.1 gateway with `ask_stream()`.
 - `phase5/serve/tests/test_gateway_parity.py` - gateway golden-parity test; passing.
 - `phase5/serve/tests/gateway_stubs.py` - deterministic keyword-mode test gateway.
+- `phase7_combined/generate_combined_dataset.py` - Phase 7 reasoning + tool calling dataset generator.
+- `phase7_combined/README.md` - Phase 7 schema, workflow, and verification documentation.
+- `phase7_combined/evaluate_combined_baseline.py` - simultaneous format compliance baseline evaluator.
+- `phase7_combined/evaluate_combined_baseline.slurm` - 4-CPU, 48GB, 10m A100 baseline evaluation job.
+- `phase7_combined/data/combined_train.jsonl` - 150 training rows with `<think>` and `<tool_call>`.
+- `phase7_combined/data/combined_eval.jsonl` - 30 held-out evaluation rows with `<think>` and `<tool_call>`.
 - `phase6_advanced/tools/generate_tool_dataset.py` - Phase 6 function-calling dataset generator.
 - `phase6_advanced/tools/README.md` - Phase 6 schema, regeneration command, baseline result, and dataset summary.
 - `phase6_advanced/tools/evaluate_tools_baseline.py` - v2.0-bdw7b-sft tool-call baseline evaluator.

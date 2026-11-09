@@ -1,0 +1,1124 @@
+{
+  "suite": "phase7-combined-trained-v1",
+  "model": "/home/tutor/3ioip3lt/bdw-llm/merged/bdw-7b-sft",
+  "adapter": "/home/tutor/3ioip3lt/bdw-llm/lora_combined/p7_combined/final",
+  "eval_file": "/home/tutor/3ioip3lt/bdw-llm/phase7_combined/data/combined_eval.jsonl",
+  "eval_sha256": "0e71eef8a83881bdc0998248f82c65b9dd3d0c4e8a4f21490f46af9bf3453265",
+  "n": 30,
+  "elapsed_seconds": 167.74,
+  "metrics": {
+    "valid_combined_format": {
+      "hit": 30,
+      "total": 30,
+      "percent": 100.0
+    },
+    "valid_think_format": {
+      "hit": 30,
+      "total": 30,
+      "percent": 100.0
+    },
+    "valid_tool_format": {
+      "hit": 30,
+      "total": 30,
+      "percent": 100.0
+    },
+    "correct_tag_order": {
+      "hit": 30,
+      "total": 30,
+      "percent": 100.0
+    },
+    "think_tag_present": {
+      "hit": 30,
+      "total": 30,
+      "percent": 100.0
+    },
+    "tool_tag_present": {
+      "hit": 30,
+      "total": 30,
+      "percent": 100.0
+    },
+    "missing_closing_think": {
+      "hit": 0,
+      "total": 30,
+      "percent": 0.0
+    },
+    "missing_closing_tool": {
+      "hit": 0,
+      "total": 30,
+      "percent": 0.0
+    },
+    "plain_text": {
+      "hit": 0,
+      "total": 30,
+      "percent": 0.0
+    },
+    "tool_name_match": {
+      "hit": 30,
+      "total": 30,
+      "percent": 100.0
+    },
+    "tool_args_match": {
+      "hit": 30,
+      "total": 30,
+      "percent": 100.0
+    }
+  },
+  "by_category": {
+    "finance_analytics": {
+      "n": 9,
+      "valid_combined_format": {
+        "hit": 9,
+        "total": 9,
+        "percent": 100.0
+      },
+      "valid_think_format": {
+        "hit": 9,
+        "total": 9,
+        "percent": 100.0
+      },
+      "valid_tool_format": {
+        "hit": 9,
+        "total": 9,
+        "percent": 100.0
+      }
+    },
+    "hpc": {
+      "n": 10,
+      "valid_combined_format": {
+        "hit": 10,
+        "total": 10,
+        "percent": 100.0
+      },
+      "valid_think_format": {
+        "hit": 10,
+        "total": 10,
+        "percent": 100.0
+      },
+      "valid_tool_format": {
+        "hit": 10,
+        "total": 10,
+        "percent": 100.0
+      }
+    },
+    "physics_math": {
+      "n": 7,
+      "valid_combined_format": {
+        "hit": 7,
+        "total": 7,
+        "percent": 100.0
+      },
+      "valid_think_format": {
+        "hit": 7,
+        "total": 7,
+        "percent": 100.0
+      },
+      "valid_tool_format": {
+        "hit": 7,
+        "total": 7,
+        "percent": 100.0
+      }
+    },
+    "vlsi": {
+      "n": 4,
+      "valid_combined_format": {
+        "hit": 4,
+        "total": 4,
+        "percent": 100.0
+      },
+      "valid_think_format": {
+        "hit": 4,
+        "total": 4,
+        "percent": 100.0
+      },
+      "valid_tool_format": {
+        "hit": 4,
+        "total": 4,
+        "percent": 100.0
+      }
+    }
+  },
+  "results": [
+    {
+      "id": "comb_eval_0001",
+      "category": "hpc",
+      "question": "A cluster network adapter specification indicates an InfiniBand interconnect bandwidth of 30.38 terabytes. Convert this rate to gigabytes for cluster storage throughput benchmarking.",
+      "expected_tool": "unit_converter",
+      "expected_arguments": {
+        "value": 30.38,
+        "from_unit": "tb",
+        "to_unit": "gb"
+      },
+      "raw_output": "<think>\n1. Identify input value: 30.38 terabytes (tb).\n2. Identify target metric: gigabytes (gb).\n3. Call unit_converter with the numeric value and matching unit tokens.\n</think>\n<tool_call>\n{\"name\": \"unit_converter\", \"arguments\": {\"value\": 30.38, \"from_unit\": \"tb\", \"to_unit\": \"gb\"}}\n</tool_call>",
+      "generated_tokens": 86,
+      "tool_name_match": true,
+      "tool_args_match": true,
+      "valid_combined_format": true,
+      "valid_think_format": true,
+      "valid_tool_format": true,
+      "correct_order": true,
+      "think_tag_present": true,
+      "tool_tag_present": true,
+      "missing_closing_think": false,
+      "missing_closing_tool": false,
+      "plain_text": false,
+      "extra_text_before_think": false,
+      "reasoning_text": "1. Identify input value: 30.38 terabytes (tb).\n2. Identify target metric: gigabytes (gb).\n3. Call unit_converter with the numeric value and matching unit tokens.",
+      "parsed_tool_call": {
+        "name": "unit_converter",
+        "arguments": {
+          "value": 30.38,
+          "from_unit": "tb",
+          "to_unit": "gb"
+        }
+      },
+      "tool_parse_error": null
+    },
+    {
+      "id": "comb_eval_0002",
+      "category": "physics_math",
+      "question": "An experimental telemetry test logs a temperature or distance measurement of 105.1 kilograms. Convert this physical quantity into pounds for cross-laboratory validation.",
+      "expected_tool": "unit_converter",
+      "expected_arguments": {
+        "value": 105.1,
+        "from_unit": "kg",
+        "to_unit": "lb"
+      },
+      "raw_output": "<think>\n1. Input specification: 105.1 kilograms (kg).\n2. Target specification: pounds (lb).\n3. Call the unit_converter tool with the magnitude and unit strings.\n</think>\n<tool_call>\n{\"name\": \"unit_converter\", \"arguments\": {\"value\": 105.1, \"from_unit\": \"kg\", \"to_unit\": \"lb\"}}\n</tool_call>",
+      "generated_tokens": 82,
+      "tool_name_match": true,
+      "tool_args_match": true,
+      "valid_combined_format": true,
+      "valid_think_format": true,
+      "valid_tool_format": true,
+      "correct_order": true,
+      "think_tag_present": true,
+      "tool_tag_present": true,
+      "missing_closing_think": false,
+      "missing_closing_tool": false,
+      "plain_text": false,
+      "extra_text_before_think": false,
+      "reasoning_text": "1. Input specification: 105.1 kilograms (kg).\n2. Target specification: pounds (lb).\n3. Call the unit_converter tool with the magnitude and unit strings.",
+      "parsed_tool_call": {
+        "name": "unit_converter",
+        "arguments": {
+          "value": 105.1,
+          "from_unit": "kg",
+          "to_unit": "lb"
+        }
+      },
+      "tool_parse_error": null
+    },
+    {
+      "id": "comb_eval_0003",
+      "category": "finance_analytics",
+      "question": "A machine learning pipeline runs 33 dedicated GPU instances costing $6.32/hour each continuously for 7 days. The cloud provider offers a committed-use discount of 10%. What is the total billed cloud compute cost in dollars?",
+      "expected_tool": "calculator",
+      "expected_arguments": {
+        "expression": "(33 * 6.32 * 168) * (1.0 - 10 / 100)"
+      },
+      "raw_output": "<think>\n1. Determine total instance-hours: 33 instances * (7 days * 24 hours/day) = 5544 hours.\n2. Compute gross expense: 5544 hours * $6.32/hr.\n3. Factor in 10% volume discount: gross * (1 - 10/100).\n4. Construct expression: (33 * 6.32 * 168) * (1.0 - 10 / 100) and evaluate with calculator.\n</think>\n<tool_call>\n{\"name\": \"calculator\", \"arguments\": {\"expression\": \"(33 * 6.32 * 168) * (1.0 - 10 / 100)\"}}\n</tool_call>",
+      "generated_tokens": 167,
+      "tool_name_match": true,
+      "tool_args_match": true,
+      "valid_combined_format": true,
+      "valid_think_format": true,
+      "valid_tool_format": true,
+      "correct_order": true,
+      "think_tag_present": true,
+      "tool_tag_present": true,
+      "missing_closing_think": false,
+      "missing_closing_tool": false,
+      "plain_text": false,
+      "extra_text_before_think": false,
+      "reasoning_text": "1. Determine total instance-hours: 33 instances * (7 days * 24 hours/day) = 5544 hours.\n2. Compute gross expense: 5544 hours * $6.32/hr.\n3. Factor in 10% volume discount: gross * (1 - 10/100).\n4. Construct expression: (33 * 6.32 * 168) * (1.0 - 10 / 100) and evaluate with calculator.",
+      "parsed_tool_call": {
+        "name": "calculator",
+        "arguments": {
+          "expression": "(33 * 6.32 * 168) * (1.0 - 10 / 100)"
+        }
+      },
+      "tool_parse_error": null
+    },
+    {
+      "id": "comb_eval_0004",
+      "category": "hpc",
+      "question": "A PARAM Rudra supercomputing cluster partition comprises 116 compute nodes. Each node hosts 4 enterprise GPUs drawing 700 W each, plus 600 W for host dual-socket CPUs and system memory. If the facility Power Usage Effectiveness (PUE) is 1.26, calculate the total facility power draw in kilowatts.",
+      "expected_tool": "calculator",
+      "expected_arguments": {
+        "expression": "(116 * (4 * 700 + 600) * 1.26) / 1000"
+      },
+      "raw_output": "<think>\n1. Calculate IT power per node: (4 GPUs * 700 W) + 600 W host overhead.\n2. Multiply by 116 total compute nodes to obtain aggregate IT power in watts.\n3. Scale by data center PUE of 1.26 and divide by 1000 to convert from watts to kilowatts.\n4. Construct expression: (116 * (4 * 700 + 600) * 1.26) / 1000 and invoke calculator.\n</think>\n<tool_call>\n{\"name\": \"calculator\", \"arguments\": {\"expression\": \"(116 * (4 * 700 + 600) * 1.26) / 1000\"}}\n</tool_call>",
+      "generated_tokens": 171,
+      "tool_name_match": true,
+      "tool_args_match": true,
+      "valid_combined_format": true,
+      "valid_think_format": true,
+      "valid_tool_format": true,
+      "correct_order": true,
+      "think_tag_present": true,
+      "tool_tag_present": true,
+      "missing_closing_think": false,
+      "missing_closing_tool": false,
+      "plain_text": false,
+      "extra_text_before_think": false,
+      "reasoning_text": "1. Calculate IT power per node: (4 GPUs * 700 W) + 600 W host overhead.\n2. Multiply by 116 total compute nodes to obtain aggregate IT power in watts.\n3. Scale by data center PUE of 1.26 and divide by 1000 to convert from watts to kilowatts.\n4. Construct expression: (116 * (4 * 700 + 600) * 1.26) / 1000 and invoke calculator.",
+      "parsed_tool_call": {
+        "name": "calculator",
+        "arguments": {
+          "expression": "(116 * (4 * 700 + 600) * 1.26) / 1000"
+        }
+      },
+      "tool_parse_error": null
+    },
+    {
+      "id": "comb_eval_0005",
+      "category": "physics_math",
+      "question": "An experimental telemetry test logs a temperature or distance measurement of 211.9 degrees Fahrenheit. Convert this physical quantity into degrees Celsius for cross-laboratory validation.",
+      "expected_tool": "unit_converter",
+      "expected_arguments": {
+        "value": 211.9,
+        "from_unit": "f",
+        "to_unit": "c"
+      },
+      "raw_output": "<think>\n1. Input specification: 211.9 degrees Fahrenheit (f).\n2. Target specification: degrees Celsius (c).\n3. Call the unit_converter tool with the magnitude and unit strings.\n</think>\n<tool_call>\n{\"name\": \"unit_converter\", \"arguments\": {\"value\": 211.9, \"from_unit\": \"f\", \"to_unit\": \"c\"}}\n</tool_call>",
+      "generated_tokens": 84,
+      "tool_name_match": true,
+      "tool_args_match": true,
+      "valid_combined_format": true,
+      "valid_think_format": true,
+      "valid_tool_format": true,
+      "correct_order": true,
+      "think_tag_present": true,
+      "tool_tag_present": true,
+      "missing_closing_think": false,
+      "missing_closing_tool": false,
+      "plain_text": false,
+      "extra_text_before_think": false,
+      "reasoning_text": "1. Input specification: 211.9 degrees Fahrenheit (f).\n2. Target specification: degrees Celsius (c).\n3. Call the unit_converter tool with the magnitude and unit strings.",
+      "parsed_tool_call": {
+        "name": "unit_converter",
+        "arguments": {
+          "value": 211.9,
+          "from_unit": "f",
+          "to_unit": "c"
+        }
+      },
+      "tool_parse_error": null
+    },
+    {
+      "id": "comb_eval_0006",
+      "category": "vlsi",
+      "question": "A deep-submicron CMOS processor core operates at Vdd = 1.09 V with clock frequency 2.9 GHz. The total effective switched capacitance is estimated at 74 pF. Compute the dynamic power consumption in watts using P_dyn = C_eff * Vdd^2 * f.",
+      "expected_tool": "calculator",
+      "expected_arguments": {
+        "expression": "(74 * 1e-12) * (1.09**2) * (2.9 * 1e9)"
+      },
+      "raw_output": "<think>\n1. Extract parameters: switched capacitance C_eff = 74 pF (74e-12 F), Vdd = 1.09 V, frequency f = 2.9 GHz (2.9e9 Hz).\n2. Recall dynamic power dissipation in digital CMOS is governed by P_dyn = C_eff * Vdd^2 * f.\n3. Substitute parameters into formula: (74 * 1e-12) * (1.09**2) * (2.9 * 1e9).\n4. Call the calculator tool with the algebraic formulation.\n</think>\n<tool_call>\n{\"name\": \"calculator\", \"arguments\": {\"expression\": \"(74 * 1e-12) * (1.09**2) * (2.9 * 1e9)\"}}\n</tool_call>",
+      "generated_tokens": 182,
+      "tool_name_match": true,
+      "tool_args_match": true,
+      "valid_combined_format": true,
+      "valid_think_format": true,
+      "valid_tool_format": true,
+      "correct_order": true,
+      "think_tag_present": true,
+      "tool_tag_present": true,
+      "missing_closing_think": false,
+      "missing_closing_tool": false,
+      "plain_text": false,
+      "extra_text_before_think": false,
+      "reasoning_text": "1. Extract parameters: switched capacitance C_eff = 74 pF (74e-12 F), Vdd = 1.09 V, frequency f = 2.9 GHz (2.9e9 Hz).\n2. Recall dynamic power dissipation in digital CMOS is governed by P_dyn = C_eff * Vdd^2 * f.\n3. Substitute parameters into formula: (74 * 1e-12) * (1.09**2) * (2.9 * 1e9).\n4. Call the calculator tool with the algebraic formulation.",
+      "parsed_tool_call": {
+        "name": "calculator",
+        "arguments": {
+          "expression": "(74 * 1e-12) * (1.09**2) * (2.9 * 1e9)"
+        }
+      },
+      "tool_parse_error": null
+    },
+    {
+      "id": "comb_eval_0007",
+      "category": "hpc",
+      "question": "A PARAM Rudra supercomputing cluster partition comprises 80 compute nodes. Each node hosts 8 enterprise GPUs drawing 700 W each, plus 600 W for host dual-socket CPUs and system memory. If the facility Power Usage Effectiveness (PUE) is 1.27, calculate the total facility power draw in kilowatts.",
+      "expected_tool": "calculator",
+      "expected_arguments": {
+        "expression": "(80 * (8 * 700 + 600) * 1.27) / 1000"
+      },
+      "raw_output": "<think>\n1. Calculate IT power per node: (8 GPUs * 700 W) + 600 W host overhead.\n2. Multiply by 80 total compute nodes to obtain aggregate IT power in watts.\n3. Scale by data center PUE of 1.27 and divide by 1000 to convert from watts to kilowatts.\n4. Construct expression: (80 * (8 * 700 + 600) * 1.27) / 1000 and invoke calculator.\n</think>\n<tool_call>\n{\"name\": \"calculator\", \"arguments\": {\"expression\": \"(80 * (8 * 700 + 600) * 1.27) / 1000\"}}\n</tool_call>",
+      "generated_tokens": 168,
+      "tool_name_match": true,
+      "tool_args_match": true,
+      "valid_combined_format": true,
+      "valid_think_format": true,
+      "valid_tool_format": true,
+      "correct_order": true,
+      "think_tag_present": true,
+      "tool_tag_present": true,
+      "missing_closing_think": false,
+      "missing_closing_tool": false,
+      "plain_text": false,
+      "extra_text_before_think": false,
+      "reasoning_text": "1. Calculate IT power per node: (8 GPUs * 700 W) + 600 W host overhead.\n2. Multiply by 80 total compute nodes to obtain aggregate IT power in watts.\n3. Scale by data center PUE of 1.27 and divide by 1000 to convert from watts to kilowatts.\n4. Construct expression: (80 * (8 * 700 + 600) * 1.27) / 1000 and invoke calculator.",
+      "parsed_tool_call": {
+        "name": "calculator",
+        "arguments": {
+          "expression": "(80 * (8 * 700 + 600) * 1.27) / 1000"
+        }
+      },
+      "tool_parse_error": null
+    },
+    {
+      "id": "comb_eval_0008",
+      "category": "finance_analytics",
+      "question": "A data center workload execution profile records a job runtime or battery consumption of 28.4 hours. Convert this measurement into seconds for the weekly executive capacity report.",
+      "expected_tool": "unit_converter",
+      "expected_arguments": {
+        "value": 28.4,
+        "from_unit": "hr",
+        "to_unit": "s"
+      },
+      "raw_output": "<think>\n1. Analyze source measurement: 28.4 hours (hr).\n2. Target metric: seconds (s).\n3. Invoke unit_converter to perform the exact unit scaling.\n</think>\n<tool_call>\n{\"name\": \"unit_converter\", \"arguments\": {\"value\": 28.4, \"from_unit\": \"hr\", \"to_unit\": \"s\"}}\n</tool_call>",
+      "generated_tokens": 80,
+      "tool_name_match": true,
+      "tool_args_match": true,
+      "valid_combined_format": true,
+      "valid_think_format": true,
+      "valid_tool_format": true,
+      "correct_order": true,
+      "think_tag_present": true,
+      "tool_tag_present": true,
+      "missing_closing_think": false,
+      "missing_closing_tool": false,
+      "plain_text": false,
+      "extra_text_before_think": false,
+      "reasoning_text": "1. Analyze source measurement: 28.4 hours (hr).\n2. Target metric: seconds (s).\n3. Invoke unit_converter to perform the exact unit scaling.",
+      "parsed_tool_call": {
+        "name": "unit_converter",
+        "arguments": {
+          "value": 28.4,
+          "from_unit": "hr",
+          "to_unit": "s"
+        }
+      },
+      "tool_parse_error": null
+    },
+    {
+      "id": "comb_eval_0009",
+      "category": "physics_math",
+      "question": "An autonomous electric test vehicle has an unladen mass of 1303.2 kg and cruises at a constant velocity of 50.4 m/s. Calculate the total kinetic energy of the vehicle in joules (J) using E_k = 0.5 * m * v^2.",
+      "expected_tool": "calculator",
+      "expected_arguments": {
+        "expression": "0.5 * 1303.2 * (50.4**2)"
+      },
+      "raw_output": "<think>\n1. Record physical quantities: mass m = 1303.2 kg, velocity v = 50.4 m/s.\n2. Governing physical law for classical kinetic energy: E_k = 1/2 * m * v^2.\n3. Substitute quantities into equation: 0.5 * 1303.2 * (50.4^2).\n4. Call the calculator tool to compute the kinetic energy in joules.\n</think>\n<tool_call>\n{\"name\": \"calculator\", \"arguments\": {\"expression\": \"0.5 * 1303.2 * (50.4**2)\"}}\n</tool_call>",
+      "generated_tokens": 141,
+      "tool_name_match": true,
+      "tool_args_match": true,
+      "valid_combined_format": true,
+      "valid_think_format": true,
+      "valid_tool_format": true,
+      "correct_order": true,
+      "think_tag_present": true,
+      "tool_tag_present": true,
+      "missing_closing_think": false,
+      "missing_closing_tool": false,
+      "plain_text": false,
+      "extra_text_before_think": false,
+      "reasoning_text": "1. Record physical quantities: mass m = 1303.2 kg, velocity v = 50.4 m/s.\n2. Governing physical law for classical kinetic energy: E_k = 1/2 * m * v^2.\n3. Substitute quantities into equation: 0.5 * 1303.2 * (50.4^2).\n4. Call the calculator tool to compute the kinetic energy in joules.",
+      "parsed_tool_call": {
+        "name": "calculator",
+        "arguments": {
+          "expression": "0.5 * 1303.2 * (50.4**2)"
+        }
+      },
+      "tool_parse_error": null
+    },
+    {
+      "id": "comb_eval_0010",
+      "category": "hpc",
+      "question": "A PARAM Rudra supercomputing cluster partition comprises 39 compute nodes. Each node hosts 8 enterprise GPUs drawing 700 W each, plus 600 W for host dual-socket CPUs and system memory. If the facility Power Usage Effectiveness (PUE) is 1.24, calculate the total facility power draw in kilowatts.",
+      "expected_tool": "calculator",
+      "expected_arguments": {
+        "expression": "(39 * (8 * 700 + 600) * 1.24) / 1000"
+      },
+      "raw_output": "<think>\n1. Calculate IT power per node: (8 GPUs * 700 W) + 600 W host overhead.\n2. Multiply by 39 total compute nodes to obtain aggregate IT power in watts.\n3. Scale by data center PUE of 1.24 and divide by 1000 to convert from watts to kilowatts.\n4. Construct expression: (39 * (8 * 700 + 600) * 1.24) / 1000 and invoke calculator.\n</think>\n<tool_call>\n{\"name\": \"calculator\", \"arguments\": {\"expression\": \"(39 * (8 * 700 + 600) * 1.24) / 1000\"}}\n</tool_call>",
+      "generated_tokens": 168,
+      "tool_name_match": true,
+      "tool_args_match": true,
+      "valid_combined_format": true,
+      "valid_think_format": true,
+      "valid_tool_format": true,
+      "correct_order": true,
+      "think_tag_present": true,
+      "tool_tag_present": true,
+      "missing_closing_think": false,
+      "missing_closing_tool": false,
+      "plain_text": false,
+      "extra_text_before_think": false,
+      "reasoning_text": "1. Calculate IT power per node: (8 GPUs * 700 W) + 600 W host overhead.\n2. Multiply by 39 total compute nodes to obtain aggregate IT power in watts.\n3. Scale by data center PUE of 1.24 and divide by 1000 to convert from watts to kilowatts.\n4. Construct expression: (39 * (8 * 700 + 600) * 1.24) / 1000 and invoke calculator.",
+      "parsed_tool_call": {
+        "name": "calculator",
+        "arguments": {
+          "expression": "(39 * (8 * 700 + 600) * 1.24) / 1000"
+        }
+      },
+      "tool_parse_error": null
+    },
+    {
+      "id": "comb_eval_0011",
+      "category": "hpc",
+      "question": "A cluster network adapter specification indicates an InfiniBand interconnect bandwidth of 100.0 gigabytes per second. Convert this rate to gigabits per second for cluster storage throughput benchmarking.",
+      "expected_tool": "unit_converter",
+      "expected_arguments": {
+        "value": 100.0,
+        "from_unit": "gb/s",
+        "to_unit": "gbps"
+      },
+      "raw_output": "<think>\n1. Identify input value: 100.0 gigabytes per second (gb/s).\n2. Identify target metric: gigabits per second (gbps).\n3. Call unit_converter with the numeric value and matching unit tokens.\n</think>\n<tool_call>\n{\"name\": \"unit_converter\", \"arguments\": {\"value\": 100.0, \"from_unit\": \"gb/s\", \"to_unit\": \"gbps\"}}\n</tool_call>",
+      "generated_tokens": 95,
+      "tool_name_match": true,
+      "tool_args_match": true,
+      "valid_combined_format": true,
+      "valid_think_format": true,
+      "valid_tool_format": true,
+      "correct_order": true,
+      "think_tag_present": true,
+      "tool_tag_present": true,
+      "missing_closing_think": false,
+      "missing_closing_tool": false,
+      "plain_text": false,
+      "extra_text_before_think": false,
+      "reasoning_text": "1. Identify input value: 100.0 gigabytes per second (gb/s).\n2. Identify target metric: gigabits per second (gbps).\n3. Call unit_converter with the numeric value and matching unit tokens.",
+      "parsed_tool_call": {
+        "name": "unit_converter",
+        "arguments": {
+          "value": 100.0,
+          "from_unit": "gb/s",
+          "to_unit": "gbps"
+        }
+      },
+      "tool_parse_error": null
+    },
+    {
+      "id": "comb_eval_0012",
+      "category": "physics_math",
+      "question": "An autonomous electric test vehicle has an unladen mass of 777.1 kg and cruises at a constant velocity of 90.6 m/s. Calculate the total kinetic energy of the vehicle in joules (J) using E_k = 0.5 * m * v^2.",
+      "expected_tool": "calculator",
+      "expected_arguments": {
+        "expression": "0.5 * 777.1 * (90.6**2)"
+      },
+      "raw_output": "<think>\n1. Record physical quantities: mass m = 777.1 kg, velocity v = 90.6 m/s.\n2. Governing physical law for classical kinetic energy: E_k = 1/2 * m * v^2.\n3. Substitute quantities into equation: 0.5 * 777.1 * (90.6^2).\n4. Call the calculator tool to compute the kinetic energy in joules.\n</think>\n<tool_call>\n{\"name\": \"calculator\", \"arguments\": {\"expression\": \"0.5 * 777.1 * (90.6**2)\"}}\n</tool_call>",
+      "generated_tokens": 138,
+      "tool_name_match": true,
+      "tool_args_match": true,
+      "valid_combined_format": true,
+      "valid_think_format": true,
+      "valid_tool_format": true,
+      "correct_order": true,
+      "think_tag_present": true,
+      "tool_tag_present": true,
+      "missing_closing_think": false,
+      "missing_closing_tool": false,
+      "plain_text": false,
+      "extra_text_before_think": false,
+      "reasoning_text": "1. Record physical quantities: mass m = 777.1 kg, velocity v = 90.6 m/s.\n2. Governing physical law for classical kinetic energy: E_k = 1/2 * m * v^2.\n3. Substitute quantities into equation: 0.5 * 777.1 * (90.6^2).\n4. Call the calculator tool to compute the kinetic energy in joules.",
+      "parsed_tool_call": {
+        "name": "calculator",
+        "arguments": {
+          "expression": "0.5 * 777.1 * (90.6**2)"
+        }
+      },
+      "tool_parse_error": null
+    },
+    {
+      "id": "comb_eval_0013",
+      "category": "finance_analytics",
+      "question": "A data center workload execution profile records a job runtime or battery consumption of 1200 seconds. Convert this measurement into minutes for the weekly executive capacity report.",
+      "expected_tool": "unit_converter",
+      "expected_arguments": {
+        "value": 1200,
+        "from_unit": "s",
+        "to_unit": "min"
+      },
+      "raw_output": "<think>\n1. Analyze source measurement: 1200 seconds (s).\n2. Target metric: minutes (min).\n3. Invoke unit_converter to perform the exact unit scaling.\n</think>\n<tool_call>\n{\"name\": \"unit_converter\", \"arguments\": {\"value\": 1200, \"from_unit\": \"s\", \"to_unit\": \"min\"}}\n</tool_call>",
+      "generated_tokens": 80,
+      "tool_name_match": true,
+      "tool_args_match": true,
+      "valid_combined_format": true,
+      "valid_think_format": true,
+      "valid_tool_format": true,
+      "correct_order": true,
+      "think_tag_present": true,
+      "tool_tag_present": true,
+      "missing_closing_think": false,
+      "missing_closing_tool": false,
+      "plain_text": false,
+      "extra_text_before_think": false,
+      "reasoning_text": "1. Analyze source measurement: 1200 seconds (s).\n2. Target metric: minutes (min).\n3. Invoke unit_converter to perform the exact unit scaling.",
+      "parsed_tool_call": {
+        "name": "unit_converter",
+        "arguments": {
+          "value": 1200,
+          "from_unit": "s",
+          "to_unit": "min"
+        }
+      },
+      "tool_parse_error": null
+    },
+    {
+      "id": "comb_eval_0014",
+      "category": "finance_analytics",
+      "question": "A data center workload execution profile records a job runtime or battery consumption of 39.7 hours. Convert this measurement into seconds for the weekly executive capacity report.",
+      "expected_tool": "unit_converter",
+      "expected_arguments": {
+        "value": 39.7,
+        "from_unit": "hr",
+        "to_unit": "s"
+      },
+      "raw_output": "<think>\n1. Analyze source measurement: 39.7 hours (hr).\n2. Target metric: seconds (s).\n3. Invoke unit_converter to perform the exact unit scaling.\n</think>\n<tool_call>\n{\"name\": \"unit_converter\", \"arguments\": {\"value\": 39.7, \"from_unit\": \"hr\", \"to_unit\": \"s\"}}\n</tool_call>",
+      "generated_tokens": 80,
+      "tool_name_match": true,
+      "tool_args_match": true,
+      "valid_combined_format": true,
+      "valid_think_format": true,
+      "valid_tool_format": true,
+      "correct_order": true,
+      "think_tag_present": true,
+      "tool_tag_present": true,
+      "missing_closing_think": false,
+      "missing_closing_tool": false,
+      "plain_text": false,
+      "extra_text_before_think": false,
+      "reasoning_text": "1. Analyze source measurement: 39.7 hours (hr).\n2. Target metric: seconds (s).\n3. Invoke unit_converter to perform the exact unit scaling.",
+      "parsed_tool_call": {
+        "name": "unit_converter",
+        "arguments": {
+          "value": 39.7,
+          "from_unit": "hr",
+          "to_unit": "s"
+        }
+      },
+      "tool_parse_error": null
+    },
+    {
+      "id": "comb_eval_0015",
+      "category": "physics_math",
+      "question": "An analog signal conditioning filter circuit features a series resistor R = 25 kOhms and shunt capacitor C = 164 nF. What is the -3dB cutoff frequency f_c (Hz) of this first-order low-pass filter? (Use formula f_c = 1 / (2 * pi * R * C)).",
+      "expected_tool": "calculator",
+      "expected_arguments": {
+        "expression": "1.0 / (2 * 3.141593 * (25 * 1e3) * (164 * 1e-9))"
+      },
+      "raw_output": "<think>\n1. Convert component values to base SI units: R = 25 kOhm = 25e3 Ohm, C = 164 nF = 164e-9 F.\n2. Recall cutoff frequency expression for first-order RC filter: f_c = 1 / (2 * pi * R * C).\n3. Formulate expression using pi approx 3.141593: 1.0 / (2 * 3.141593 * (25 * 1e3) * (164 * 1e-9)).\n4. Invoke the calculator tool to evaluate the cutoff frequency in Hertz.\n</think>\n<tool_call>\n{\"name\": \"calculator\", \"arguments\": {\"expression\": \"1.0 / (2 * 3.141593 * (25 * 1e3) * (164 * 1e-9))\"}}\n</tool_call>",
+      "generated_tokens": 206,
+      "tool_name_match": true,
+      "tool_args_match": true,
+      "valid_combined_format": true,
+      "valid_think_format": true,
+      "valid_tool_format": true,
+      "correct_order": true,
+      "think_tag_present": true,
+      "tool_tag_present": true,
+      "missing_closing_think": false,
+      "missing_closing_tool": false,
+      "plain_text": false,
+      "extra_text_before_think": false,
+      "reasoning_text": "1. Convert component values to base SI units: R = 25 kOhm = 25e3 Ohm, C = 164 nF = 164e-9 F.\n2. Recall cutoff frequency expression for first-order RC filter: f_c = 1 / (2 * pi * R * C).\n3. Formulate expression using pi approx 3.141593: 1.0 / (2 * 3.141593 * (25 * 1e3) * (164 * 1e-9)).\n4. Invoke the calculator tool to evaluate the cutoff frequency in Hertz.",
+      "parsed_tool_call": {
+        "name": "calculator",
+        "arguments": {
+          "expression": "1.0 / (2 * 3.141593 * (25 * 1e3) * (164 * 1e-9))"
+        }
+      },
+      "tool_parse_error": null
+    },
+    {
+      "id": "comb_eval_0016",
+      "category": "finance_analytics",
+      "question": "An edge API service experiences peak incoming traffic of 35169 queries per second (QPS). A single backend container replica can reliably service 1680 QPS. To withstand sudden surges, the architecture requires an N+1 redundancy factor of 1.33. Calculate the minimum number of container replicas required: (35169 * 1.33) / 1680.",
+      "expected_tool": "calculator",
+      "expected_arguments": {
+        "expression": "(35169 * 1.33) / 1680"
+      },
+      "raw_output": "<think>\n1. Identify peak traffic load: 35169 QPS.\n2. Apply redundancy scaling multiplier: 1.33 => target throughput is 35169 * 1.33 QPS.\n3. Divide by per-replica processing capability of 1680 QPS.\n4. Invoke calculator with expression: (35169 * 1.33) / 1680.\n</think>\n<tool_call>\n{\"name\": \"calculator\", \"arguments\": {\"expression\": \"(35169 * 1.33) / 1680\"}}\n</tool_call>",
+      "generated_tokens": 135,
+      "tool_name_match": true,
+      "tool_args_match": true,
+      "valid_combined_format": true,
+      "valid_think_format": true,
+      "valid_tool_format": true,
+      "correct_order": true,
+      "think_tag_present": true,
+      "tool_tag_present": true,
+      "missing_closing_think": false,
+      "missing_closing_tool": false,
+      "plain_text": false,
+      "extra_text_before_think": false,
+      "reasoning_text": "1. Identify peak traffic load: 35169 QPS.\n2. Apply redundancy scaling multiplier: 1.33 => target throughput is 35169 * 1.33 QPS.\n3. Divide by per-replica processing capability of 1680 QPS.\n4. Invoke calculator with expression: (35169 * 1.33) / 1680.",
+      "parsed_tool_call": {
+        "name": "calculator",
+        "arguments": {
+          "expression": "(35169 * 1.33) / 1680"
+        }
+      },
+      "tool_parse_error": null
+    },
+    {
+      "id": "comb_eval_0017",
+      "category": "vlsi",
+      "question": "In a sequential VLSI datapath, a register has a clock-to-Q delay of 132 ps and setup time of 130 ps. The critical combinational logic delay between registers is 573 ps with an estimated clock skew of 28 ps. What is the minimum operating clock period T_min (ps) required to satisfy setup timing?",
+      "expected_tool": "calculator",
+      "expected_arguments": {
+        "expression": "132 + 573 + 130 + 28"
+      },
+      "raw_output": "<think>\n1. Identify timing parameters: T_cq = 132 ps, T_comb = 573 ps, T_setup = 130 ps, T_skew = 28 ps.\n2. The governing formula for minimum clock period to prevent setup violation is T_min >= T_cq + T_comb + T_setup + T_skew.\n3. Formulate arithmetic expression: 132 + 573 + 130 + 28.\n4. Invoke the calculator tool to evaluate the exact clock period.\n</think>\n<tool_call>\n{\"name\": \"calculator\", \"arguments\": {\"expression\": \"132 + 573 + 130 + 28\"}}\n</tool_call>",
+      "generated_tokens": 154,
+      "tool_name_match": true,
+      "tool_args_match": true,
+      "valid_combined_format": true,
+      "valid_think_format": true,
+      "valid_tool_format": true,
+      "correct_order": true,
+      "think_tag_present": true,
+      "tool_tag_present": true,
+      "missing_closing_think": false,
+      "missing_closing_tool": false,
+      "plain_text": false,
+      "extra_text_before_think": false,
+      "reasoning_text": "1. Identify timing parameters: T_cq = 132 ps, T_comb = 573 ps, T_setup = 130 ps, T_skew = 28 ps.\n2. The governing formula for minimum clock period to prevent setup violation is T_min >= T_cq + T_comb + T_setup + T_skew.\n3. Formulate arithmetic expression: 132 + 573 + 130 + 28.\n4. Invoke the calculator tool to evaluate the exact clock period.",
+      "parsed_tool_call": {
+        "name": "calculator",
+        "arguments": {
+          "expression": "132 + 573 + 130 + 28"
+        }
+      },
+      "tool_parse_error": null
+    },
+    {
+      "id": "comb_eval_0018",
+      "category": "hpc",
+      "question": "A PARAM Rudra supercomputing cluster partition comprises 72 compute nodes. Each node hosts 8 enterprise GPUs drawing 300 W each, plus 600 W for host dual-socket CPUs and system memory. If the facility Power Usage Effectiveness (PUE) is 1.34, calculate the total facility power draw in kilowatts.",
+      "expected_tool": "calculator",
+      "expected_arguments": {
+        "expression": "(72 * (8 * 300 + 600) * 1.34) / 1000"
+      },
+      "raw_output": "<think>\n1. Calculate IT power per node: (8 GPUs * 300 W) + 600 W host overhead.\n2. Multiply by 72 total compute nodes to obtain aggregate IT power in watts.\n3. Scale by data center PUE of 1.34 and divide by 1000 to convert from watts to kilowatts.\n4. Construct expression: (72 * (8 * 300 + 600) * 1.34) / 1000 and invoke calculator.\n</think>\n<tool_call>\n{\"name\": \"calculator\", \"arguments\": {\"expression\": \"(72 * (8 * 300 + 600) * 1.34) / 1000\"}}\n</tool_call>",
+      "generated_tokens": 168,
+      "tool_name_match": true,
+      "tool_args_match": true,
+      "valid_combined_format": true,
+      "valid_think_format": true,
+      "valid_tool_format": true,
+      "correct_order": true,
+      "think_tag_present": true,
+      "tool_tag_present": true,
+      "missing_closing_think": false,
+      "missing_closing_tool": false,
+      "plain_text": false,
+      "extra_text_before_think": false,
+      "reasoning_text": "1. Calculate IT power per node: (8 GPUs * 300 W) + 600 W host overhead.\n2. Multiply by 72 total compute nodes to obtain aggregate IT power in watts.\n3. Scale by data center PUE of 1.34 and divide by 1000 to convert from watts to kilowatts.\n4. Construct expression: (72 * (8 * 300 + 600) * 1.34) / 1000 and invoke calculator.",
+      "parsed_tool_call": {
+        "name": "calculator",
+        "arguments": {
+          "expression": "(72 * (8 * 300 + 600) * 1.34) / 1000"
+        }
+      },
+      "tool_parse_error": null
+    },
+    {
+      "id": "comb_eval_0019",
+      "category": "physics_math",
+      "question": "A cylindrical coolant reservoir has a circular radius of 14.9 meters and a vertical height of 29.8 meters. Compute the total enclosed volume of the cylinder in cubic meters using V = pi * r^2 * h.",
+      "expected_tool": "calculator",
+      "expected_arguments": {
+        "expression": "3.141593 * (14.9**2) * 29.8"
+      },
+      "raw_output": "<think>\n1. Extract dimensions: base radius r = 14.9 m, cylinder height h = 29.8 m.\n2. Formula for volume of a right circular cylinder: V = pi * r^2 * h.\n3. Set up calculation: 3.141593 * (14.9^2) * 29.8.\n4. Execute calculation using the calculator tool.\n</think>\n<tool_call>\n{\"name\": \"calculator\", \"arguments\": {\"expression\": \"3.141593 * (14.9**2) * 29.8\"}}\n</tool_call>",
+      "generated_tokens": 135,
+      "tool_name_match": true,
+      "tool_args_match": true,
+      "valid_combined_format": true,
+      "valid_think_format": true,
+      "valid_tool_format": true,
+      "correct_order": true,
+      "think_tag_present": true,
+      "tool_tag_present": true,
+      "missing_closing_think": false,
+      "missing_closing_tool": false,
+      "plain_text": false,
+      "extra_text_before_think": false,
+      "reasoning_text": "1. Extract dimensions: base radius r = 14.9 m, cylinder height h = 29.8 m.\n2. Formula for volume of a right circular cylinder: V = pi * r^2 * h.\n3. Set up calculation: 3.141593 * (14.9^2) * 29.8.\n4. Execute calculation using the calculator tool.",
+      "parsed_tool_call": {
+        "name": "calculator",
+        "arguments": {
+          "expression": "3.141593 * (14.9**2) * 29.8"
+        }
+      },
+      "tool_parse_error": null
+    },
+    {
+      "id": "comb_eval_0020",
+      "category": "hpc",
+      "question": "A PARAM Rudra supercomputing cluster partition comprises 86 compute nodes. Each node hosts 4 enterprise GPUs drawing 700 W each, plus 600 W for host dual-socket CPUs and system memory. If the facility Power Usage Effectiveness (PUE) is 1.19, calculate the total facility power draw in kilowatts.",
+      "expected_tool": "calculator",
+      "expected_arguments": {
+        "expression": "(86 * (4 * 700 + 600) * 1.19) / 1000"
+      },
+      "raw_output": "<think>\n1. Calculate IT power per node: (4 GPUs * 700 W) + 600 W host overhead.\n2. Multiply by 86 total compute nodes to obtain aggregate IT power in watts.\n3. Scale by data center PUE of 1.19 and divide by 1000 to convert from watts to kilowatts.\n4. Construct expression: (86 * (4 * 700 + 600) * 1.19) / 1000 and invoke calculator.\n</think>\n<tool_call>\n{\"name\": \"calculator\", \"arguments\": {\"expression\": \"(86 * (4 * 700 + 600) * 1.19) / 1000\"}}\n</tool_call>",
+      "generated_tokens": 168,
+      "tool_name_match": true,
+      "tool_args_match": true,
+      "valid_combined_format": true,
+      "valid_think_format": true,
+      "valid_tool_format": true,
+      "correct_order": true,
+      "think_tag_present": true,
+      "tool_tag_present": true,
+      "missing_closing_think": false,
+      "missing_closing_tool": false,
+      "plain_text": false,
+      "extra_text_before_think": false,
+      "reasoning_text": "1. Calculate IT power per node: (4 GPUs * 700 W) + 600 W host overhead.\n2. Multiply by 86 total compute nodes to obtain aggregate IT power in watts.\n3. Scale by data center PUE of 1.19 and divide by 1000 to convert from watts to kilowatts.\n4. Construct expression: (86 * (4 * 700 + 600) * 1.19) / 1000 and invoke calculator.",
+      "parsed_tool_call": {
+        "name": "calculator",
+        "arguments": {
+          "expression": "(86 * (4 * 700 + 600) * 1.19) / 1000"
+        }
+      },
+      "tool_parse_error": null
+    },
+    {
+      "id": "comb_eval_0021",
+      "category": "finance_analytics",
+      "question": "A data center workload execution profile records a job runtime or battery consumption of 135 minutes. Convert this measurement into seconds for the weekly executive capacity report.",
+      "expected_tool": "unit_converter",
+      "expected_arguments": {
+        "value": 135,
+        "from_unit": "min",
+        "to_unit": "s"
+      },
+      "raw_output": "<think>\n1. Analyze source measurement: 135 minutes (min).\n2. Target metric: seconds (s).\n3. Invoke unit_converter to perform the exact unit scaling.\n</think>\n<tool_call>\n{\"name\": \"unit_converter\", \"arguments\": {\"value\": 135, \"from_unit\": \"min\", \"to_unit\": \"s\"}}\n</tool_call>",
+      "generated_tokens": 78,
+      "tool_name_match": true,
+      "tool_args_match": true,
+      "valid_combined_format": true,
+      "valid_think_format": true,
+      "valid_tool_format": true,
+      "correct_order": true,
+      "think_tag_present": true,
+      "tool_tag_present": true,
+      "missing_closing_think": false,
+      "missing_closing_tool": false,
+      "plain_text": false,
+      "extra_text_before_think": false,
+      "reasoning_text": "1. Analyze source measurement: 135 minutes (min).\n2. Target metric: seconds (s).\n3. Invoke unit_converter to perform the exact unit scaling.",
+      "parsed_tool_call": {
+        "name": "unit_converter",
+        "arguments": {
+          "value": 135,
+          "from_unit": "min",
+          "to_unit": "s"
+        }
+      },
+      "tool_parse_error": null
+    },
+    {
+      "id": "comb_eval_0022",
+      "category": "physics_math",
+      "question": "An analog signal conditioning filter circuit features a series resistor R = 47 kOhms and shunt capacitor C = 74 nF. What is the -3dB cutoff frequency f_c (Hz) of this first-order low-pass filter? (Use formula f_c = 1 / (2 * pi * R * C)).",
+      "expected_tool": "calculator",
+      "expected_arguments": {
+        "expression": "1.0 / (2 * 3.141593 * (47 * 1e3) * (74 * 1e-9))"
+      },
+      "raw_output": "<think>\n1. Convert component values to base SI units: R = 47 kOhm = 47e3 Ohm, C = 74 nF = 74e-9 F.\n2. Recall cutoff frequency expression for first-order RC filter: f_c = 1 / (2 * pi * R * C).\n3. Formulate expression using pi approx 3.141593: 1.0 / (2 * 3.141593 * (47 * 1e3) * (74 * 1e-9)).\n4. Invoke the calculator tool to evaluate the cutoff frequency in Hertz.\n</think>\n<tool_call>\n{\"name\": \"calculator\", \"arguments\": {\"expression\": \"1.0 / (2 * 3.141593 * (47 * 1e3) * (74 * 1e-9))\"}}\n</tool_call>",
+      "generated_tokens": 202,
+      "tool_name_match": true,
+      "tool_args_match": true,
+      "valid_combined_format": true,
+      "valid_think_format": true,
+      "valid_tool_format": true,
+      "correct_order": true,
+      "think_tag_present": true,
+      "tool_tag_present": true,
+      "missing_closing_think": false,
+      "missing_closing_tool": false,
+      "plain_text": false,
+      "extra_text_before_think": false,
+      "reasoning_text": "1. Convert component values to base SI units: R = 47 kOhm = 47e3 Ohm, C = 74 nF = 74e-9 F.\n2. Recall cutoff frequency expression for first-order RC filter: f_c = 1 / (2 * pi * R * C).\n3. Formulate expression using pi approx 3.141593: 1.0 / (2 * 3.141593 * (47 * 1e3) * (74 * 1e-9)).\n4. Invoke the calculator tool to evaluate the cutoff frequency in Hertz.",
+      "parsed_tool_call": {
+        "name": "calculator",
+        "arguments": {
+          "expression": "1.0 / (2 * 3.141593 * (47 * 1e3) * (74 * 1e-9))"
+        }
+      },
+      "tool_parse_error": null
+    },
+    {
+      "id": "comb_eval_0023",
+      "category": "vlsi",
+      "question": "A physical design timing report lists an interconnect wire delay of 2.162 micrometers. Convert this value into nanometers for compatibility with standard Liberty timing tables.",
+      "expected_tool": "unit_converter",
+      "expected_arguments": {
+        "value": 2.162,
+        "from_unit": "um",
+        "to_unit": "nm"
+      },
+      "raw_output": "<think>\n1. Analyze request: convert 2.162 micrometers (um) to nanometers (nm).\n2. Recall conversion relationship between um and nm.\n3. Invoke the unit_converter tool with source magnitude and respective unit identifiers.\n</think>\n<tool_call>\n{\"name\": \"unit_converter\", \"arguments\": {\"value\": 2.162, \"from_unit\": \"um\", \"to_unit\": \"nm\"}}\n</tool_call>",
+      "generated_tokens": 94,
+      "tool_name_match": true,
+      "tool_args_match": true,
+      "valid_combined_format": true,
+      "valid_think_format": true,
+      "valid_tool_format": true,
+      "correct_order": true,
+      "think_tag_present": true,
+      "tool_tag_present": true,
+      "missing_closing_think": false,
+      "missing_closing_tool": false,
+      "plain_text": false,
+      "extra_text_before_think": false,
+      "reasoning_text": "1. Analyze request: convert 2.162 micrometers (um) to nanometers (nm).\n2. Recall conversion relationship between um and nm.\n3. Invoke the unit_converter tool with source magnitude and respective unit identifiers.",
+      "parsed_tool_call": {
+        "name": "unit_converter",
+        "arguments": {
+          "value": 2.162,
+          "from_unit": "um",
+          "to_unit": "nm"
+        }
+      },
+      "tool_parse_error": null
+    },
+    {
+      "id": "comb_eval_0024",
+      "category": "hpc",
+      "question": "An LLM with 65.9 billion parameters is trained using DeepSpeed ZeRO-3 across 256 GPUs (32 nodes x 8 GPUs). Assuming 16 bytes per parameter (2B weights + 2B grads + 12B master weights/momentum/variance states) fully sharded, calculate the static memory requirement per GPU in gigabytes (GB).",
+      "expected_tool": "calculator",
+      "expected_arguments": {
+        "expression": "(65.9 * 1e9 * 16) / (256 * (1024**3))"
+      },
+      "raw_output": "<think>\n1. Determine total static state bytes: 65.9 * 10^9 parameters * 16 bytes/param.\n2. In ZeRO-3, model states are evenly partitioned across all 256 GPUs.\n3. Divide aggregate bytes by 256 and convert to GB (divide by 1024^3).\n4. Formulate expression: (65.9 * 1e9 * 16) / (256 * (1024**3)) and evaluate with calculator.\n</think>\n<tool_call>\n{\"name\": \"calculator\", \"arguments\": {\"expression\": \"(65.9 * 1e9 * 16) / (256 * (1024**3))\"}}\n</tool_call>",
+      "generated_tokens": 167,
+      "tool_name_match": true,
+      "tool_args_match": true,
+      "valid_combined_format": true,
+      "valid_think_format": true,
+      "valid_tool_format": true,
+      "correct_order": true,
+      "think_tag_present": true,
+      "tool_tag_present": true,
+      "missing_closing_think": false,
+      "missing_closing_tool": false,
+      "plain_text": false,
+      "extra_text_before_think": false,
+      "reasoning_text": "1. Determine total static state bytes: 65.9 * 10^9 parameters * 16 bytes/param.\n2. In ZeRO-3, model states are evenly partitioned across all 256 GPUs.\n3. Divide aggregate bytes by 256 and convert to GB (divide by 1024^3).\n4. Formulate expression: (65.9 * 1e9 * 16) / (256 * (1024**3)) and evaluate with calculator.",
+      "parsed_tool_call": {
+        "name": "calculator",
+        "arguments": {
+          "expression": "(65.9 * 1e9 * 16) / (256 * (1024**3))"
+        }
+      },
+      "tool_parse_error": null
+    },
+    {
+      "id": "comb_eval_0025",
+      "category": "finance_analytics",
+      "question": "A data center workload execution profile records a job runtime or battery consumption of 3600 seconds. Convert this measurement into minutes for the weekly executive capacity report.",
+      "expected_tool": "unit_converter",
+      "expected_arguments": {
+        "value": 3600,
+        "from_unit": "s",
+        "to_unit": "min"
+      },
+      "raw_output": "<think>\n1. Analyze source measurement: 3600 seconds (s).\n2. Target metric: minutes (min).\n3. Invoke unit_converter to perform the exact unit scaling.\n</think>\n<tool_call>\n{\"name\": \"unit_converter\", \"arguments\": {\"value\": 3600, \"from_unit\": \"s\", \"to_unit\": \"min\"}}\n</tool_call>",
+      "generated_tokens": 80,
+      "tool_name_match": true,
+      "tool_args_match": true,
+      "valid_combined_format": true,
+      "valid_think_format": true,
+      "valid_tool_format": true,
+      "correct_order": true,
+      "think_tag_present": true,
+      "tool_tag_present": true,
+      "missing_closing_think": false,
+      "missing_closing_tool": false,
+      "plain_text": false,
+      "extra_text_before_think": false,
+      "reasoning_text": "1. Analyze source measurement: 3600 seconds (s).\n2. Target metric: minutes (min).\n3. Invoke unit_converter to perform the exact unit scaling.",
+      "parsed_tool_call": {
+        "name": "unit_converter",
+        "arguments": {
+          "value": 3600,
+          "from_unit": "s",
+          "to_unit": "min"
+        }
+      },
+      "tool_parse_error": null
+    },
+    {
+      "id": "comb_eval_0026",
+      "category": "finance_analytics",
+      "question": "A data center workload execution profile records a job runtime or battery consumption of 44073 watt-hours. Convert this measurement into kilowatt-hours for the weekly executive capacity report.",
+      "expected_tool": "unit_converter",
+      "expected_arguments": {
+        "value": 44073,
+        "from_unit": "wh",
+        "to_unit": "kwh"
+      },
+      "raw_output": "<think>\n1. Analyze source measurement: 44073 watt-hours (wh).\n2. Target metric: kilowatt-hours (kwh).\n3. Invoke unit_converter to perform the exact unit scaling.\n</think>\n<tool_call>\n{\"name\": \"unit_converter\", \"arguments\": {\"value\": 44073, \"from_unit\": \"wh\", \"to_unit\": \"kwh\"}}\n</tool_call>",
+      "generated_tokens": 88,
+      "tool_name_match": true,
+      "tool_args_match": true,
+      "valid_combined_format": true,
+      "valid_think_format": true,
+      "valid_tool_format": true,
+      "correct_order": true,
+      "think_tag_present": true,
+      "tool_tag_present": true,
+      "missing_closing_think": false,
+      "missing_closing_tool": false,
+      "plain_text": false,
+      "extra_text_before_think": false,
+      "reasoning_text": "1. Analyze source measurement: 44073 watt-hours (wh).\n2. Target metric: kilowatt-hours (kwh).\n3. Invoke unit_converter to perform the exact unit scaling.",
+      "parsed_tool_call": {
+        "name": "unit_converter",
+        "arguments": {
+          "value": 44073,
+          "from_unit": "wh",
+          "to_unit": "kwh"
+        }
+      },
+      "tool_parse_error": null
+    },
+    {
+      "id": "comb_eval_0027",
+      "category": "hpc",
+      "question": "A cluster network adapter specification indicates an InfiniBand interconnect bandwidth of 4096 megabytes. Convert this rate to gigabytes for cluster storage throughput benchmarking.",
+      "expected_tool": "unit_converter",
+      "expected_arguments": {
+        "value": 4096,
+        "from_unit": "mb",
+        "to_unit": "gb"
+      },
+      "raw_output": "<think>\n1. Identify input value: 4096 megabytes (mb).\n2. Identify target metric: gigabytes (gb).\n3. Call unit_converter with the numeric value and matching unit tokens.\n</think>\n<tool_call>\n{\"name\": \"unit_converter\", \"arguments\": {\"value\": 4096, \"from_unit\": \"mb\", \"to_unit\": \"gb\"}}\n</tool_call>",
+      "generated_tokens": 84,
+      "tool_name_match": true,
+      "tool_args_match": true,
+      "valid_combined_format": true,
+      "valid_think_format": true,
+      "valid_tool_format": true,
+      "correct_order": true,
+      "think_tag_present": true,
+      "tool_tag_present": true,
+      "missing_closing_think": false,
+      "missing_closing_tool": false,
+      "plain_text": false,
+      "extra_text_before_think": false,
+      "reasoning_text": "1. Identify input value: 4096 megabytes (mb).\n2. Identify target metric: gigabytes (gb).\n3. Call unit_converter with the numeric value and matching unit tokens.",
+      "parsed_tool_call": {
+        "name": "unit_converter",
+        "arguments": {
+          "value": 4096,
+          "from_unit": "mb",
+          "to_unit": "gb"
+        }
+      },
+      "tool_parse_error": null
+    },
+    {
+      "id": "comb_eval_0028",
+      "category": "finance_analytics",
+      "question": "A data center workload execution profile records a job runtime or battery consumption of 74.15 kilowatt-hours. Convert this measurement into watt-hours for the weekly executive capacity report.",
+      "expected_tool": "unit_converter",
+      "expected_arguments": {
+        "value": 74.15,
+        "from_unit": "kwh",
+        "to_unit": "wh"
+      },
+      "raw_output": "<think>\n1. Analyze source measurement: 74.15 kilowatt-hours (kwh).\n2. Target metric: watt-hours (wh).\n3. Invoke unit_converter to perform the exact unit scaling.\n</think>\n<tool_call>\n{\"name\": \"unit_converter\", \"arguments\": {\"value\": 74.15, \"from_unit\": \"kwh\", \"to_unit\": \"wh\"}}\n</tool_call>",
+      "generated_tokens": 88,
+      "tool_name_match": true,
+      "tool_args_match": true,
+      "valid_combined_format": true,
+      "valid_think_format": true,
+      "valid_tool_format": true,
+      "correct_order": true,
+      "think_tag_present": true,
+      "tool_tag_present": true,
+      "missing_closing_think": false,
+      "missing_closing_tool": false,
+      "plain_text": false,
+      "extra_text_before_think": false,
+      "reasoning_text": "1. Analyze source measurement: 74.15 kilowatt-hours (kwh).\n2. Target metric: watt-hours (wh).\n3. Invoke unit_converter to perform the exact unit scaling.",
+      "parsed_tool_call": {
+        "name": "unit_converter",
+        "arguments": {
+          "value": 74.15,
+          "from_unit": "kwh",
+          "to_unit": "wh"
+        }
+      },
+      "tool_parse_error": null
+    },
+    {
+      "id": "comb_eval_0029",
+      "category": "vlsi",
+      "question": "A semiconductor fabrication lot processes 303 wafers, each patterned with 337 candidate dies. Wafer probe testing demonstrates a die yield of 85.6%, and subsequent packaging yield is 97.8%. How many fully qualified packaged chips are produced from this lot?",
+      "expected_tool": "calculator",
+      "expected_arguments": {
+        "expression": "303 * 337 * (85.6 / 100) * (97.8 / 100)"
+      },
+      "raw_output": "<think>\n1. Determine total raw dies: 303 wafers * 337 dies/wafer.\n2. Apply wafer test yield (85.6%) and packaging assembly yield (97.8%).\n3. Expression for good packaged units: 303 * 337 * (85.6 / 100) * (97.8 / 100).\n4. Invoke calculator to obtain the expected net chip output.\n</think>\n<tool_call>\n{\"name\": \"calculator\", \"arguments\": {\"expression\": \"303 * 337 * (85.6 / 100) * (97.8 / 100)\"}}\n</tool_call>",
+      "generated_tokens": 157,
+      "tool_name_match": true,
+      "tool_args_match": true,
+      "valid_combined_format": true,
+      "valid_think_format": true,
+      "valid_tool_format": true,
+      "correct_order": true,
+      "think_tag_present": true,
+      "tool_tag_present": true,
+      "missing_closing_think": false,
+      "missing_closing_tool": false,
+      "plain_text": false,
+      "extra_text_before_think": false,
+      "reasoning_text": "1. Determine total raw dies: 303 wafers * 337 dies/wafer.\n2. Apply wafer test yield (85.6%) and packaging assembly yield (97.8%).\n3. Expression for good packaged units: 303 * 337 * (85.6 / 100) * (97.8 / 100).\n4. Invoke calculator to obtain the expected net chip output.",
+      "parsed_tool_call": {
+        "name": "calculator",
+        "arguments": {
+          "expression": "303 * 337 * (85.6 / 100) * (97.8 / 100)"
+        }
+      },
+      "tool_parse_error": null
+    },
+    {
+      "id": "comb_eval_0030",
+      "category": "hpc",
+      "question": "An LLM with 61.8 billion parameters is trained using DeepSpeed ZeRO-3 across 512 GPUs (64 nodes x 8 GPUs). Assuming 16 bytes per parameter (2B weights + 2B grads + 12B master weights/momentum/variance states) fully sharded, calculate the static memory requirement per GPU in gigabytes (GB).",
+      "expected_tool": "calculator",
+      "expected_arguments": {
+        "expression": "(61.8 * 1e9 * 16) / (512 * (1024**3))"
+      },
+      "raw_output": "<think>\n1. Determine total static state bytes: 61.8 * 10^9 parameters * 16 bytes/param.\n2. In ZeRO-3, model states are evenly partitioned across all 512 GPUs.\n3. Divide aggregate bytes by 512 and convert to GB (divide by 1024^3).\n4. Formulate expression: (61.8 * 1e9 * 16) / (512 * (1024**3)) and evaluate with calculator.\n</think>\n<tool_call>\n{\"name\": \"calculator\", \"arguments\": {\"expression\": \"(61.8 * 1e9 * 16) / (512 * (1024**3))\"}}\n</tool_call>",
+      "generated_tokens": 167,
+      "tool_name_match": true,
+      "tool_args_match": true,
+      "valid_combined_format": true,
+      "valid_think_format": true,
+      "valid_tool_format": true,
+      "correct_order": true,
+      "think_tag_present": true,
+      "tool_tag_present": true,
+      "missing_closing_think": false,
+      "missing_closing_tool": false,
+      "plain_text": false,
+      "extra_text_before_think": false,
+      "reasoning_text": "1. Determine total static state bytes: 61.8 * 10^9 parameters * 16 bytes/param.\n2. In ZeRO-3, model states are evenly partitioned across all 512 GPUs.\n3. Divide aggregate bytes by 512 and convert to GB (divide by 1024^3).\n4. Formulate expression: (61.8 * 1e9 * 16) / (512 * (1024**3)) and evaluate with calculator.",
+      "parsed_tool_call": {
+        "name": "calculator",
+        "arguments": {
+          "expression": "(61.8 * 1e9 * 16) / (512 * (1024**3))"
+        }
+      },
+      "tool_parse_error": null
+    }
+  ]
+}

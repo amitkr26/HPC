@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Phase 6 baseline: evaluate v2.0-bdw7b-sft on held-out reasoning prompts."""
+"""Phase 6 reasoning baseline evaluation: test base model with no adapter on held-out prompts."""
 from __future__ import annotations
 
 import argparse
@@ -78,7 +78,7 @@ def rate(values: list[bool]) -> dict[str, Any]:
     return {
         "hit": hits,
         "total": total,
-        "percent": round(100.0 * hits / total, 1) if total else 0.0,
+        "percent": round((hits / total) * 100.0, 1) if total else 0.0,
     }
 
 
@@ -124,71 +124,82 @@ def expected_number(answer: str) -> float | None:
 
 def candidate_number(text: str) -> float | None:
     matches = NUMBER_RE.findall(text.replace(",", ""))
-    return float(matches[-1]) if matches else None
+    if not matches:
+        return None
+    return float(matches[-1])
 
 
 def logic_order(text: str, names: list[str]) -> list[str] | None:
-    matches: list[tuple[int, str]] = []
-    for name in names:
-        matches.extend(
-            (match.start(), name)
-            for match in re.finditer(r"\b%s\b" % re.escape(name), text)
-        )
-    matches.sort()
-    sequence: list[str] = []
-    for _, name in matches:
-        if not sequence or sequence[-1] != name:
-            sequence.append(name)
-    if len(sequence) == 5 and set(sequence) == set(names):
-        return sequence
-    windows = [
-        sequence[index:index + 5]
-        for index in range(max(0, len(sequence) - 4))
-        if len(set(sequence[index:index + 5])) == 5
-        and set(sequence[index:index + 5]) == set(names)
-    ]
-    return windows[-1] if windows else None
+    known = set(names)
+    positions: list[tuple[int, str]] = []
+    for name in known:
+        position = text.find(name)
+        if position != -1:
+            positions.append((position, name))
+    if len(positions) != len(known):
+        return None
+    positions.sort(key=lambda pair: pair[0])
+    return [name for _, name in positions]
 
 
 def extract_code(text: str, function_name: str) -> str | None:
-    for block in reversed(CODE_FENCE_RE.findall(text)):
-        if re.search(
-            r"^\s*def\s+%s\s*\(" % re.escape(function_name), block, re.M
-        ):
+    matches = CODE_FENCE_RE.findall(text)
+    for block in matches:
+        if f"def {function_name}(" in block:
             return block.strip()
-    match = re.search(
-        r"(?ms)^\s*def\s+%s\s*\(.*" % re.escape(function_name), text
-    )
-    return match.group(0).strip() if match else None
+    candidate = text.rsplit(CLOSE_TAG, 1)[1].strip() if CLOSE_TAG in text else text.strip()
+    for block in CODE_FENCE_RE.findall(candidate):
+        if f"def {function_name}(" in block:
+            return block.strip()
+    lines: list[str] = []
+    recording = False
+    for line in candidate.splitlines():
+        if line.startswith(f"def {function_name}("):
+            recording = True
+        if recording:
+            lines.append(line)
+    return "\n".join(lines).strip() if lines else None
 
 
 def run_candidate_code(
     code: str, function_name: str, sample_input: Any
 ) -> tuple[Any, str | None]:
-    arguments = [
-        sys.executable, "-I", "-c", CODE_WRAPPER, code, function_name,
-        json.dumps(sample_input, ensure_ascii=False),
-        json.dumps(SAFE_BUILTIN_NAMES),
-    ]
+    with tempfile.NamedTemporaryFile("w", suffix=".py", delete=False) as script:
+        script.write(CODE_WRAPPER)
+        script_path = script.name
     try:
-        completed = subprocess.run(
-            arguments, capture_output=True, text=True, timeout=5,
-            cwd=tempfile.gettempdir(),
-            env={"PYTHONIOENCODING": "utf-8",
-                 "PATH": os.environ.get("PATH", "")},
+        command = [
+            sys.executable,
+            script_path,
+            code,
+            function_name,
+            json.dumps(sample_input),
+            json.dumps(SAFE_BUILTIN_NAMES),
+        ]
+        process = subprocess.run(
+            command,
+            capture_output=True,
+            text=True,
+            timeout=5.0,
+            check=False,
         )
-    except subprocess.TimeoutExpired:
-        return None, "TimeoutExpired"
-    for line in reversed(completed.stdout.splitlines()):
-        if line.startswith("__RESULT__"):
-            try:
+        output = process.stdout
+        for line in output.splitlines():
+            if line.startswith("__RESULT__"):
                 return json.loads(line[len("__RESULT__"):]), None
-            except json.JSONDecodeError as error:
-                return None, "Invalid result JSON: %s" % error
-        if line.startswith("__ERROR__"):
-            return None, line[len("__ERROR__"):]
-    detail = completed.stderr.strip() or "missing result marker"
-    return None, detail[-500:]
+            if line.startswith("__ERROR__"):
+                return None, line[len("__ERROR__"):]
+        error = process.stderr.strip() or f"Process exited {process.returncode}"
+        return None, error[:200]
+    except subprocess.TimeoutExpired:
+        return None, "Execution timed out (5s)"
+    except Exception as exc:
+        return None, f"Execution harness error: {exc}"
+    finally:
+        try:
+            os.unlink(script_path)
+        except OSError:
+            pass
 
 
 def score_row(row: dict[str, Any], text: str) -> dict[str, Any]:
@@ -226,7 +237,7 @@ def score_row(row: dict[str, Any], text: str) -> dict[str, Any]:
             )
             semantic_match = code_error is None and candidate == expected_display
     else:
-        raise ValueError("unknown category: %s" % row["category"])
+        raise ValueError("Unknown category: %s" % row["category"])
 
     return {
         "id": row.get("id"),
@@ -246,15 +257,18 @@ def score_row(row: dict[str, Any], text: str) -> dict[str, Any]:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Evaluate v2.0-bdw7b-sft on held-out reasoning prompts."
+        description="Evaluate baseline v2.0-bdw7b-sft (no adapter) on held-out reasoning prompts."
     )
-    parser.add_argument("--base", default=str(DEFAULT_BASE))
-    parser.add_argument("--eval", dest="eval_file", default=str(DEFAULT_EVAL))
-    parser.add_argument("--out", default=str(DEFAULT_OUT))
-    parser.add_argument("--max-new-tokens", type=int, default=384)
-    parser.add_argument("--seed", type=int, default=1337)
-    parser.add_argument("--device", default="cuda")
-    parser.add_argument("--limit", type=int, default=0)
+    parser.add_argument("--base", default=str(DEFAULT_BASE), help="Base model directory")
+    parser.add_argument("--eval", dest="eval_file", default=str(DEFAULT_EVAL), help="Evaluation JSONL file")
+    parser.add_argument("--out", default=str(DEFAULT_OUT), help="Output JSON path")
+    parser.add_argument("--max-new-tokens", type=int, default=512, help="Max new tokens to generate")
+    parser.add_argument("--do-sample", action="store_true", default=False, help="Enable stochastic sampling")
+    parser.add_argument("--temperature", type=float, default=0.7, help="Sampling temperature")
+    parser.add_argument("--top-p", type=float, default=0.9, help="Top-p sampling cutoff")
+    parser.add_argument("--seed", type=int, default=1337, help="Random seed for generation")
+    parser.add_argument("--device", default="cuda", help="Target execution device")
+    parser.add_argument("--limit", type=int, default=0, help="Optional limit on rows")
     return parser.parse_args()
 
 
@@ -270,20 +284,23 @@ def main() -> int:
     base_dir = Path(args.base).expanduser().resolve()
     eval_file = Path(args.eval_file).expanduser().resolve()
     out_path = Path(args.out).expanduser().resolve()
-    for path, label in ((base_dir, "base model"), (eval_file, "eval file")):
-        if not path.exists():
-            raise SystemExit("%s not found: %s" % (label, path))
+
+    # Preflight validations
+    if not base_dir.is_dir():
+        raise SystemExit(f"Base model directory not found: {base_dir}")
+    if not eval_file.is_file():
+        raise SystemExit(f"Eval file not found: {eval_file}")
 
     rows = load_rows(eval_file)
     if args.limit:
         rows = rows[: args.limit]
     if not rows:
-        raise SystemExit("no eval rows")
+        raise SystemExit("No eval rows loaded")
     if len(rows) != 24 and not args.limit:
         print("WARNING: expected 24 eval rows, got %d" % len(rows), flush=True)
 
     print("=" * 72)
-    print("Phase 6 reasoning baseline evaluation")
+    print("Phase 6 Reasoning Baseline Evaluation (No Adapter)")
     print("=" * 72)
     print("base_dir    :", base_dir)
     print("eval_file   :", eval_file)
@@ -293,10 +310,11 @@ def main() -> int:
     print("transformers:", transformers.__version__)
     print("cuda        :", torch.cuda.is_available())
     if not torch.cuda.is_available():
-        raise SystemExit("CUDA is not available in this job")
+        raise SystemExit("CUDA is not available on this compute node")
     print("gpu         :", torch.cuda.get_device_name(0))
-    print("decoding    : greedy, max_new_tokens=%d, seed=%d"
-          % (args.max_new_tokens, args.seed), flush=True)
+    print("decoding    : %s, max_new_tokens=%d, seed=%d%s"
+          % ("sampling (temp=%.2f, top_p=%.2f)" % (args.temperature, args.top_p) if args.do_sample else "greedy",
+             args.max_new_tokens, args.seed, "" if not args.do_sample else ""), flush=True)
 
     torch.manual_seed(args.seed)
     transformers.set_seed(args.seed)
@@ -320,14 +338,24 @@ def main() -> int:
         )
         encoded = tokenizer(prompt, return_tensors="pt", add_special_tokens=False)
         encoded = {key: value.to(args.device) for key, value in encoded.items()}
-        torch.manual_seed(args.seed)
+        torch.manual_seed(args.seed + number)
+
+        gen_kwargs: dict[str, Any] = {
+            "max_new_tokens": args.max_new_tokens,
+            "pad_token_id": tokenizer.eos_token_id,
+            "eos_token_id": tokenizer.eos_token_id,
+        }
+        if args.do_sample:
+            gen_kwargs["do_sample"] = True
+            gen_kwargs["temperature"] = args.temperature
+            gen_kwargs["top_p"] = args.top_p
+        else:
+            gen_kwargs["do_sample"] = False
+
         with torch.inference_mode():
             generated = model.generate(
                 **encoded,
-                max_new_tokens=args.max_new_tokens,
-                do_sample=False,
-                pad_token_id=tokenizer.eos_token_id,
-                eos_token_id=tokenizer.eos_token_id,
+                **gen_kwargs,
             )
         generated = generated[0, encoded["input_ids"].shape[1]:]
         text = tokenizer.decode(
@@ -337,72 +365,69 @@ def main() -> int:
         result = score_row(row, text)
         result["generated_tokens"] = int(generated.numel())
         results.append(result)
-        print("[%02d/%02d] %-24s %-6s format=%-5s accuracy=%-5s final=%r"
-              % (number, len(rows), row.get("id"), row["category"],
-                 result["valid_think_format"],
-                 result["answer_semantic_match"],
-                 result["final_answer_text"][:120]), flush=True)
 
-    format_rate = rate([row["valid_think_format"] for row in results])
-    accuracy = rate([row["answer_semantic_match"] for row in results])
-    valid_rows = [row for row in results if row["valid_think_format"]]
-    conditional_accuracy = rate(
-        [row["answer_semantic_match"] for row in valid_rows]
-    )
+        preview = result["final_answer_text"].replace("\n", " ")[:60]
+        print("[%02d/%02d] %-24s %-6s format=%-5s accuracy=%-5s final='%s'"
+              % (number, len(rows), row["id"], row["category"],
+                 str(result["valid_think_format"]),
+                 str(result["answer_semantic_match"]), preview), flush=True)
+
+    elapsed = round(time.time() - started, 1)
+
     metrics = {
-        "valid_think_format": format_rate,
-        "complete_think_block": rate(
-            [row["complete_think_block"] for row in results]
-        ),
-        "think_tag_present": rate(
-            [row["think_tag_present"] for row in results]
-        ),
-        "plain_text": rate([row["plain_text"] for row in results]),
-        "missing_closing_tag": rate(
-            [row["missing_closing_tag"] for row in results]
-        ),
-        "missing_opening_tag": rate(
-            [row["missing_opening_tag"] for row in results]
-        ),
-        "multiple_think_blocks": rate(
-            [row["multiple_think_blocks"] for row in results]
-        ),
-        "extra_text_before_think": rate(
-            [row["extra_text_before_think"] for row in results]
-        ),
-        "empty_reasoning": rate([row["empty_reasoning"] for row in results]),
-        "empty_final_answer": rate(
-            [row["empty_final_answer"] for row in results]
-        ),
-        "answer_semantic_match": accuracy,
-        "answer_semantic_match_when_format_valid": conditional_accuracy,
+        key: rate([bool(result[key]) for result in results])
+        for key in (
+            "valid_think_format",
+            "complete_think_block",
+            "think_tag_present",
+            "plain_text",
+            "missing_closing_tag",
+            "missing_opening_tag",
+            "multiple_think_blocks",
+            "extra_text_before_think",
+            "empty_reasoning",
+            "empty_final_answer",
+            "answer_semantic_match",
+        )
     }
+    format_valid_results = [
+        result for result in results if result["valid_think_format"]
+    ]
+    metrics["answer_semantic_match_when_format_valid"] = rate(
+        [bool(result["answer_semantic_match"]) for result in format_valid_results]
+    )
+
     by_category: dict[str, Any] = {}
     for category in CATEGORIES:
-        category_rows = [row for row in results if row["category"] == category]
+        category_results = [
+            result for result in results if result["category"] == category
+        ]
         by_category[category] = {
-            "n": len(category_rows),
+            "n": len(category_results),
             "valid_think_format": rate(
-                [row["valid_think_format"] for row in category_rows]
+                [bool(result["valid_think_format"]) for result in category_results]
             ),
             "complete_think_block": rate(
-                [row["complete_think_block"] for row in category_rows]
+                [bool(result["complete_think_block"]) for result in category_results]
             ),
             "answer_semantic_match": rate(
-                [row["answer_semantic_match"] for row in category_rows]
+                [bool(result["answer_semantic_match"]) for result in category_results]
             ),
         }
 
-    elapsed = round(time.time() - started, 1)
+    format_rate = metrics["valid_think_format"]
+    accuracy = metrics["answer_semantic_match"]
     document = {
         "suite": "phase6-reasoning-eval-v1",
-        "model_label": "v2.0-bdw7b-sft",
+        "model_label": "v2.0-bdw7b-sft-baseline",
         "base_model_dir": str(base_dir),
         "eval_file": str(eval_file),
         "eval_sha256": sha256_file(eval_file),
         "n": len(results),
         "decoding": {
-            "do_sample": False,
+            "do_sample": args.do_sample,
+            "temperature": args.temperature if args.do_sample else 0.0,
+            "top_p": args.top_p if args.do_sample else 1.0,
             "seed": args.seed,
             "max_new_tokens": args.max_new_tokens,
         },
@@ -463,8 +488,12 @@ if __name__ == "__main__":
         raise SystemExit(main())
     except SystemExit:
         raise
-    except Exception:
+    except Exception as exc:
         traceback.print_exc()
-        print("RESULT: PHASE6_REASONING_BASELINE_FAIL %s" % sys.exc_info()[1],
-              flush=True)
+        print(
+            "RESULT: PHASE6_REASONING_BASELINE_FAIL %s" % exc,
+            file=sys.stderr,
+            flush=True,
+        )
+        print("RESULT: PHASE6_REASONING_BASELINE_FAIL %s" % exc, flush=True)
         raise SystemExit(1)

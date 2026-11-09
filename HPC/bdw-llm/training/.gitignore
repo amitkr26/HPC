@@ -1,0 +1,6 @@
+# Runtime outputs & checkpoints
+checkpoints/
+logs/
+lora_adapter/
+*.log
+__pycache__/

@@ -559,6 +559,12 @@ def main() -> int:
     parser.add_argument("--seed", type=int, default=20261105)
     args = parser.parse_args()
 
+    tokenizer_path = Path(args.tokenizer).expanduser().resolve()
+    out_dir = Path(args.out_dir).expanduser().resolve()
+    if not tokenizer_path.is_dir():
+        raise FileNotFoundError(f"Tokenizer directory not found: {tokenizer_path}")
+    out_dir.mkdir(parents=True, exist_ok=True)
+
     rng = random.Random(args.seed)
     category_rows: dict[str, list[dict[str, Any]]] = {}
     for category, builder in (
@@ -680,9 +686,9 @@ if __name__ == "__main__":
         raise SystemExit(main())
     except SystemExit:
         raise
-    except Exception:
+    except Exception as exc:
         import traceback
         traceback.print_exc()
-        print("RESULT: PHASE6_REASONING_DATASET_FAIL %s" % sys.exc_info()[1],
-              flush=True)
+        print("RESULT: PHASE6_REASONING_DATASET_FAIL %s" % exc, file=sys.stderr, flush=True)
+        print("RESULT: PHASE6_REASONING_DATASET_FAIL %s" % exc, flush=True)
         raise SystemExit(1)

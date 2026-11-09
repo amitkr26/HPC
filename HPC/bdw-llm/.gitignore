@@ -83,3 +83,12 @@ Thumbs.db
 *.err
 !scripts/*.out
 !scripts/*.err
+
+
+secrets/
+secrets
+/api.txt
+node_modules/
+.next/
+.vercel/
+*.tsbuildinfo
