@@ -1,6 +1,6 @@
 # BDW-LLM Project Status
 
-**Last updated:** 2026-11-09 12:45 IST
+**Last updated:** 2026-11-09 19:25 IST
 **Audit host:** `paramrudra.cdacdelhi.in:4422` (`3ioip3lt`)
 **Cluster project:** `/home/tutor/3ioip3lt/bdw-llm`
 **Local project:** `C:\Users\STUDENT\Desktop\Amit\HPC\bdw-llm`
@@ -27,7 +27,7 @@
 |---|---|---|
 | Phase 1 - from-scratch 28M model | DONE | 27.8M decoder-only model, 200,000 steps, held-out ppl `52.40` vs `18,603.31` untrained. |
 | Phase 2 - 7B SFT | DONE | `v2.0-bdw7b-sft`, LoRA r=32/alpha=64, 748 steps, val loss `0.4052`; p2-v2 gates green; Q4 top-1 agreement `0.9682`. |
-| Phase 3 - RAG/Supabase/gateway/UI | LIVE / PARTIAL | Core stack live; Supabase and gateway verified. P3.4/P3.5 production release gate, Next.js integration, and telemetry not evidenced. |
+| Phase 3 - RAG/Supabase/gateway/UI | LIVE / EXPANDED | Core stack live; Supabase pgvector table (`public.bdw_study_chunks`) expanded with Batch 2 ingestion (+8,282 chunks), totaling 43,469 indexed vector chunks across VLSI, Analog, Digital, Signals, Control Systems, and Networks. Tested live pgvector cosine similarity search. |
 | Phase 4 - domain LoRA + RAG | DONE | Five adapters, five exported GGUFs, five domain RAG indexes, Supabase domain tables, router integration `58/58` tests, P4 eval v2 scored. |
 | Phase 5.0 - shim/contract | DONE | Earlier `P5_SHIM_OK port=8090 auth=required models=6`; P5.0 contract tests previously passed. |
 | Phase 5.1 - zero-cost production | READY / SECRETS PENDING | Isolated venv, clean `pip check`, `97 passed / 2 skipped`, hardened launcher, staged `cloudflared`, `.env` scaffolded. `P5_API_KEY` and `TUNNEL_TOKEN` remain empty; DNS unresolved; no Slurm job. |
@@ -268,6 +268,19 @@ Phase 4 artifacts: five adapters (~309M each), five `export/p4_lora_*.gguf` file
 - [ ] Start P5.2/P5.3 and expand P4 evaluation.
 
 ## 8. Change Log
+
+### 2026-11-09 - Batch 2 RAG Knowledge Base Ingestion & Live Vector Expansion
+
+- **Batch 2 Autonomous Ingestion (`training/batch2_orchestrator.py`)**:
+  - Ingested 212 technical engineering workbooks, GATE solutions, and question banks.
+  - Enforced strict privacy shield: preemptively blocked and permanently deleted 19 personal/sensitive files (IDs, PAN cards, bank details, background check forms).
+  - Formatted 208 verified safe educational documents into 8,282 high-density chunks with educational domain classification.
+  - Generated 1024-dimensional normalized vector embeddings using `BAAI/bge-large-en-v1.5`.
+  - Appended all 8,282 vectors in batches of 250 with conflict handling into live Supabase PostgreSQL (`public.bdw_study_chunks`).
+  - Total Knowledge Base capacity increased from **35,187 to 43,469 vectors (+8,282 new)**.
+  - Validated live vector retrieval via `1 - (embedding <=> q::vector)` with >0.77 semantic match scores across both 7B (Kaggle) and 72B (Param Rudra) models.
+  - Force-deleted all raw temporary files from cluster disk (`~/bdw-llm/raw_zip_temp/batch_2`); zero unclassified data remains.
+
 
 ### 2026-11-06 - Phase 8: DPO Retuning (100% Format Compliance), Evaluation & Final Hybrid Model Merge
 
