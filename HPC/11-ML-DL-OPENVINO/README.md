@@ -8,7 +8,15 @@
 
 ## Contents
 
-No separate ML/DL/OpenVINO artifacts are currently retained in this folder.
-The NumPy/pandas data-handling practice that had accumulated here now lives in
+`raw/` contains the Module 11 retail practice dataset:
+
+- `sales_transactions.csv` - sales transactions
+- `customer_profiles.json` - customer profiles
+- `products.xlsx` and `retail_store.db` - product and store data
+- `ab_campaign_results.csv` and `competitor_reviews.html` - campaign and review data
+- `product_images/` - 400 product images for vision exercises
+- `shelf_feed.mp4` and `support_call.wav` - video and audio samples for inference exercises
+
+The NumPy/pandas data-handling practice lives in
 [`10-STATISTICS-AND-DATA-HANDLING/01-DATA-HANDLING-PRACTICE/`](../10-STATISTICS-AND-DATA-HANDLING/01-DATA-HANDLING-PRACTICE),
 which matches the syllabus topic.
