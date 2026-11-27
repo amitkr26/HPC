@@ -1,0 +1,56 @@
+rank,cd,borough,neighborhoods,district_short,median_income,nyc_poverty_rate,park_count,park_acres,waterfront_acres,waterfront_share,Coffee_Viability_Score
+1,MN Community Districts 1 & 2,Manhattan,"Battery Park City, Greenwich Village & Soho",Battery Park City (Manhattan),79181,0.088,57,92.758,49.478,0.5334095172384054,100.0
+2,MN Community District 7,Manhattan,Upper West Side & West Side,Upper West Side & West Side (Manhattan),65844,0.09,30,378.7336666666667,198.517,0.5241598977645681,89.0
+3,BK Community District 6,Brooklyn,"Park Slope, Carroll Gardens & Red Hook",Park Slope (Brooklyn),57393,0.095,36,219.612,73.8885,0.3364501939784711,88.2
+4,MN Community District 8,Manhattan,Upper East Side,Upper East Side (Manhattan),71933,0.073,18,190.75016666666667,34.4605,0.18065777137809405,88.1
+5,MN Community District 6,Manhattan,"Murray Hill, Gramercy & Stuyvesant Town",Murray Hill (Manhattan),73067,0.1,23,162.17366666666666,3.164,0.019509949210825432,88.0
+6,BK Community District 2,Brooklyn,Brooklyn Heights & Fort Greene,Brooklyn Heights & Fort Greene (Brooklyn),44313,0.121,63,117.3365,10.6885,0.09109271198646626,87.4
+7,SI Community District 3,Staten Island,"Tottenville, Great Kills & Annadale",Tottenville (Staten Island),40637,0.114,57,3474.2053333333333,1968.7175,0.5666669960785277,86.8
+8,MN Community Districts 4 & 5,Manhattan,"Chelsea, Clinton & Midtown Business District",Chelsea (Manhattan),65905,0.108,28,188.00166666666667,0.0,0.0,85.1
+9,QN Community District 11,Queens,"Bayside, Douglaston & Little Neck",Bayside (Queens),37432,0.135,35,1082.4121666666667,788.919,0.7288526721105777,81.4
+10,BK Community District 1,Brooklyn,Greenpoint & Williamsburg,Greenpoint & Williamsburg (Brooklyn),35889,0.173,81,148.447,53.511,0.36047208768112526,80.5
+11,SI Community District 2,Staten Island,New Springville & South Beach,New Springville & South Beach (Staten Island),35413,0.144,41,3244.9774690433333,1470.9705,0.4533068454350974,78.0
+12,QN Community District 6,Queens,Forest Hills & Rego Park,Forest Hills & Rego Park (Queens),41029,0.163,22,395.69195,232.42045,0.5873772514199492,77.7
+13,BK Community District 18,Brooklyn,Canarsie & Flatlands,Canarsie & Flatlands (Brooklyn),32210,0.15,36,1032.447357142857,979.6193571428571,0.9488322579989031,76.2
+14,QN Community District 13,Queens,"Queens Village, Cambria Heights & Rosedale",Queens Village (Queens),32961,0.132,35,805.0366666666666,220.128,0.2734384769223762,75.4
+15,QN Community District 1,Queens,Astoria & Long Island City,Astoria & Long Island City (Queens),31658,0.183,39,187.76574754,158.13974754,0.8422182938680617,71.9
+16,BX Community District 10,Bronx,"Coop City, Pelham Bay & Schuylerville",Coop City (Bronx),31573,0.14,25,2095.5944999999997,1956.6485,0.9336961420732877,70.5
+17,QN Community District 5,Queens,"Ridgewood, Glendale & Middle Village",Ridgewood (Queens),31420,0.186,40,305.308,0.0,0.0,64.7
+18,SI Community District 1,Staten Island,"Port Richmond, Stapleton & Mariners Harbor",Port Richmond (Staten Island),31347,0.212,69,996.5913333333333,248.853,0.24970415824072323,63.3
+19,QN Community District 2,Queens,Sunnyside & Woodside,Sunnyside & Woodside (Queens),31245,0.204,37,52.1905,33.3715,0.6394171353024017,62.2
+20,BX Community District 8,Bronx,"Riverdale, Fieldston & Kingsbridge",Riverdale (Bronx),30437,0.152,33,717.9333333333334,144.29,0.20097966384993962,61.1
+21,BK Community District 10,Brooklyn,Bay Ridge & Dyker Heights,Bay Ridge & Dyker Heights (Brooklyn),30858,0.19,24,460.80185714285716,169.80185714285713,0.3684921284729445,56.8
+22,BK Community District 15,Brooklyn,"Sheepshead Bay, Gerritsen Beach & Homecrest",Sheepshead Bay (Brooklyn),29307,0.194,29,804.8033571428572,752.6853571428571,0.9352413238122852,54.7
+23,QN Community District 14,Queens,"Far Rockaway, Breezy Point & Broad Channel",Far Rockaway (Queens),25920,0.179,58,1820.578,1786.252,0.9811455482819192,52.4
+24,QN Community District 10,Queens,Howard Beach & Ozone Park,Howard Beach & Ozone Park (Queens),27016,0.189,31,281.0053571428571,162.2893571428571,0.577531185856904,52.4
+25,QN Community District 8,Queens,"Briarwood, Fresh Meadows & Hillcrest",Briarwood (Queens),30239,0.22,29,657.9052230966666,174.1522,0.2647071248048317,50.2
+26,MN Community District 3,Manhattan,Chinatown & Lower East Side,Chinatown & Lower East Side (Manhattan),25667,0.18,83,117.421,53.389,0.4546801679427019,48.3
+27,BK Community District 8,Brooklyn,Crown Heights North & Prospect Heights,Crown Heights North & Prospect Heights (Brooklyn),29895,0.214,21,221.1555,0.069,0.000311997666800057,46.6
+28,MN Community District 10,Manhattan,Central Harlem,Central Harlem (Manhattan),26075,0.211,53,253.33,80.60233333333333,0.31817129172752273,45.8
+29,BK Community District 17,Brooklyn,"East Flatbush, Farragut & Rugby",East Flatbush (Brooklyn),27248,0.19,12,14.991999999999999,0.0,0.0,45.0
+30,QN Community District 12,Queens,"Jamaica, Hollis & St. Albans",Jamaica (Queens),25946,0.204,46,335.828,0.0,0.0,42.9
+31,QN Community District 9,Queens,Richmond Hill & Woodhaven,Richmond Hill & Woodhaven (Queens),26357,0.219,14,138.617,0.0,0.0,38.7
+32,BX Community District 12,Bronx,"Wakefield, Williamsbridge & Woodlawn",Wakefield (Bronx),26136,0.232,17,2075.08775,1634.3724166666666,0.7876160498112268,37.6
+33,BK Community District 9,Brooklyn,"Crown Heights South, Prospect Lefferts & Wingate",Crown Heights South (Brooklyn),26140,0.221,15,182.332,0.0,0.0,36.5
+34,QN Community District 7,Queens,"Flushing, Murray Hill & Whitestone",Flushing (Queens),25517,0.252,47,1050.8612,504.0612,0.4796648691568401,33.3
+35,BK Community District 3,Brooklyn,Bedford Stuyvesant,Bedford Stuyvesant (Brooklyn),24627,0.226,74,60.675000000000004,0.0,0.0,32.7
+36,BX Community District 11,Bronx,"Pelham Parkway, Morris Park & Laconia",Pelham Parkway (Bronx),25358,0.205,17,418.22025,179.59325,0.4294226546897239,30.7
+37,BK Community District 14,Brooklyn,Flatbush & Midwood,Flatbush & Midwood (Brooklyn),25708,0.221,14,181.049,0.0,0.0,29.2
+38,MN Community District 9,Manhattan,"Hamilton Heights, Manhattanville & West Harlem",Hamilton Heights (Manhattan),24561,0.235,28,230.91850000000002,142.8425,0.6185840458863191,26.2
+39,QN Community District 3,Queens,Jackson Heights & North Corona,Jackson Heights & North Corona (Queens),22853,0.254,35,265.21395,232.42045,0.8763507726497795,24.9
+40,BK Community District 11,Brooklyn,Bensonhurst & Bath Beach,Bensonhurst & Bath Beach (Brooklyn),23329,0.23,13,139.05085714285713,126.13285714285713,0.9070987387964938,23.9
+41,BK Community District 5,Brooklyn,East New York & Starrett City,East New York & Starrett City (Brooklyn),22796,0.298,82,475.81485714285714,205.01685714285713,0.4308752744164597,23.3
+42,MN Community District 12,Manhattan,"Washington Heights, Inwood & Marble Hill",Washington Heights (Manhattan),20421,0.199,29,600.3868333333334,488.07283333333334,0.8129306077942526,22.5
+43,MN Community District 11,Manhattan,East Harlem,East Harlem (Manhattan),19510,0.231,64,661.9345,445.2058333333333,0.6725829116526384,19.8
+44,QN Community District 4,Queens,Elmhurst & South Corona,Elmhurst & South Corona (Queens),21889,0.271,32,256.33295,232.42045,0.9067131244734632,18.7
+45,BX Community District 9,Bronx,"Castle Hill, Clason Point & Parkchester",Castle Hill (Bronx),20300,0.264,43,480.2866666666667,449.6146666666667,0.9361381397221105,17.0
+46,BK Community District 4,Brooklyn,Bushwick,Bushwick (Brooklyn),22264,0.251,24,45.4105,0.0,0.0,15.2
+47,BK Community District 13,Brooklyn,Brighton Beach & Coney Island,Brighton Beach & Coney Island (Brooklyn),19345,0.24,31,571.3433571428571,520.4623571428572,0.9109449696686018,12.7
+48,BK Community District 7,Brooklyn,Sunset Park & Windsor Terrace,Sunset Park & Windsor Terrace (Brooklyn),20787,0.294,32,178.019,0.0,0.0,9.7
+49,BK Community District 16,Brooklyn,Brownsville & Ocean Hill,Brownsville & Ocean Hill (Brooklyn),19274,0.282,56,48.144,0.0,0.0,7.7
+50,BK Community District 12,Brooklyn,"Borough Park, Kensington & Ocean Parkway",Borough Park (Brooklyn),21103,0.283,12,46.91,0.0,0.0,6.8
+51,BX Community Districts 1 & 2,Bronx,"Hunts Point, Longwood & Melrose",Hunts Point (Bronx),15510,0.293,76,169.91336646000002,77.91236646,0.45854171501181845,5.7
+52,BX Community Districts 3 & 6,Bronx,"Belmont, Crotona Park East & East Tremont",Belmont (Bronx),14213,0.308,94,447.1419166666667,249.9549166666667,0.5590057817214259,4.3
+53,BX Community District 7,Bronx,"Bedford Park, Fordham North & Norwood",Bedford Park (Bronx),18674,0.264,25,674.2010833333334,179.59325,0.2663793554173316,3.1
+54,BX Community District 4,Bronx,"Concourse, Highbridge & Mount Eden",Concourse (Bronx),16710,0.323,47,172.51,15.148,0.08780940235348676,2.7
+55,BX Community District 5,Bronx,"Morris Heights, Fordham South & Mount Hope",Morris Heights (Bronx),15628,0.344,40,27.9895,3.578,0.12783365190517873,0.0

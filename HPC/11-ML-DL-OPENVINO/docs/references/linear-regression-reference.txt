@@ -1,0 +1,65 @@
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.compose import ColumnTransformer
+from sklearn.preprocessing import StandardScaler, OneHotEncoder, OrdinalEncoder
+from sklearn.pipeline import Pipeline
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_absolute_error, root_mean_squared_error, r2_score
+
+reg_num_cols = [
+    "order_count", "avg_units_per_order", "avg_discount",
+    "age", "tenure_months", "support_tickets"
+]
+reg_ord_cols = ["loyalty_tier"]
+reg_nom_cols = ["region", "preferred_category"]
+
+X_reg = ml_df[reg_num_cols + reg_ord_cols + reg_nom_cols]
+y_reg = ml_df["total_spend"]
+
+X_train_r, X_test_r, y_train_r, y_test_r = train_test_split(
+    X_reg, y_reg, test_size=0.20, random_state=42
+)
+
+reg_preprocessor = ColumnTransformer(
+    transformers=[
+        ("num", StandardScaler(), reg_num_cols),
+        ("ord", OrdinalEncoder(categories=[["Bronze", "Silver", "Gold", "Platinum"]]), reg_ord_cols),
+        ("nom", OneHotEncoder(drop="first", handle_unknown="ignore"), reg_nom_cols),
+    ]
+)
+
+lin_reg_pipe = Pipeline([
+    ("prep", reg_preprocessor),
+    ("model", LinearRegression()),
+])
+
+lin_reg_pipe.fit(X_train_r, y_train_r)
+y_pred_r = lin_reg_pipe.predict(X_test_r)
+
+mae = mean_absolute_error(y_test_r, y_pred_r)
+rmse = root_mean_squared_error(y_test_r, y_pred_r)
+r2 = r2_score(y_test_r, y_pred_r)
+print(f"Linear Regression Test Metrics -> MAE: INR {mae:,.2f} | RMSE: INR {rmse:,.2f} | R^2: {r2:.4f}")
+
+# Actual vs. Predicted and Residual Diagnostics
+fig, axes = plt.subplots(1, 2, figsize=(13, 4.5))
+axes[0].scatter(y_test_r, y_pred_r, alpha=0.5, color="teal")
+max_val = max(y_test_r.max(), y_pred_r.max())
+axes[0].plot([0, max_val], [0, max_val], "r--", lw=2)
+axes[0].set_title(f"Actual vs. Predicted Total Spend (R^2 = {r2:.3f})")
+axes[0].set_xlabel("Actual Spend (INR)")
+axes[0].set_ylabel("Predicted Spend (INR)")
+
+residuals = y_test_r - y_pred_r
+axes[1].hist(residuals, bins=30, color="coral", edgecolor="black", alpha=0.75)
+axes[1].axvline(0, color="black", linestyle="--")
+axes[1].set_title("Residual Error Distribution")
+axes[1].set_xlabel("Actual - Predicted (INR)")
+plt.tight_layout()
+plt.show()
+
+# Inspect standardized feature coefficients
+feat_names = lin_reg_pipe.named_steps["prep"].get_feature_names_out()
+coefs = pd.Series(lin_reg_pipe.named_steps["model"].coef_, index=feat_names).sort_values()
+print("\nTop Negative & Positive Standardized Spend Drivers:")
+display(pd.concat([coefs.head(4), coefs.tail(4)]).round(2))

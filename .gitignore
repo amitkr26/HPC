@@ -24,8 +24,13 @@ Desktop.ini
 credentials.txt
 .env
 
-# Other independent repos
+# Other independent repos / local runtime checkouts
 BerojgarDegreeWala/
+bdw-llm/
+
+# Python virtualenvs and Jupyter checkpoints
+.venv*/
+.ipynb_checkpoints/
 
 # Python caches + sqlite journal noise (course workspaces)
 __pycache__/

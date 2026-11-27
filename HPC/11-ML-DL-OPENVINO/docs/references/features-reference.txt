@@ -1,0 +1,68 @@
+master_df = pd.read_csv(PROC_DIR / "master_retail.csv", parse_dates=["transaction_date"])
+snapshot_date = pd.Timestamp("2025-12-31")
+
+# 1. Order-level aggregation first
+order_level = (
+    master_df.groupby(["customer_id", "order_id"], as_index=False)
+    .agg(
+        order_date=("transaction_date", "max"),
+        order_spend=("sales_amount", "sum"),
+        order_units=("units_sold", "sum"),
+        order_profit=("profit", "sum"),
+    )
+)
+
+# 2. Preferred category (highest spend category per customer)
+pref_cat = (
+    master_df.groupby(["customer_id", "category"])["sales_amount"]
+    .sum()
+    .reset_index()
+    .sort_values(["customer_id", "sales_amount"], ascending=[True, False])
+    .drop_duplicates("customer_id")[["customer_id", "category"]]
+    .rename(columns={"category": "preferred_category"})
+)
+
+# 3. Customer-level RFM metrics
+cust_orders = (
+    order_level.groupby("customer_id", as_index=False)
+    .agg(
+        order_count=("order_id", "count"),
+        total_spend=("order_spend", "sum"),
+        avg_order_value=("order_spend", "mean"),
+        total_units=("order_units", "sum"),
+        avg_units_per_order=("order_units", "mean"),
+        total_profit=("order_profit", "sum"),
+        last_order_date=("order_date", "max"),
+    )
+)
+cust_orders["recency_days"] = (snapshot_date - cust_orders["last_order_date"]).dt.days
+cust_orders.drop(columns=["last_order_date"], inplace=True)
+
+cust_disc = (
+    master_df.groupby("customer_id", as_index=False)["discount_pct"]
+    .mean()
+    .rename(columns={"discount_pct": "avg_discount"})
+)
+
+cust_profile = master_df.drop_duplicates("customer_id")[
+    ["customer_id", "age", "region", "tenure_months", "loyalty_tier", "support_tickets", "churned"]
+]
+
+# 4. Merge into unified Customer ML Table
+ml_df = (
+    cust_profile
+    .merge(cust_orders, on="customer_id", how="inner")
+    .merge(cust_disc, on="customer_id", how="left")
+    .merge(pref_cat, on="customer_id", how="left")
+)
+
+# 5. Domain ratio features
+ml_df["profit_margin_pct"] = (ml_df["total_profit"] / ml_df["total_spend"] * 100.0).round(2)
+ml_df["tickets_per_year"] = (ml_df["support_tickets"] / (ml_df["tenure_months"] / 12.0)).round(3)
+ml_df["orders_per_month"] = (ml_df["order_count"] / ml_df["tenure_months"]).round(3)
+
+out_path = PROC_DIR / "customer_ml_features.csv"
+ml_df.to_csv(out_path, index=False)
+print(f"[SUCCESS] Saved {out_path} -> Shape: {ml_df.shape}")
+print("Churn distribution:\n", ml_df["churned"].value_counts(normalize=True).round(3))
+ml_df.head()

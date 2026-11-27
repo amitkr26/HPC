@@ -1,0 +1,63 @@
+import pandas as pd
+from pathlib import Path
+
+
+# 1. Load multi-format datasets
+tx_df = pd.read_csv(RAW / "sales_transactions.csv")
+prod_df = pd.read_excel(RAW / "products.xlsx", sheet_name="Products")
+cust_df = pd.read_json(RAW / "customer_profiles.json")
+
+# 2. Helper to clean column names (lowercase, strip, underscores)
+def clean_columns(df: pd.DataFrame) -> pd.DataFrame:
+    df = df.copy()
+    df.columns = df.columns.str.strip().str.lower().str.replace(" ", "_", regex=False)
+    return df
+
+tx_df = clean_columns(tx_df)
+prod_df = clean_columns(prod_df)
+cust_df = clean_columns(cust_df)
+
+# 3. Audit raw transaction issues
+print("Raw shape:", tx_df.shape)
+print("Exact duplicates:", tx_df.duplicated().sum())
+print("Missing values:\n", tx_df.isna().sum())
+print("Raw unique regions:", tx_df["region"].unique())
+print("Units sold min/max:", tx_df["units_sold"].min(), tx_df["units_sold"].max())
+
+# 4. Clean transactions
+tx_clean = tx_df.drop_duplicates().copy()
+tx_clean["region"] = tx_clean["region"].str.strip().str.title()
+tx_clean["discount_pct"] = tx_clean["discount_pct"].fillna(0.0)
+
+# Remove impossible negative quantities and extreme bulk-entry errors
+invalid_mask = (tx_clean["units_sold"] <= 0) | (tx_clean["units_sold"] > 15)
+print(f"Removing {invalid_mask.sum()} corrupted/outlier unit rows...")
+tx_clean = tx_clean[~invalid_mask].copy()
+
+# 5. Merge with Products and Customers
+master_df = (
+    tx_clean
+    .merge(prod_df, on="product_id", how="left")
+    .merge(cust_df, on="customer_id", how="left", suffixes=("", "_cust"))
+)
+
+# Fill missing transaction region from customer profile region
+master_df["region"] = master_df["region"].fillna(master_df["region_cust"])
+master_df.drop(columns=["region_cust"], inplace=True)
+
+# Parse dates and enforce exact financial formulas
+master_df["transaction_date"] = pd.to_datetime(master_df["transaction_date"])
+master_df["sales_amount"] = (
+    master_df["units_sold"] * master_df["unit_price"] * (1.0 - master_df["discount_pct"] / 100.0)
+).round(2)
+master_df["profit"] = (
+    master_df["sales_amount"] - master_df["units_sold"] * master_df["cost_price"]
+).round(2)
+master_df["order_year"] = master_df["transaction_date"].dt.year
+master_df["order_month"] = master_df["transaction_date"].dt.to_period("M").astype(str)
+
+# Final sanity check & export
+assert master_df.isna().sum().sum() == 0, "Unexpected nulls remain!"
+out_path = PROC / "master_retail.csv"
+master_df.to_csv(out_path, index=False)
+print(f"[SUCCESS] Exported clean master dataset: {out_path} -> Shape: {master_df.shape}")
